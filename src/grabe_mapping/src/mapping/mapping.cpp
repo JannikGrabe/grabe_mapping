@@ -132,7 +132,6 @@ void Mapping::set_input_is_meter(bool input_is_meter) {
 
 void Mapping::toggle_input_is_meter() {
     this->input_is_meter = !this->input_is_meter;
-    std::cout << "meter: " << this->input_is_meter << std::endl;
 }
 
 void Mapping::set_input_is_lefthanded(bool input_is_lefthanded) {
@@ -142,7 +141,6 @@ void Mapping::set_input_is_lefthanded(bool input_is_lefthanded) {
 
 void Mapping::toggle_input_is_lefthanded() {
     this->input_is_lefthanded = !this->input_is_lefthanded;
-    std::cout << "lefthanded: " << this->input_is_lefthanded << std::endl;
 }
 
     // topic
