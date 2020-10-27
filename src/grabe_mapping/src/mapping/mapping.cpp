@@ -6,7 +6,7 @@ Mapping::Mapping() {
 
     this->init_states();
 
-    QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_work_finished);
+    QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_process_finished);
 }
 
 void Mapping::start_mapping() {
@@ -32,6 +32,25 @@ void Mapping::start_scan_to_file() {
     QFuture<int> scan_to_file_future = QtConcurrent::run(Mapping::run_command, scan_to_file_launch_sh);
     // set watcher to currently last process
     this->watcher.setFuture(scan_to_file_future);
+
+    this->next_process = &Mapping::showResults;
+}
+
+void Mapping::showResults() {
+
+    // build command to run show
+    std::string show = "/home/jannik/slam6d-code/bin/show -s 0 -e 12 ";
+    show += this->output_filepath.toStdString();
+
+    QFuture<int> show_future = QtConcurrent::run(Mapping::run_command, show);
+
+    this->watcher.setFuture(show_future);
+
+    this->next_process = &Mapping::finish_mapping;
+}
+
+void Mapping::finish_mapping() {
+    emit this->finished_mapping(0);
 }
 
 int Mapping::run_command(std::string command) {
@@ -65,8 +84,8 @@ bool Mapping::check_states() {
     return true;
 }
 
-void Mapping::on_work_finished() {
-    emit this->finished_mapping(0);
+void Mapping::on_process_finished() {
+    (this->*next_process)();
 }
 
 // getter

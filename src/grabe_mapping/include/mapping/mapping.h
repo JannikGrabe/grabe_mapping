@@ -24,9 +24,14 @@ private:
     // work 
     std::string script_path;
     QFutureWatcher<void> watcher;
+    void (Mapping::*next_process)();
 
     // member methods
     void start_scan_to_file();
+
+    void showResults();
+
+    void finish_mapping();
 
     static int run_command(std::string command);
 
@@ -35,7 +40,7 @@ private:
     bool check_states();
 
 public slots:
-    void on_work_finished();
+    void on_process_finished();
     
 public: 
 
