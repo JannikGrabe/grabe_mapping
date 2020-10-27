@@ -15,22 +15,7 @@ void Mapping::start_mapping() {
         return;
     }
 
-    //this->start_rosbag();
     this->start_scan_to_file();
-}
-
-void Mapping::start_rosbag() {
-
-    // build command to run script for rosbag play
-    std::string rosbag_play_sh = this->script_path + "/rosbag_play.sh ";
-    rosbag_play_sh += this->rosbag_filename.toStdString(); // filename of rosbag
-
-    // open thread for rosbag play
-    QFuture<int> rosbag_future = QtConcurrent::run(Mapping::run_command, rosbag_play_sh);
-
-    // set watcher to currently last process
-    this->watcher.setFuture(rosbag_future);
-
 }
 
 void Mapping::start_scan_to_file() {

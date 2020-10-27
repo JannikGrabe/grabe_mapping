@@ -26,8 +26,6 @@ private:
     QFutureWatcher<void> watcher;
 
     // member methods
-    void start_rosbag();
-
     void start_scan_to_file();
 
     static int run_command(std::string command);
