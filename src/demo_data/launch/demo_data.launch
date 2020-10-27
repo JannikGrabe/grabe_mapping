@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<launch>
+	<arg name="path" value="/home/jannik/Bachelorarbeit/data/hannover1"/>
+
+	<node pkg="rosbag" type="record" name="recorder" args="record -a --duration=30 -O /home/jannik/Bachelorarbeit/Bagfiles/demo_data"/>
+
+	<group ns="demo_data">
+		<node pkg="demo_data" type="tf_broadcaster" name="tf_broadcaster" output="screen"/>
+
+		<node pkg="demo_data" type="scan_publisher" name="scan_publisher" output="screen">
+			<param name="path" type="string" value="$(arg path)"/>
+		</node> 
+
+		<node pkg="demo_data" type="pose_publisher" name="pose_publisher" output="screen">
+			<param name="path" type="string" value="$(arg path)"/>
+		</node>
+	</group>
+</launch>

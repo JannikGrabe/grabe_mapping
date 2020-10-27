@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+
+<!--
+	In this launch file all the necessary nodes are started which are needed to accumulate the sensor data from the Hokuyo and the Velodyne scanner. They are published as a sensor_msgs::PointCloud2
+-->
+
+<launch>
+
+
+  	<!-- rosbag is started using simulation time -->
+	<param name="use_sim_time" type="boolean" value="true" />
+	<node pkg="rosbag" type="play" name="player" required="true"
+		args="--clock /home/jannik/Bachelorarbeit/Bagfiles/SWAPwithOdom/2016-09-21-16-17-50.bag"/>
+
+
+	<group ns="pc_accumulation/hokuyo_assembler">
+	  	<!-- 
+	  		sensor data from the Hokuyo comes as sensor_msgs::LaserScan messages on the topic /scan. The laser_scan_assembler collects these messages and transforms them into the frame /odom.
+	  	-->
+	  	<node type="laser_scan_assembler" pkg="laser_assembler" name="laser_scan_assembler" output="screen">
+	    	<remap from="scan" to="/scan"/>
+	    	<param name="max_scans" type="int" value="100000" />
+	    	<param name="fixed_frame" type="string" value="odom" />
+	  	</node>
+		
+	  	<!--
+	  		The laser_assembler_client calls the assemble_scans service of the laser_scan_assembler at 'rate' and all the collected LaserScans are assembled in a sensor_msgs::PointCloud2 and published on /pc_accumulation/pointcloud.
+	  	-->
+	  	<node pkg="pc_accumulation" type="laser_assembler2_client" name="laser_assembler2_client" output="screen">
+	  		<remap from="assembled_pointcloud2" to="/pc_accumulation/pointcloud"/>
+	  		<param name="rate" value="2"/>
+	  	</node>
+	</group>
+
+	<group ns="pc_accumulation/velodyne_assembler">
+	  	<!--
+	  		sensor data from the Velodyne comes as sensor_msgs::PointCloud2 messages on the topic /velodyne/cloud_raw. They are converted to sensor_msgs::PointCloud by the pointcloud_converter and published on pc_accumulation/velodyne_assembler/pointcloud_raw
+	  	-->
+	  	<node pkg="pc_accumulation" type="pointcloud_converter_node" name="velodyne_pointcloud_converter" output="screen">
+	  		<remap from="pointcloud2_in" to="/velodyne/cloud_raw"/>
+	  		<remap from="pointcloud_out"  to="pointcloud_raw"/>
+	  	</node>
+		
+
+	  	<!--
+			The point_cloud_assembler collects the messages from the topic pc_accumulation/velodyne_assembler/pointcloud_raw and transfroms them into the frame /odom.
+		-->
+	  	<node pkg="laser_assembler" type="point_cloud_assembler" name="point_cloud_assembler" output="screen">
+	  		<remap from="cloud" to="pointcloud_raw"/>
+	    	<param name="max_clouds" type="int" value="100000" />
+	    	<param name="fixed_frame" type="string" value="odom" />
+	    </node>
+		
+
+	    <!--
+	  		The laser_assembler2_client calls the assemble_scans2 service of the laser_scan_assembler at 'rate' and all the collected PointClouds are assembled in a sensor_msgs::PointCloud2 and published on /pc_accumulation/pointcloud.
+	  	-->
+	    <node pkg="pc_accumulation" type="laser_assembler2_client" name="laser_assembler2_client" output="screen">
+	  		<param name="rate" value="1"/>
+	  		<remap from="assembled_pointcloud2" to="/pc_accumulation/pointcloud"/>
+	    </node>
+	    
+	</group>
+
+	<group ns="pc_accumulation/">
+		<!-- 
+			The pointcloud_to_file node writes the fully accumulated PointCloud2s to file. Also the pose information needed for the mapping tools is written to seperate files
+		-->
+		<node pkg="pc_accumulation" type="pointcloud_to_file" name="pointcloud_to_file" output="screen">
+			<remap from="pointcloud" to="/pc_accumulation/pointcloud"/>
+		</node>
+		
+	</group>
+</launch>
