@@ -93,42 +93,38 @@ bool Mapping::check_states() {
 // Algorithms
 void Mapping::initAlgorithms() {
     // ICP Minimization
-    this->minimization = MappingAlgorithm("Default", "");
+    this->minimization = MappingAlgorithm("Unit Quaternion", "-a", 1);
 
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Default", this->minimization));
+        "Unit Quaternion", this->minimization));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Unit Quaternion", MappingAlgorithm("Unit Quaternion")));
+        "Singular Value Decomposition", MappingAlgorithm("Singular Value Decomposition", "-a", 2)));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Singular Value Decomposition", MappingAlgorithm("Singular Value Decomposition")));
+        "Orthonormal Matrices", MappingAlgorithm("Orthonormal Matrices", "-a", 3)));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Orthonormal Matrices", MappingAlgorithm("Orthonormal Matrices")));
+        "Dual Quaternions", MappingAlgorithm("Dual Quaternions", "-a", 4)));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Dual Quaternions", MappingAlgorithm("Dual Quaternions")));
+        "Helix Approximation", MappingAlgorithm("Helix Approximation", "-a", 5)));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Helix Approximation", MappingAlgorithm("Helix Approximation")));
+        "Small Angle Approximation", MappingAlgorithm("Small Angle Approximation", "-a", 6)));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Small Angle Approximation", MappingAlgorithm("Small Angle Approximation")));
+        "Uncertainty Based: Euler Angles", MappingAlgorithm("Uncertainty Based: Euler Angles", "-a", 7)));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Uncertainty Based: Euler Angles", MappingAlgorithm("Uncertainty Based: Euler Angles")));
+        "Uncertainty Based: Quaternions", MappingAlgorithm("Uncertainty Based: Quaternions", "-a", 8)));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Uncertainty Based: Quaternions", MappingAlgorithm("Uncertainty Based: Quaternions")));
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Unit Quaternion with Scale Method", MappingAlgorithm("Unit Quaternion with Scale Method")));
+        "Unit Quaternion with Scale Method", MappingAlgorithm("Unit Quaternion with Scale Method", "-a", 9)));
 
     // ICP Nearest Neighbor
-    this->nearest_neighbor = MappingAlgorithm("Default", "");
+    this->nearest_neighbor = MappingAlgorithm("simple k-d tree", "-t", 0);
 
     this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Default", this->nearest_neighbor));
+        "simple k-d tree", this->nearest_neighbor));
     this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "simple k-d tree", MappingAlgorithm("simple k-d tree")));
+        "cached k-d tree", MappingAlgorithm("cached k-d tree", "-t", 2)));
     this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "cached k-d tree", MappingAlgorithm("cached k-d tree")));
+        "ANN tree", MappingAlgorithm("ANN tree", "-t", 3)));
     this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "ANN tree", MappingAlgorithm("ANN tree")));
-    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "BOC tree", MappingAlgorithm("BOC tree"))); 
+        "BOC tree", MappingAlgorithm("BOC tree", "-t", 4))); 
 }
 
 // Slots
