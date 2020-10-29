@@ -156,11 +156,11 @@ QString Mapping::get_gps_topic() {
 }
 
     // ICP
-QString Mapping::get_minimization() {
+MappingAlgorithm Mapping::get_minimization() {
     return this->minimization;
 }
 
-QString Mapping::get_nearest_neighbor() {
+MappingAlgorithm Mapping::get_nearest_neighbor() {
     return this->nearest_neighbor;
 }
 

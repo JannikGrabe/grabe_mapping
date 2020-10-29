@@ -74,8 +74,8 @@ public:
     QString get_gps_topic();
 
         // ICP
-    QString get_minimization();
-    QString get_nearest_neighbor();
+    MappingAlgorithm get_minimization();
+    MappingAlgorithm get_nearest_neighbor();
 
         // output
     QString get_output_filepath();
