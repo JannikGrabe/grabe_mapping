@@ -21,6 +21,10 @@ private:
     // ouput
     QString output_filepath;
 
+    // ICP
+    QString minimization;
+    QString nearest_neighbor;
+
     // work 
     std::string script_path;
     QFutureWatcher<void> watcher;
@@ -59,6 +63,10 @@ public:
     QString get_odom_topic();
     QString get_gps_topic();
 
+        // ICP
+    QString get_minimization();
+    QString get_nearest_neighbor();
+
         // output
     QString get_output_filepath();
 
@@ -74,6 +82,10 @@ public:
     void set_scan_topic(QString topic);
     void set_odom_topic(QString topic);
     void set_gps_topic(QString topic);
+
+        // ICP
+    void set_minimization(QString text);
+    void set_nearest_neighbor(QString text);
 
         // output
     void set_output_filepath(QString filename);

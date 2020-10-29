@@ -115,6 +115,15 @@ QString Mapping::get_gps_topic() {
     return this->gps_topic;
 }
 
+    // ICP
+QString Mapping::get_minimization() {
+    return this->minimization;
+}
+
+QString Mapping::get_nearest_neighbor() {
+    return this->nearest_neighbor;
+}
+
     // output
 QString Mapping::get_output_filepath() {
     return this->output_filepath;
@@ -154,6 +163,15 @@ void Mapping::set_odom_topic(QString topic) {
 
 void Mapping::set_gps_topic(QString topic) {
     this->gps_topic = topic;
+}
+
+    // ICP
+void Mapping::set_minimization(QString text) {
+    this->minimization = text;
+}
+
+void Mapping::set_nearest_neighbor(QString text) {
+    this->nearest_neighbor = text;
 }
 
     // output
