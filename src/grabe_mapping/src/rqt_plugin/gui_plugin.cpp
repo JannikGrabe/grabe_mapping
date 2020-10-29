@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QProgressBar>
+#include <QMessageBox>
 
 namespace grabe_mapping
 {
@@ -58,6 +59,8 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(ui_.pb_openrviz, &QPushButton::pressed, this, &GuiPlugin::on_pb_openrviz_pressed);
 
   // ICP
+  QObject::connect(this->ui_.cb_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_minimization_current_text_changed);
+  QObject::connect(this->ui_.cb_nn, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_nn_current_text_changed);
 
 }
 
@@ -122,6 +125,23 @@ void GuiPlugin::on_le_gps_type_text_changed(QString text) {
 
 }
 
+  // Algorithms
+void GuiPlugin::on_cb_minimization_current_text_changed(QString text) {
+  if(!this->mapping->set_minimization(text)) {
+    QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
+    int i = this->ui_.cb_minimization->findText(text);
+    if(i != -1) this->ui_.cb_minimization->removeItem(i);
+  }
+}
+
+void GuiPlugin::on_cb_nn_current_text_changed(QString text) {
+  if(!this->mapping->set_nearest_neighbor(text)) {
+    QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
+    int i = this->ui_.cb_nn->findText(text);
+    if(i != -1) this->ui_.cb_nn->removeItem(i);
+  }
+}
+
   // work
 void GuiPlugin::on_pb_start_pressed() {
 
@@ -129,9 +149,6 @@ void GuiPlugin::on_pb_start_pressed() {
   this->ui_.pb_progress->setVisible(true);
   this->ui_.pb_progress->setRange(0, 0);
   this->ui_.pb_openrviz->setVisible(true);
-
-  this->mapping->set_minimization(this->ui_.cb_minimization->currentText());
-  this->mapping->set_nearest_neighbor(this->ui_.cb_nn->currentText());
 
   this->mapping->start_mapping();
 }
@@ -184,7 +201,8 @@ void GuiPlugin::initComboBoxes() {
   this->ui_.cb_minimization->addItem("Uncertainty Based: Euler Angles");
   this->ui_.cb_minimization->addItem("Uncertainty Based: Quaternions"); 
   this->ui_.cb_minimization->addItem("Unit Quaternion with Scale Method");
-  
+  this->ui_.cb_minimization->addItem("bla");
+
   this->ui_.cb_nn->addItem("Default");                       
   this->ui_.cb_nn->addItem("simple k-d tree"); 
   this->ui_.cb_nn->addItem("cached k-d tree");

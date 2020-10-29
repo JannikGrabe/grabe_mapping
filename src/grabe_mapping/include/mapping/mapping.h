@@ -94,8 +94,8 @@ public:
     void set_gps_topic(QString topic);
 
         // ICP
-    void set_minimization(QString text);
-    void set_nearest_neighbor(QString text);
+    bool set_minimization(QString text);
+    bool set_nearest_neighbor(QString text);
 
         // output
     void set_output_filepath(QString filename);

@@ -50,10 +50,13 @@ public slots:
   void on_le_odom_type_text_changed(QString text);
   void on_le_gps_type_text_changed(QString text);
 
+  // Algorithms
+  void on_cb_minimization_current_text_changed(QString text);
+  void on_cb_nn_current_text_changed(QString text);
+
   // output
   void on_pb_output_pressed();
   void on_le_output_text_changed(QString text);
-
 
 
 private:

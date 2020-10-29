@@ -1,6 +1,7 @@
 #include "mapping/mapping.h"
 #include "ros/ros.h"
 #include "ros/package.h"
+#include <iostream>
 
 Mapping::Mapping() {
 
@@ -100,7 +101,7 @@ void Mapping::initAlgorithms() {
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Orthonormal Matrices", MappingAlgorithm("Orthonormal Matrices")));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Dual Quaternion", MappingAlgorithm("Dual Quaternions")));
+        "Dual Quaternions", MappingAlgorithm("Dual Quaternions")));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Helix Approximation", MappingAlgorithm("Helix Approximation")));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
@@ -206,12 +207,24 @@ void Mapping::set_gps_topic(QString topic) {
 }
 
     // ICP
-void Mapping::set_minimization(QString text) {
-    this->minimization = this->minimization_algorithms.find(text.toStdString())->second;
+bool Mapping::set_minimization(QString text) {
+    std::map<std::string,MappingAlgorithm>::iterator it = this->minimization_algorithms.find(text.toStdString());
+    if(it != this->minimization_algorithms.end()) {
+        this->minimization = it->second;
+        return true;
+    } else {
+        return false;
+    }
 }
 
-void Mapping::set_nearest_neighbor(QString text) {
-    this->nearest_neighbor = this->nearest_neighbor_algorithms.find(text.toStdString())->second;
+bool Mapping::set_nearest_neighbor(QString text) {
+    std::map<std::string,MappingAlgorithm>::iterator it = this->nearest_neighbor_algorithms.find(text.toStdString());
+    if(it != this->nearest_neighbor_algorithms.end()) {
+        this->nearest_neighbor = it->second;
+        return true;
+    } else {
+        return false;
+    }
 }
 
     // output
