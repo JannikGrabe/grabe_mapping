@@ -166,7 +166,6 @@ void GuiPlugin::on_pb_start_pressed() {
   this->ui_.pb_start->setEnabled(false);
   this->ui_.pb_progress->setVisible(true);
   this->ui_.pb_progress->setRange(0, 0);
-  this->ui_.pb_openrviz->setVisible(true);
 
   this->mapping->start_mapping();
 }
@@ -174,7 +173,6 @@ void GuiPlugin::on_pb_start_pressed() {
 void GuiPlugin::on_work_finished(int exit_code) {
   this->ui_.pb_start->setEnabled(true);
   this->ui_.pb_progress->setVisible(false);
-  this->ui_.pb_openrviz->setVisible(false);
 
   if(exit_code == 1) {
     ROS_ERROR("Something went wrong");
@@ -201,7 +199,6 @@ void GuiPlugin::on_le_output_text_changed(QString text) {
 void GuiPlugin::initWidgets() {
   this->initComboBoxes();
   this->ui_.pb_progress->setVisible(false);
-  this->ui_.pb_openrviz->setVisible(false);
 }
 
 void GuiPlugin::initComboBoxes() {

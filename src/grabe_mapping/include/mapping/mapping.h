@@ -4,6 +4,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include "mapping_algorithm.h"
 #include <map>
+#include <QProcess>
 
 class Mapping : public QWidget {
     Q_OBJECT
@@ -39,6 +40,9 @@ private:
     QList<QFuture<int> > future_list;
     void (Mapping::*next_process)();
 
+    QProcess* current_process;
+    qint64 current_pid;
+
     // Mapping
     void start_scan_to_file();
 
@@ -49,6 +53,8 @@ private:
     void finish_mapping();
 
     static int run_command(std::string command);
+
+    void stopChildProcesses(qint64 parentProcessId);
 
     // States
     void init_states();
