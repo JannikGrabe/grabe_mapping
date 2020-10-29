@@ -1,4 +1,5 @@
 #include <string>
+#include <sstream>
 
 class MappingAlgorithm {
     std::string name;
@@ -16,6 +17,8 @@ public:
     std::string get_name() const { return this->name; }
     
     std::string to_string() {
-        return this->argument + " " + std::to_string(this->argument_value);
+        std::ostringstream value("", std::ios_base::app);
+        value << this->argument_value;
+        return this->argument + " " + value.str();
     }
 };

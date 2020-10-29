@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>403</width>
-    <height>280</height>
+    <height>294</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,13 +20,20 @@
       <item>
        <widget class="QTabWidget" name="tb_settings">
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tab_rosbag">
          <attribute name="title">
           <string>Rosbag</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QCheckBox" name="cb_use_output_files">
+            <property name="text">
+             <string>use Scans in Output directory</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <layout class="QGridLayout" name="gl_rosbag">
             <item row="0" column="0">
@@ -364,7 +371,7 @@
            </layout>
           </item>
           <item>
-           <spacer name="verticalSpacer">
+           <spacer name="vs">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
@@ -399,7 +406,7 @@
       <item>
        <layout class="QHBoxLayout" name="hl_start">
         <item>
-         <spacer name="horizontalSpacer_2">
+         <spacer name="hs2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -452,7 +459,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="bg_units"/>
   <buttongroup name="bg_coordinates"/>
+  <buttongroup name="bg_units"/>
  </buttongroups>
 </ui>

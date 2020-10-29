@@ -37,6 +37,22 @@ void Mapping::start_scan_to_file() {
     // set watcher to currently last process
     this->watcher.setFuture(scan_to_file_future);
 
+    this->next_process = &Mapping::start_slam6D;
+}
+
+void Mapping::start_slam6D() {
+    std::string slam6D = "/home/jannik/slam6d-code/bin/slam6D ";
+
+    slam6D += this->minimization.to_string();
+    slam6D += " " + this->nearest_neighbor.to_string();
+    slam6D += " " + this->output_filepath.toStdString();
+
+    std::cout << slam6D << std::endl;
+
+    QFuture<int> slam6D_future = QtConcurrent::run(Mapping::run_command, slam6D);
+
+    this->watcher.setFuture(slam6D_future);
+
     this->next_process = &Mapping::showResults;
 }
 

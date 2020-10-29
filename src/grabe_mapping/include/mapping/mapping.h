@@ -40,6 +40,8 @@ private:
     // Mapping
     void start_scan_to_file();
 
+    void start_slam6D();
+
     void showResults();
 
     void finish_mapping();
