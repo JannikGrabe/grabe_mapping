@@ -18,7 +18,7 @@ Scan_to_file::Scan_to_file() {
     this->sync = new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(10), *scan_sub, *odom_sub);
     this->sync->registerCallback(&Scan_to_file::callback, this);
 
-    this->count_pub = n.advertise<std_msgs::Int32>("scan_to _file_count", 10);
+    this->count_pub = n.advertise<std_msgs::Int32>("scan_to_file_count", 10);
 }
 
 Scan_to_file::~Scan_to_file() {
@@ -86,7 +86,9 @@ void Scan_to_file::callback(const boost::shared_ptr<sensor_msgs::PointCloud2 con
 
     ROS_INFO("processed pose %d", file_count);
 
-    this->count_pub.publish(file_count);
+    std_msgs::Int32 msg;
+    msg.data = file_count;
+    this->count_pub.publish(msg);
     
     file_count++;
 }
