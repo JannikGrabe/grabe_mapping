@@ -20,7 +20,7 @@ GuiPlugin::GuiPlugin()
   // give QObjects reasonable names
   setObjectName("GuiPlugin");
 
-  this->count_sub = this->n.subscribe("scan_to_file_count", 10, &GuiPlugin::scan_to_file_count_callback, this);
+  this->count_sub = this->n.subscribe("mapping/scan_to_file_count", 10, &GuiPlugin::scan_to_file_count_callback, this);
 
 }
 
