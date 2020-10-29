@@ -83,6 +83,7 @@ void GuiPlugin::on_cb_use_output_files_state_changed(int state) {
   if(state == 2) {
     this->ui_.tb_settings->removeTab(2);
     this->ui_.tb_settings->removeTab(1);
+    this->mapping->set_use_rosbag(false);
   }
   else if(state == 0) {
     QWidget* tab_topics = this->ui_.tb_settings->findChild<QWidget*>("tab_topics");
@@ -90,6 +91,7 @@ void GuiPlugin::on_cb_use_output_files_state_changed(int state) {
 
     QWidget* tab_rosbag = this->ui_.tb_settings->findChild<QWidget*>("tab_rosbag");
     this->ui_.tb_settings->insertTab(1, tab_rosbag, "Rosbag");
+    this->mapping->set_use_rosbag(true);
   }
 }
 

@@ -11,6 +11,7 @@ class Mapping : public QWidget {
 private:
 
     // rosbag
+    bool use_rosbag;
     QString rosbag_filename;
     bool input_is_meter;
     bool input_is_lefthanded;
@@ -66,6 +67,7 @@ public:
 
     // getter
         // rosbag
+    bool get_use_rosbag();
     QString get_rosbag_filename();
     bool get_input_is_meter();
     bool get_input_is_lefthanded();
@@ -85,6 +87,7 @@ public:
 
     // setter
         // rosbag
+    void set_use_rosbag(bool state);
     void set_rosbag_filename(QString filename);
     void set_input_is_meter(bool input_is_meter);
     void toggle_input_is_meter();

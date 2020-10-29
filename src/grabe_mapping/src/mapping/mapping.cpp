@@ -19,7 +19,10 @@ void Mapping::start_mapping() {
         return;
     }
 
-    this->start_scan_to_file();
+    if(this->use_rosbag) 
+        this->start_scan_to_file();
+    else
+        this->start_slam6D();
 }
 
 void Mapping::start_scan_to_file() {
@@ -80,19 +83,20 @@ int Mapping::run_command(std::string command) {
 
 // States
 void Mapping::init_states() {
+    this->use_rosbag = true;
     this->input_is_meter = false;
     this->input_is_lefthanded = false;
     this->script_path = ros::package::getPath("grabe_mapping") + "/scripts";
 }
 
 bool Mapping::check_states() {
-    if(this->rosbag_filename.isEmpty()) {
+    if(this->use_rosbag && this->rosbag_filename.isEmpty()) {
         ROS_ERROR("no rosbag filename set");
         return false;
-    } else if(this->scan_topic.isEmpty()) {
+    } else if(this->use_rosbag && this->scan_topic.isEmpty()) {
         ROS_ERROR("no scan topic set");
         return false;
-    } else if(this->odom_topic.isEmpty()) {
+    } else if(this->use_rosbag && this->odom_topic.isEmpty()) {
         ROS_ERROR("no odom topic set");
         return false;
     } /*else if(this->gps_topic.isEmpty()) {
@@ -150,6 +154,10 @@ void Mapping::on_process_finished() {
 
 // getter
     // rosbag
+bool Mapping::get_use_rosbag() {
+    return this->use_rosbag;
+}
+
 QString Mapping::get_rosbag_filename() {
     return this->rosbag_filename;
 }
@@ -195,6 +203,10 @@ QString Mapping::get_output_filepath() {
 
 // setter
     // rosbag
+void Mapping::set_use_rosbag(bool state) {
+    this->use_rosbag = state;
+}
+
 void Mapping::set_rosbag_filename(QString filename) {
     this->rosbag_filename = filename;
 }
