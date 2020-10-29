@@ -154,50 +154,50 @@ void Mapping::on_process_finished() {
 
 // getter
     // rosbag
-bool Mapping::get_use_rosbag() {
+bool Mapping::get_use_rosbag() const{
     return this->use_rosbag;
 }
 
-QString Mapping::get_rosbag_filename() {
+QString Mapping::get_rosbag_filename() const {
     return this->rosbag_filename;
 }
 
-bool Mapping::get_input_is_meter() {
+bool Mapping::get_input_is_meter() const {
     return this->input_is_meter;
 }
 
-bool Mapping::get_input_is_lefthanded() {
+bool Mapping::get_input_is_lefthanded() const {
     return this->input_is_lefthanded;
 }
 
-int Mapping::get_file_count() {
+int Mapping::get_file_count() const {
     return this->file_count;
 }
 
     // topics
-QString Mapping::get_scan_topic() {
+QString Mapping::get_scan_topic() const {
     return this->scan_topic;
 }
 
-QString Mapping::get_odom_topic() {
+QString Mapping::get_odom_topic() const {
     return this->odom_topic;
 }
 
-QString Mapping::get_gps_topic() {
+QString Mapping::get_gps_topic() const {
     return this->gps_topic;
 }
 
     // ICP
-MappingAlgorithm Mapping::get_minimization() {
+MappingAlgorithm Mapping::get_minimization() const {
     return this->minimization;
 }
 
-MappingAlgorithm Mapping::get_nearest_neighbor() {
+MappingAlgorithm Mapping::get_nearest_neighbor() const {
     return this->nearest_neighbor;
 }
 
     // output
-QString Mapping::get_output_filepath() {
+QString Mapping::get_output_filepath() const {
     return this->output_filepath;
 }
 

@@ -67,23 +67,23 @@ public:
 
     // getter
         // rosbag
-    bool get_use_rosbag();
-    QString get_rosbag_filename();
-    bool get_input_is_meter();
-    bool get_input_is_lefthanded();
-    int get_file_count();
+    bool get_use_rosbag() const;
+    QString get_rosbag_filename() const;
+    bool get_input_is_meter() const;
+    bool get_input_is_lefthanded() const;
+    int get_file_count() const;
 
         // topics
-    QString get_scan_topic();
-    QString get_odom_topic();
-    QString get_gps_topic();
+    QString get_scan_topic() const;
+    QString get_odom_topic() const;
+    QString get_gps_topic() const;
 
         // ICP
-    MappingAlgorithm get_minimization();
-    MappingAlgorithm get_nearest_neighbor();
+    MappingAlgorithm get_minimization() const;
+    MappingAlgorithm get_nearest_neighbor() const;
 
         // output
-    QString get_output_filepath();
+    QString get_output_filepath() const;
 
     // setter
         // rosbag
