@@ -23,7 +23,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="tab_output">
          <attribute name="title">
@@ -420,16 +420,6 @@
            </size>
           </property>
          </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pb_openrviz">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>open Rviz</string>
-          </property>
-         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pb_start">

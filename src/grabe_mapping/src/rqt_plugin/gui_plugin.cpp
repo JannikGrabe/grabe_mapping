@@ -59,7 +59,6 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   // work
   QObject::connect(this->mapping, &Mapping::finished_mapping, this, &GuiPlugin::on_work_finished);
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
-  QObject::connect(ui_.pb_openrviz, &QPushButton::pressed, this, &GuiPlugin::on_pb_openrviz_pressed);
 
   // ICP
   QObject::connect(this->ui_.cb_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_minimization_current_text_changed);
@@ -180,10 +179,6 @@ void GuiPlugin::on_work_finished(int exit_code) {
   if(exit_code == 1) {
     ROS_ERROR("Something went wrong");
   }
-}
-
-void GuiPlugin::on_pb_openrviz_pressed() {
-  QFuture<void> future = QtConcurrent::run(GuiPlugin::runCommand, std::string("rviz"));
 }
 
   // output
