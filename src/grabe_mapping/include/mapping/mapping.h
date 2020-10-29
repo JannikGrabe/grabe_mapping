@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QWidget>
 #include <QtConcurrent/QtConcurrent>
+#include "mapping_algorithm.h"
+#include <map>
 
 class Mapping : public QWidget {
     Q_OBJECT
@@ -25,12 +27,15 @@ private:
     QString minimization;
     QString nearest_neighbor;
 
+    // Algorithms
+    std::map<std::string, MappingAlgorithm> algorithms;
+
     // work 
     std::string script_path;
     QFutureWatcher<void> watcher;
     void (Mapping::*next_process)();
 
-    // member methods
+    // Mapping
     void start_scan_to_file();
 
     void showResults();
@@ -39,17 +44,20 @@ private:
 
     static int run_command(std::string command);
 
+    // States
     void init_states();
 
     bool check_states();
 
-public slots:
-    void on_process_finished();
+    // Algorithms
+    void initAlgorithms();
+
     
 public: 
 
     Mapping();
 
+    // Mapping
     void start_mapping();
 
     // getter
@@ -58,7 +66,7 @@ public:
     bool get_input_is_meter();
     bool get_input_is_lefthanded();
 
-        // topic
+        // topics
     QString get_scan_topic();
     QString get_odom_topic();
     QString get_gps_topic();
@@ -78,7 +86,7 @@ public:
     void set_input_is_lefthanded(bool input_is_lefthanded);
     void toggle_input_is_lefthanded();
 
-        // topic
+        // topics
     void set_scan_topic(QString topic);
     void set_odom_topic(QString topic);
     void set_gps_topic(QString topic);
@@ -93,4 +101,7 @@ public:
 
 signals:
     void finished_mapping(int exit_code);
+
+public slots:
+    void on_process_finished();
 };
