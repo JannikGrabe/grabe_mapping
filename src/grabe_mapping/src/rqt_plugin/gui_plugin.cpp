@@ -58,7 +58,6 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(ui_.pb_openrviz, &QPushButton::pressed, this, &GuiPlugin::on_pb_openrviz_pressed);
 
   // ICP
-  
 
 }
 
@@ -166,8 +165,28 @@ void GuiPlugin::on_le_output_text_changed(QString text) {
 
 // init
 void GuiPlugin::initWidgets() {
+  this->initComboBoxes();
   this->ui_.pb_progress->setVisible(false);
   this->ui_.pb_openrviz->setVisible(false);
+}
+
+void GuiPlugin::initComboBoxes() {
+  this->ui_.cb_minimization->addItem("Default"); 
+  this->ui_.cb_minimization->addItem("Unit Quaternion"); 
+  this->ui_.cb_minimization->addItem("Singular Value Decomposition");
+  this->ui_.cb_minimization->addItem("Orthonormal Matrices");
+  this->ui_.cb_minimization->addItem("Dual Quaternions");
+  this->ui_.cb_minimization->addItem("Helix Approximation");
+  this->ui_.cb_minimization->addItem("Small Angle Approximation");
+  this->ui_.cb_minimization->addItem("Uncertainty Based: Euler Angles");
+  this->ui_.cb_minimization->addItem("Uncertainty Based: Quaternions"); 
+  this->ui_.cb_minimization->addItem("Unit Quaternion with Scale Method");
+  
+  this->ui_.cb_nn->addItem("Default");                       
+  this->ui_.cb_nn->addItem("simple k-d tree"); 
+  this->ui_.cb_nn->addItem("cached k-d tree");
+  this->ui_.cb_nn->addItem("ANN tree");
+  this->ui_.cb_nn->addItem("BOC tree");
 }
 
 // work stuff

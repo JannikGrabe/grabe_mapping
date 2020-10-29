@@ -230,37 +230,50 @@
          <attribute name="title">
           <string>ICP</string>
          </attribute>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="1">
-           <widget class="QComboBox" name="cobo_icp">
-            <property name="currentText">
-             <string>choose Algorithm</string>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QGroupBox" name="gb_minimization">
+            <property name="title">
+             <string>Minimization</string>
             </property>
-            <item>
-             <property name="text">
-              <string>choose Algorithm</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>algorithm 1</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>algorithm 2</string>
-             </property>
-            </item>
+            <layout class="QFormLayout" name="formLayout_2">
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_minimization">
+               <property name="text">
+                <string>Algorithm</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_minimization">
+               <property name="currentText">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="l_icp">
-            <property name="text">
-             <string>Algorithm</string>
+          <item>
+           <widget class="QGroupBox" name="gb_nn">
+            <property name="title">
+             <string>Nearest Neighbor</string>
             </property>
+            <layout class="QFormLayout" name="formLayout_3">
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_nn">
+               <property name="text">
+                <string>Algorithm</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_nn"/>
+             </item>
+            </layout>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item>
            <spacer name="vs3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>

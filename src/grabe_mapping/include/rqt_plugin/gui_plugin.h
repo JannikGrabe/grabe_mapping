@@ -61,6 +61,7 @@ private:
   QMainWindow* widget_;
   
   void initWidgets();
+  void initComboBoxes();
   static int runCommand(std::string command);
 
   Mapping* mapping;
