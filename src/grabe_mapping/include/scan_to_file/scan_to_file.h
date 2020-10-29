@@ -2,6 +2,7 @@
 #include "nav_msgs/Odometry.h"
 #include "sensor_msgs/PointCloud2.h"
 #include "sensor_msgs/point_cloud2_iterator.h"
+#include "std_msgs/Int32.h"
 #include <fstream>
 
 #include <message_filters/subscriber.h>
@@ -22,6 +23,9 @@ private:
     // Synchronizer that puts together messages from all subscribers
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, nav_msgs::Odometry> MySyncPolicy; // approximate time policy
     message_filters::Synchronizer<MySyncPolicy>* sync;
+
+    // Publisher
+    ros::Publisher count_pub; 
 
     // callback for grouped messages
     void callback(const boost::shared_ptr<sensor_msgs::PointCloud2 const>& scan, const boost::shared_ptr<nav_msgs::Odometry const>& odom);
