@@ -130,6 +130,9 @@ void GuiPlugin::on_pb_start_pressed() {
   this->ui_.pb_progress->setRange(0, 0);
   this->ui_.pb_openrviz->setVisible(true);
 
+  this->mapping->set_minimization(this->ui_.cb_minimization->currentText());
+  this->mapping->set_nearest_neighbor(this->ui_.cb_nn->currentText());
+
   this->mapping->start_mapping();
 }
 
