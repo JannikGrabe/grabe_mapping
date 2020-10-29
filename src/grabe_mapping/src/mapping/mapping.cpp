@@ -93,36 +93,35 @@ bool Mapping::check_states() {
 // Algorithms
 void Mapping::initAlgorithms() {
     // ICP Minimization
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Unit Quaternion", MappingAlgorithm("Unit Quaternion")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Singular Value Decomposition", MappingAlgorithm("Singular Value Decomposition")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Orthonormal Matrices", MappingAlgorithm("Orthonormal Matrices")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Dual Quaternion", MappingAlgorithm("Dual Quaternions")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Helix Approximation", MappingAlgorithm("Helix Approximation")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Small Angle Approximation", MappingAlgorithm("Small Angle Approximation")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Uncertainty Based: Euler Angles", MappingAlgorithm("Uncertainty Based: Euler Angles")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Uncertainty Based: Quaternions", MappingAlgorithm("Uncertainty Based: Quaternions")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Unit Quaternion with Scale Method", MappingAlgorithm("Unit Quaternion with Scale Method")));
 
     // ICP Nearest Neighbor
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "simple k-d tree", MappingAlgorithm("simple k-d tree")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "cached k-d tree", MappingAlgorithm("cached k-d tree")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "ANN tree", MappingAlgorithm("ANN tree")));
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "BOC tree", MappingAlgorithm("BOC tree"))); 
 }
-
 
 // Slots
 void Mapping::on_process_finished() {
@@ -208,11 +207,11 @@ void Mapping::set_gps_topic(QString topic) {
 
     // ICP
 void Mapping::set_minimization(QString text) {
-    this->minimization = text;
+    this->minimization = this->minimization_algorithms.find(text.toStdString())->second;
 }
 
 void Mapping::set_nearest_neighbor(QString text) {
-    this->nearest_neighbor = text;
+    this->nearest_neighbor = this->nearest_neighbor_algorithms.find(text.toStdString())->second;
 }
 
     // output

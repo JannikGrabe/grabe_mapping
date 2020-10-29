@@ -24,11 +24,13 @@ private:
     QString output_filepath;
 
     // ICP
-    QString minimization;
-    QString nearest_neighbor;
+    MappingAlgorithm minimization;
+    MappingAlgorithm nearest_neighbor;
 
     // Algorithms
-    std::map<std::string, MappingAlgorithm> algorithms;
+    std::map<std::string, MappingAlgorithm> minimization_algorithms;
+    std::map<std::string, MappingAlgorithm> nearest_neighbor_algorithms;
+
 
     // work 
     std::string script_path;
