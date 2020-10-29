@@ -81,15 +81,15 @@ void triggerConfiguration()
   // rosbag
 void GuiPlugin::on_cb_use_output_files_state_changed(int state) {
   if(state == 2) {
-    this->ui_.le_filePath->setEnabled(false);
-    this->ui_.pb_fileDialog->setEnabled(false);
     this->ui_.tb_settings->removeTab(2);
+    this->ui_.tb_settings->removeTab(1);
   }
   else if(state == 0) {
-    this->ui_.le_filePath->setEnabled(true);
-    this->ui_.pb_fileDialog->setEnabled(true);
-    QWidget* tab = this->ui_.tb_settings->findChild<QWidget*>("tab_topics");
-    this->ui_.tb_settings->insertTab(2, tab, "Topics");
+    QWidget* tab_topics = this->ui_.tb_settings->findChild<QWidget*>("tab_topics");
+    this->ui_.tb_settings->insertTab(1, tab_topics, "Topics");
+
+    QWidget* tab_rosbag = this->ui_.tb_settings->findChild<QWidget*>("tab_rosbag");
+    this->ui_.tb_settings->insertTab(1, tab_rosbag, "Rosbag");
   }
 }
 
