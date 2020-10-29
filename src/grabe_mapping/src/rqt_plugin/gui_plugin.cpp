@@ -252,6 +252,9 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("odom_topic", this->mapping->get_odom_topic());
   instance_settings.setValue("gps_topic", this->mapping->get_gps_topic());
   instance_settings.setValue("output_filepath", this->mapping->get_output_filepath());
+  instance_settings.setValue("use_output_files", !this->mapping->get_use_rosbag());
+  instance_settings.setValue("icp_minimization", this->ui_.cb_minimization->currentIndex());
+  instance_settings.setValue("nearest_neighbor", this->ui_.cb_nn->currentIndex());
 }
 
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
@@ -264,6 +267,9 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   this->ui_.le_odom->setText(instance_settings.value("odom_topic").toString());
   this->ui_.le_gps->setText(instance_settings.value("gps_topic").toString());
   this->ui_.le_output->setText(instance_settings.value("output_filepath").toString());
+  this->ui_.cb_use_output_files->setChecked(instance_settings.value("use_output_files").toBool());
+  this->ui_.cb_minimization->setCurrentIndex(instance_settings.value("icp_minimization").toInt());
+  this->ui_.cb_nn->setCurrentIndex(instance_settings.value("nearest_neighbor").toInt());
 }
 
 } 
