@@ -33,6 +33,7 @@ public:
 
 public slots:
   // rosbag
+  void on_cb_use_output_files_state_changed(int state);
   void on_pb_fileDialog_pressed();
   void on_rb_lefthanded_toggled();
   void on_rb_meter_toggled();

@@ -41,6 +41,7 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   context.addWidget(widget_);
 
   // rosbag
+  QObject::connect(ui_.cb_use_output_files, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_use_output_files_state_changed);
   QObject::connect(ui_.pb_fileDialog, &QPushButton::pressed, this, &GuiPlugin::on_pb_fileDialog_pressed);
   QObject::connect(ui_.rb_lefthanded, &QRadioButton::toggled, this, &GuiPlugin::on_rb_lefthanded_toggled);
   QObject::connect(ui_.rb_meter, &QRadioButton::toggled, this, &GuiPlugin::on_rb_meter_toggled);
@@ -78,6 +79,20 @@ void triggerConfiguration()
 
 // slots
   // rosbag
+void GuiPlugin::on_cb_use_output_files_state_changed(int state) {
+  if(state == 2) {
+    this->ui_.le_filePath->setEnabled(false);
+    this->ui_.pb_fileDialog->setEnabled(false);
+    this->ui_.tb_settings->removeTab(2);
+  }
+  else if(state == 0) {
+    this->ui_.le_filePath->setEnabled(true);
+    this->ui_.pb_fileDialog->setEnabled(true);
+    QWidget* tab = this->ui_.tb_settings->findChild<QWidget*>("tab_topics");
+    this->ui_.tb_settings->insertTab(2, tab, "Topics");
+  }
+}
+
 void GuiPlugin::on_pb_fileDialog_pressed() {
   
   QString rosbag_filename = QFileDialog::getOpenFileName(
