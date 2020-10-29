@@ -1,7 +1,6 @@
 #include "mapping/mapping.h"
 #include "ros/ros.h"
 #include "ros/package.h"
-#include <iostream>
 
 Mapping::Mapping() {
 
@@ -94,6 +93,10 @@ bool Mapping::check_states() {
 // Algorithms
 void Mapping::initAlgorithms() {
     // ICP Minimization
+    this->minimization = MappingAlgorithm("Default", "");
+
+    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Default", this->minimization));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Unit Quaternion", MappingAlgorithm("Unit Quaternion")));
     this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
@@ -114,6 +117,10 @@ void Mapping::initAlgorithms() {
         "Unit Quaternion with Scale Method", MappingAlgorithm("Unit Quaternion with Scale Method")));
 
     // ICP Nearest Neighbor
+    this->nearest_neighbor = MappingAlgorithm("Default", "");
+
+    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Default", this->nearest_neighbor));
     this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "simple k-d tree", MappingAlgorithm("simple k-d tree")));
     this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
