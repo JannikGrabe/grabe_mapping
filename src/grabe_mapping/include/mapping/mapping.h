@@ -36,6 +36,7 @@ private:
     // work 
     std::string script_path;
     QFutureWatcher<void> watcher;
+    QList<QFuture<int> > future_list;
     void (Mapping::*next_process)();
 
     // Mapping
@@ -64,6 +65,8 @@ public:
 
     // Mapping
     void start_mapping();
+
+    void cancel_mapping();
 
     // getter
         // rosbag

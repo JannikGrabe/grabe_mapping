@@ -37,6 +37,8 @@ void Mapping::start_scan_to_file() {
   
     // open thread for scan_to_file_node
     QFuture<int> scan_to_file_future = QtConcurrent::run(Mapping::run_command, scan_to_file_launch_sh);
+    this->future_list.append(scan_to_file_future);
+
     // set watcher to currently last process
     this->watcher.setFuture(scan_to_file_future);
 
@@ -53,6 +55,7 @@ void Mapping::start_slam6D() {
     std::cout << slam6D << std::endl;
 
     QFuture<int> slam6D_future = QtConcurrent::run(Mapping::run_command, slam6D);
+    this->future_list.append(slam6D_future);
 
     this->watcher.setFuture(slam6D_future);
 
@@ -66,6 +69,7 @@ void Mapping::showResults() {
     show += this->output_filepath.toStdString();
 
     QFuture<int> show_future = QtConcurrent::run(Mapping::run_command, show);
+    this->future_list.append(show_future);
 
     this->watcher.setFuture(show_future);
 
@@ -80,6 +84,9 @@ int Mapping::run_command(std::string command) {
     return system(command.c_str());
 }
 
+void Mapping::cancel_mapping() {
+    this->watcher.cancel();
+}
 
 // States
 void Mapping::init_states() {

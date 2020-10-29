@@ -240,6 +240,7 @@ int GuiPlugin::runCommand(std::string command) {
 void GuiPlugin::shutdownPlugin()
 {
   // unregister all publishers here
+  this->mapping->cancel_mapping();
 }
 
 void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
