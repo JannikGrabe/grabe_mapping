@@ -18,7 +18,7 @@ Scan_to_file::Scan_to_file() {
     this->sync = new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(10), *scan_sub, *odom_sub);
     this->sync->registerCallback(&Scan_to_file::callback, this);
 
-    this->count_pub = n.advertise<std_msgs::Int32>("file_count", 10);
+    this->count_pub = n.advertise<std_msgs::Int32>("scan_to _file_count", 10);
 }
 
 Scan_to_file::~Scan_to_file() {

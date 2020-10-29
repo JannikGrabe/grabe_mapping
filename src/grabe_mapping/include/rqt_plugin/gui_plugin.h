@@ -6,6 +6,9 @@
 #include <QWidget>
 #include <QMainWindow>
 #include "mapping/mapping.h"
+#include "ros/ros.h"
+#include "ros/subscriber.h"
+#include "std_msgs/Int32.h"
 
 namespace grabe_mapping // the namespace determines the name by which the plugin can be discovered
 {
@@ -58,6 +61,8 @@ public slots:
   void on_pb_output_pressed();
   void on_le_output_text_changed(QString text);
 
+  // callbacks
+  void scan_to_file_count_callback(const std_msgs::Int32::ConstPtr& count);
 
 private:
   Ui::Mapping ui_;
@@ -68,6 +73,9 @@ private:
   static int runCommand(std::string command);
 
   Mapping* mapping;
+
+  ros::NodeHandle n;
+  ros::Subscriber count_sub;
 };
 }
 #endif

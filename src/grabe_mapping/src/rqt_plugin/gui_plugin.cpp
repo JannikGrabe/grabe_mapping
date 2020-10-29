@@ -20,6 +20,8 @@ GuiPlugin::GuiPlugin()
   // give QObjects reasonable names
   setObjectName("GuiPlugin");
 
+  this->count_sub = this->n.subscribe("scan_to_file_count", 10, &GuiPlugin::scan_to_file_count_callback, this);
+
 }
 
 void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
@@ -208,6 +210,11 @@ void GuiPlugin::initComboBoxes() {
   this->ui_.cb_nn->addItem("cached k-d tree");
   this->ui_.cb_nn->addItem("ANN tree");
   this->ui_.cb_nn->addItem("BOC tree");
+}
+
+// callbacks
+void GuiPlugin::scan_to_file_count_callback(const std_msgs::Int32::ConstPtr& count) {
+  std::cout << "in callback" << std::endl;
 }
 
 // work stuff
