@@ -5,7 +5,6 @@
 #include <grabe_mapping/ui_gui_plugin.h>
 #include <QWidget>
 #include <QMainWindow>
-#include <QtConcurrent/QtConcurrent>
 #include "mapping/mapping.h"
 
 namespace grabe_mapping // the namespace determines the name by which the plugin can be discovered

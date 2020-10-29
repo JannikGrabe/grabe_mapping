@@ -1,10 +1,10 @@
 
 #include "rqt_plugin/gui_plugin.h"
 #include <pluginlib/class_list_macros.h>
+#include <QtConcurrent/QtConcurrent>
 #include <QStringList>
 #include <QFileDialog>
 #include <QLineEdit>
-#include <iostream>
 #include <QProgressBar>
 
 namespace grabe_mapping
@@ -56,6 +56,9 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->mapping, &Mapping::finished_mapping, this, &GuiPlugin::on_work_finished);
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
   QObject::connect(ui_.pb_openrviz, &QPushButton::pressed, this, &GuiPlugin::on_pb_openrviz_pressed);
+
+  // ICP
+  
 
 }
 
