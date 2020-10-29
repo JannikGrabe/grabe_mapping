@@ -5,6 +5,5 @@ class MappingAlgorithm {
     std::string argument;
 
 public:
-    
-    MappingAlgorithm(std::string name, std::string argument = "placeholder_argument" ) : name(name), argument(argument) {}
+    MappingAlgorithm(std::string name = "placeholder_name", std::string argument = "placeholder_argument" ) : name(name), argument(argument) {}
 };
