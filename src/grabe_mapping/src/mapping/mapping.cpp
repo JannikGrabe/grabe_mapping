@@ -150,6 +150,10 @@ bool Mapping::get_input_is_lefthanded() {
     return this->input_is_lefthanded;
 }
 
+int Mapping::get_file_count() {
+    return this->file_count;
+}
+
     // topics
 QString Mapping::get_scan_topic() {
     return this->scan_topic;
@@ -198,6 +202,11 @@ void Mapping::set_input_is_lefthanded(bool input_is_lefthanded) {
 
 void Mapping::toggle_input_is_lefthanded() {
     this->input_is_lefthanded = !this->input_is_lefthanded;
+}
+
+void Mapping::set_file_count(int val) {
+    if(val >= 0) 
+        this->file_count = val;
 }
 
     // topics

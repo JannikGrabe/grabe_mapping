@@ -214,7 +214,7 @@ void GuiPlugin::initComboBoxes() {
 
 // callbacks
 void GuiPlugin::scan_to_file_count_callback(const std_msgs::Int32::ConstPtr& count) {
-  std::cout << "in callback" << std::endl;
+  this->mapping->set_file_count(count->data);
 }
 
 // work stuff

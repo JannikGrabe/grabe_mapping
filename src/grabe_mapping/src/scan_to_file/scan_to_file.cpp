@@ -87,7 +87,7 @@ void Scan_to_file::callback(const boost::shared_ptr<sensor_msgs::PointCloud2 con
     ROS_INFO("processed pose %d", file_count);
 
     std_msgs::Int32 msg;
-    msg.data = file_count;
+    msg.data = file_count + 1;
     this->count_pub.publish(msg);
     
     file_count++;

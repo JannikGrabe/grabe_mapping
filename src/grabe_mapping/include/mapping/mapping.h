@@ -14,6 +14,7 @@ private:
     QString rosbag_filename;
     bool input_is_meter;
     bool input_is_lefthanded;
+    int file_count;
 
     // topic 
     QString scan_topic;
@@ -66,6 +67,7 @@ public:
     QString get_rosbag_filename();
     bool get_input_is_meter();
     bool get_input_is_lefthanded();
+    int get_file_count();
 
         // topics
     QString get_scan_topic();
@@ -86,6 +88,7 @@ public:
     void toggle_input_is_meter();
     void set_input_is_lefthanded(bool input_is_lefthanded);
     void toggle_input_is_lefthanded();
+    void set_file_count(int val);
 
         // topics
     void set_scan_topic(QString topic);
