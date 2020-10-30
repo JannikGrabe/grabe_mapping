@@ -41,9 +41,8 @@ public slots:
 
   // work
   void on_pb_start_pressed();
-  void on_progress_changed(int val);
-  void on_progressRange_changed(int min, int max);
   void on_work_finished(int exit_code);
+  void on_pb_show_pressed();
 
   // topics
   void on_le_scan_text_changed(QString text);

@@ -448,6 +448,13 @@
          </spacer>
         </item>
         <item>
+         <widget class="QPushButton" name="pb_show">
+          <property name="text">
+           <string>show Results</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="pb_start">
           <property name="text">
            <string>start mapping</string>

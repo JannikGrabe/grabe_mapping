@@ -48,8 +48,6 @@ private:
 
     void start_slam6D();
 
-    void showResults();
-
     void finish_mapping();
 
     static int run_command(std::string command);
@@ -73,6 +71,8 @@ public:
     void start_mapping();
 
     void cancel_mapping();
+
+    void showResults();
 
     // getter
         // rosbag

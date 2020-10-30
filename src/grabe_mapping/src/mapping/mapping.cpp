@@ -67,14 +67,14 @@ void Mapping::start_slam6D() {
 void Mapping::showResults() {
 
     // build command to run show
-    std::string show = "/home/jannik/slam6d-code/bin/show -s 0 -e 12 ";
+    std::string show = "/home/jannik/slam6d-code/bin/show ";
     show += this->output_filepath.toStdString();
 
     QFuture<int> show_future = QtConcurrent::run(Mapping::run_command, show);
 
-    //this->watcher.setFuture(show_future);
+    this->watcher.setFuture(show_future);
 
-    this->next_process = &Mapping::finish_mapping;
+    // this->next_process = &Mapping::finish_mapping;
 }
 
 void Mapping::finish_mapping() {

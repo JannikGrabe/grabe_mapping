@@ -59,6 +59,7 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   // work
   QObject::connect(this->mapping, &Mapping::finished_mapping, this, &GuiPlugin::on_work_finished);
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
+  QObject::connect(ui_.pb_show, &QPushButton::pressed, this, &GuiPlugin::on_pb_show_pressed);
 
   // Algorithms
   QObject::connect(this->ui_.cb_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_minimization_current_text_changed);
@@ -182,6 +183,7 @@ void GuiPlugin::on_cb_graphslam_current_text_changed(QString text) {
 void GuiPlugin::on_pb_start_pressed() {
 
   this->ui_.pb_start->setEnabled(false);
+  this->ui_.pb_show->setEnabled(false);
   this->ui_.pb_progress->setVisible(true);
   this->ui_.pb_progress->setRange(0, 0);
 
@@ -191,10 +193,16 @@ void GuiPlugin::on_pb_start_pressed() {
 void GuiPlugin::on_work_finished(int exit_code) {
   this->ui_.pb_start->setEnabled(true);
   this->ui_.pb_progress->setVisible(false);
+  this->ui_.pb_show->setEnabled(true);
 
   if(exit_code == 1) {
     ROS_ERROR("Something went wrong");
   }
+}
+
+void GuiPlugin::on_pb_show_pressed() {
+  this->mapping->showResults();
+  this->ui_.pb_show->setEnabled(false);
 }
 
   // output
@@ -217,6 +225,7 @@ void GuiPlugin::on_le_output_text_changed(QString text) {
 void GuiPlugin::initWidgets() {
   this->initComboBoxes();
   this->ui_.pb_progress->setVisible(false);
+  this->ui_.pb_show->setEnabled(false);
 }
 
 void GuiPlugin::initComboBoxes() {
