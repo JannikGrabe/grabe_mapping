@@ -50,6 +50,8 @@ void Mapping::start_slam6D() {
 
     slam6D += this->minimization.to_string();
     slam6D += " " + this->nearest_neighbor.to_string();
+    slam6D += " " + this->closing_loop.to_string();
+    slam6D += " " + this->graphslam.to_string();
     slam6D += " " + this->output_filepath.toStdString();
 
     std::cout << slam6D << std::endl;
@@ -167,6 +169,34 @@ void Mapping::initAlgorithms() {
         "ANN tree", MappingAlgorithm("ANN tree", "-t", 3)));
     this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "BOC tree", MappingAlgorithm("BOC tree", "-t", 4))); 
+
+    // closing loop method
+    this->closing_loop = MappingAlgorithm("no loop closing", "-L", 0);
+
+    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "no loop closing", this->closing_loop));
+    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Euler Angles", MappingAlgorithm("Euler Angles", "-L", 1)));
+    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Quaternions", MappingAlgorithm("Quaternions", "-L", 2)));
+    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Unit Quaternions", MappingAlgorithm("Unit Quaternions", "-L", 3)));
+    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "SLERP", MappingAlgorithm("SLERP", "-L", 4)));
+
+    // graphslam minimization
+    this->graphslam = MappingAlgorithm("no GraphSLAM", "-G", 0);
+
+    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "no graphSLAM", this->graphslam));
+    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Euler Angles", MappingAlgorithm("Euler Angles", "-G", 1)));
+    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Unit Quaternions", MappingAlgorithm("Unit Quaternions", "-G", 2)));
+    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Helix Approximation", MappingAlgorithm("Helix Approximation", "-G", 3)));
+    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Small Angle Approximation", MappingAlgorithm("Small Angle Approximation", "-G", 4)));
 }
 
 // Slots
@@ -209,13 +239,21 @@ QString Mapping::get_gps_topic() const {
     return this->gps_topic;
 }
 
-    // ICP
+    // Algorithms
 MappingAlgorithm Mapping::get_minimization() const {
     return this->minimization;
 }
 
 MappingAlgorithm Mapping::get_nearest_neighbor() const {
     return this->nearest_neighbor;
+}
+
+MappingAlgorithm Mapping::get_closing_loop() const {
+    return this->closing_loop;
+}
+
+MappingAlgorithm Mapping::get_graphslam() const {
+    return this->graphslam;
 }
 
     // output
@@ -268,7 +306,7 @@ void Mapping::set_gps_topic(QString topic) {
     this->gps_topic = topic;
 }
 
-    // ICP
+    // Algorithms
 bool Mapping::set_minimization(QString text) {
     std::map<std::string,MappingAlgorithm>::iterator it = this->minimization_algorithms.find(text.toStdString());
     if(it != this->minimization_algorithms.end()) {
@@ -283,6 +321,26 @@ bool Mapping::set_nearest_neighbor(QString text) {
     std::map<std::string,MappingAlgorithm>::iterator it = this->nearest_neighbor_algorithms.find(text.toStdString());
     if(it != this->nearest_neighbor_algorithms.end()) {
         this->nearest_neighbor = it->second;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool Mapping::set_closing_loop(QString text) {
+    std::map<std::string,MappingAlgorithm>::iterator it = this->closing_loop_algorithms.find(text.toStdString());
+    if(it != this->closing_loop_algorithms.end()) {
+        this->closing_loop = it->second;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool Mapping::set_graphslam(QString text) {
+    std::map<std::string,MappingAlgorithm>::iterator it = this->graphslam_algorithms.find(text.toStdString());
+    if(it != this->graphslam_algorithms.end()) {
+        this->graphslam = it->second;
         return true;
     } else {
         return false;

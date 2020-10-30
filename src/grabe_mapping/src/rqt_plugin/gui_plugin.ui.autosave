@@ -345,18 +345,22 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="QGroupBox" name="groupBox_2">
+           <widget class="QGroupBox" name="gb_closing_loop">
             <property name="title">
-             <string>GraphSLAM Minimization</string>
+             <string>Closing Loop</string>
             </property>
-            <layout class="QFormLayout" name="formLayout_4">
-             <item row="0" column="1">
-              <widget class="QComboBox" name="comboBox"/>
-             </item>
+            <layout class="QFormLayout" name="formLayout">
              <item row="0" column="0">
-              <widget class="QLabel" name="label">
+              <widget class="QLabel" name="l_closing_loop">
                <property name="text">
                 <string>Algorithm</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_closing_loop">
+               <property name="currentText">
+                <string/>
                </property>
               </widget>
              </item>
@@ -364,38 +368,19 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox">
+           <widget class="QGroupBox" name="gb_graphslam">
             <property name="title">
-             <string>Closing Loop</string>
+             <string>GraphSLAM Minimization</string>
             </property>
-            <layout class="QFormLayout" name="formLayout">
+            <layout class="QFormLayout" name="formLayout_4">
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_graphslam"/>
+             </item>
              <item row="0" column="0">
               <widget class="QLabel" name="l_graphslam">
                <property name="text">
                 <string>Algorithm</string>
                </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QComboBox" name="cobo_graphslam">
-               <property name="currentText">
-                <string>choose Algorithm</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>choose Algorithm</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>algorithm 1</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>algorithm 2</string>
-                </property>
-               </item>
               </widget>
              </item>
             </layout>
