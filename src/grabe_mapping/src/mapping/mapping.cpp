@@ -27,43 +27,22 @@ void Mapping::start_mapping() {
 }
 
 void Mapping::start_scan_to_file() {
-    // // build command to run script to launch scan_to_file_node
-    // std::string scan_to_file_launch_sh = this->script_path + "/scan_to_file_launch.sh ";
-    // scan_to_file_launch_sh += this->rosbag_filename.toStdString();                                            // rosbag_filename
-    // scan_to_file_launch_sh += " " + this->scan_topic.toStdString();                                           // scan_topic name
-    // scan_to_file_launch_sh += " " + this->odom_topic.toStdString();                                           // odom_topic name
-    // scan_to_file_launch_sh += " " + (this->input_is_meter ? std::string("true") : std::string("false"));      // input_is_meter flag
-    // scan_to_file_launch_sh += " " + (this->input_is_lefthanded ? std::string("true") : std::string("false")); // input_is_lefthanded flags
-    // scan_to_file_launch_sh += " " + this->output_filepath.toStdString();                                      // path where to put any output files
+    // build command to run script to launch scan_to_file_node
+    std::string scan_to_file_launch_sh = this->script_path + "/scan_to_file_launch.sh ";
+    scan_to_file_launch_sh += this->rosbag_filename.toStdString();                                            // rosbag_filename
+    scan_to_file_launch_sh += " " + this->scan_topic.toStdString();                                           // scan_topic name
+    scan_to_file_launch_sh += " " + this->odom_topic.toStdString();                                           // odom_topic name
+    scan_to_file_launch_sh += " " + (this->input_is_meter ? std::string("true") : std::string("false"));      // input_is_meter flag
+    scan_to_file_launch_sh += " " + (this->input_is_lefthanded ? std::string("true") : std::string("false")); // input_is_lefthanded flags
+    scan_to_file_launch_sh += " " + this->output_filepath.toStdString();                                      // path where to put any output files
   
-    // // open thread for scan_to_file_node
-    // QFuture<int> scan_to_file_future = QtConcurrent::run(Mapping::run_command, scan_to_file_launch_sh);
-    // this->future_list.append(scan_to_file_future);
+    // open thread for scan_to_file_node
+    QFuture<int> scan_to_file_future = QtConcurrent::run(Mapping::run_command, scan_to_file_launch_sh);
 
-    // // set watcher to currently last process
-    // this->watcher.setFuture(scan_to_file_future);
+    // set watcher to currently last process
+    this->watcher.setFuture(scan_to_file_future);
 
-    // this->next_process = &Mapping::start_slam6D;
-
-    QString script = QString::fromStdString(this->script_path) + "/scan_to_file_launch.sh";
-    QStringList arguments;
-    arguments   << this->rosbag_filename
-                << this->scan_topic
-                << this->odom_topic
-                << (this->input_is_meter ? "true" : "false")
-                << (this->input_is_lefthanded ? "true" : "false")
-                << this->output_filepath;
-
-    // start a new process for scan_to_file.launch
-    QProcess* process = new QProcess();
-    qint64 pid;
-    process->startDetached(script, arguments, QString(), &pid);
-
-    // set current process to this one, it will send a signal when its finished    
-    this->current_process = process;
-
-    // save pid in order to kill if needed
-    this->current_pid = pid;
+    this->next_process = &Mapping::start_slam6D;
 }
 
 void Mapping::start_slam6D() {
@@ -76,7 +55,6 @@ void Mapping::start_slam6D() {
     std::cout << slam6D << std::endl;
 
     QFuture<int> slam6D_future = QtConcurrent::run(Mapping::run_command, slam6D);
-    this->future_list.append(slam6D_future);
 
     this->watcher.setFuture(slam6D_future);
 
@@ -90,7 +68,6 @@ void Mapping::showResults() {
     show += this->output_filepath.toStdString();
 
     QFuture<int> show_future = QtConcurrent::run(Mapping::run_command, show);
-    this->future_list.append(show_future);
 
     this->watcher.setFuture(show_future);
 
@@ -106,17 +83,7 @@ int Mapping::run_command(std::string command) {
 }
 
 void Mapping::cancel_mapping() {
-    if(this->current_pid <= 0) {
-        return;
-    }
 
-    this->stopChildProcesses(this->current_pid);
-    
-    QProcess kill;
-    kill.start("kill " + QString::number(this->current_pid));
-    kill.waitForFinished();
-
-    
 }
 
 void Mapping::stopChildProcesses(qint64 parentProcessId) {

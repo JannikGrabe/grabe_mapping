@@ -37,11 +37,7 @@ private:
     // work 
     std::string script_path;
     QFutureWatcher<void> watcher;
-    QList<QFuture<int> > future_list;
     void (Mapping::*next_process)();
-
-    QProcess* current_process;
-    qint64 current_pid;
 
     // Mapping
     void start_scan_to_file();
