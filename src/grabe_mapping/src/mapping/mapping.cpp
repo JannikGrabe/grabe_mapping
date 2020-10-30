@@ -83,7 +83,8 @@ int Mapping::run_command(std::string command) {
 }
 
 void Mapping::cancel_mapping() {
-
+    this->next_process = &Mapping::finish_mapping;
+    this->run_command("rosnode kill /player");
 }
 
 void Mapping::stopChildProcesses(qint64 parentProcessId) {
