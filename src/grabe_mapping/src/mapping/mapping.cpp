@@ -49,7 +49,7 @@ void Mapping::start_scan_to_file() {
 void Mapping::start_slam6D() {
     std::string slam6D = "/home/jannik/slam6d-code/bin/slam6D ";
 
-    slam6D += this->minimization.to_string();
+    slam6D += this->icp_minimization.to_string();
     slam6D += " " + this->nearest_neighbor.to_string();
     slam6D += " " + this->closing_loop.to_string();
     slam6D += " " + this->graphslam.to_string();
@@ -139,25 +139,25 @@ bool Mapping::check_states() {
 // Algorithms
 void Mapping::initAlgorithms() {
     // ICP Minimization
-    this->minimization = MappingAlgorithm("Unit Quaternion", "-a", 1);
+    this->icp_minimization = MappingAlgorithm("Unit Quaternion", "-a", 1);
 
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Unit Quaternion", this->minimization));
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+        "Unit Quaternion", this->icp_minimization));
+    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Singular Value Decomposition", MappingAlgorithm("Singular Value Decomposition", "-a", 2)));
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Orthonormal Matrices", MappingAlgorithm("Orthonormal Matrices", "-a", 3)));
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Dual Quaternions", MappingAlgorithm("Dual Quaternions", "-a", 4)));
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Helix Approximation", MappingAlgorithm("Helix Approximation", "-a", 5)));
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Small Angle Approximation", MappingAlgorithm("Small Angle Approximation", "-a", 6)));
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Uncertainty Based: Euler Angles", MappingAlgorithm("Uncertainty Based: Euler Angles", "-a", 7)));
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Uncertainty Based: Quaternions", MappingAlgorithm("Uncertainty Based: Quaternions", "-a", 8)));
-    this->minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
+    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Unit Quaternion with Scale Method", MappingAlgorithm("Unit Quaternion with Scale Method", "-a", 9)));
 
     // ICP Nearest Neighbor
@@ -242,8 +242,8 @@ QString Mapping::get_gps_topic() const {
 }
 
     // Algorithms
-MappingAlgorithm Mapping::get_minimization() const {
-    return this->minimization;
+MappingAlgorithm Mapping::get_icp_minimization() const {
+    return this->icp_minimization;
 }
 
 MappingAlgorithm Mapping::get_nearest_neighbor() const {
@@ -309,10 +309,10 @@ void Mapping::set_gps_topic(QString topic) {
 }
 
     // Algorithms
-bool Mapping::set_minimization(QString text) {
-    std::map<std::string,MappingAlgorithm>::iterator it = this->minimization_algorithms.find(text.toStdString());
-    if(it != this->minimization_algorithms.end()) {
-        this->minimization = it->second;
+bool Mapping::set_icp_minimization(QString text) {
+    std::map<std::string,MappingAlgorithm>::iterator it = this->icp_minimization_algorithms.find(text.toStdString());
+    if(it != this->icp_minimization_algorithms.end()) {
+        this->icp_minimization = it->second;
         return true;
     } else {
         return false;

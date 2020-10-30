@@ -62,7 +62,7 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(ui_.pb_show, &QPushButton::pressed, this, &GuiPlugin::on_pb_show_pressed);
 
   // Algorithms
-  QObject::connect(this->ui_.cb_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_minimization_current_text_changed);
+  QObject::connect(this->ui_.cb_icp_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_icp_minimization_current_text_changed);
   QObject::connect(this->ui_.cb_nn, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_nn_current_text_changed);
   QObject::connect(this->ui_.cb_closing_loop, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_closing_loop_current_text_changed);
   QObject::connect(this->ui_.cb_graphslam, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_graphslam_current_text_changed);
@@ -147,11 +147,11 @@ void GuiPlugin::on_le_gps_type_text_changed(QString text) {
 }
 
   // Algorithms
-void GuiPlugin::on_cb_minimization_current_text_changed(QString text) {
-  if(!this->mapping->set_minimization(text)) {
+void GuiPlugin::on_cb_icp_minimization_current_text_changed(QString text) {
+  if(!this->mapping->set_icp_minimization(text)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
-    int i = this->ui_.cb_minimization->findText(text);
-    if(i != -1) this->ui_.cb_minimization->removeItem(i);
+    int i = this->ui_.cb_icp_minimization->findText(text);
+    if(i != -1) this->ui_.cb_icp_minimization->removeItem(i);
   }
 }
 
@@ -229,12 +229,12 @@ void GuiPlugin::initWidgets() {
 }
 
 void GuiPlugin::initComboBoxes() {
-  this->ui_.cb_minimization->addItem("Unit Quaternion"); 
-  this->ui_.cb_minimization->addItem("Singular Value Decomposition");
+  this->ui_.cb_icp_minimization->addItem("Unit Quaternion"); 
+  this->ui_.cb_icp_minimization->addItem("Singular Value Decomposition");
   //this->ui_.cb_minimization->addItem("Orthonormal Matrices");
   //this->ui_.cb_minimization->addItem("Dual Quaternions");
   //this->ui_.cb_minimization->addItem("Helix Approximation");
-  this->ui_.cb_minimization->addItem("Small Angle Approximation");
+  this->ui_.cb_icp_minimization->addItem("Small Angle Approximation");
   //this->ui_.cb_minimization->addItem("Uncertainty Based: Euler Angles");
   //this->ui_.cb_minimization->addItem("Uncertainty Based: Quaternions"); 
   //this->ui_.cb_minimization->addItem("Unit Quaternion with Scale Method");
@@ -284,7 +284,7 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("gps_topic", this->mapping->get_gps_topic());
   instance_settings.setValue("output_filepath", this->mapping->get_output_filepath());
   instance_settings.setValue("use_output_files", !this->mapping->get_use_rosbag());
-  instance_settings.setValue("icp_minimization", this->ui_.cb_minimization->currentIndex());
+  instance_settings.setValue("icp_minimization", this->ui_.cb_icp_minimization->currentIndex());
   instance_settings.setValue("nearest_neighbor", this->ui_.cb_nn->currentIndex());
   instance_settings.setValue("closing_loop", this->ui_.cb_closing_loop->currentIndex());
   instance_settings.setValue("graphslam", this->ui_.cb_graphslam->currentIndex());
@@ -301,7 +301,7 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   this->ui_.le_gps->setText(instance_settings.value("gps_topic").toString());
   this->ui_.le_output->setText(instance_settings.value("output_filepath").toString());
   this->ui_.cb_use_output_files->setChecked(instance_settings.value("use_output_files").toBool());
-  this->ui_.cb_minimization->setCurrentIndex(instance_settings.value("icp_minimization").toInt());
+  this->ui_.cb_icp_minimization->setCurrentIndex(instance_settings.value("icp_minimization").toInt());
   this->ui_.cb_nn->setCurrentIndex(instance_settings.value("nearest_neighbor").toInt());
   this->ui_.cb_closing_loop->setCurrentIndex(instance_settings.value("closing_loop").toInt());
   this->ui_.cb_graphslam->setCurrentIndex(instance_settings.value("graphslam").toInt());

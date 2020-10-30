@@ -27,13 +27,13 @@ private:
     QString output_filepath;
 
     // ICP
-    MappingAlgorithm minimization;
+    MappingAlgorithm icp_minimization;
     MappingAlgorithm nearest_neighbor;
     MappingAlgorithm closing_loop;
     MappingAlgorithm graphslam;
 
     // Algorithms
-    std::map<std::string, MappingAlgorithm> minimization_algorithms;
+    std::map<std::string, MappingAlgorithm> icp_minimization_algorithms;
     std::map<std::string, MappingAlgorithm> nearest_neighbor_algorithms;
     std::map<std::string, MappingAlgorithm> closing_loop_algorithms;
     std::map<std::string, MappingAlgorithm> graphslam_algorithms;
@@ -88,7 +88,7 @@ public:
     QString get_gps_topic() const;
 
         // Algorithms
-    MappingAlgorithm get_minimization() const;
+    MappingAlgorithm get_icp_minimization() const;
     MappingAlgorithm get_nearest_neighbor() const;
     MappingAlgorithm get_closing_loop() const;
     MappingAlgorithm get_graphslam() const;
@@ -112,7 +112,7 @@ public:
     void set_gps_topic(QString topic);
 
         // Algorithms
-    bool set_minimization(QString text);
+    bool set_icp_minimization(QString text);
     bool set_nearest_neighbor(QString text);
     bool set_closing_loop(QString text);
     bool set_graphslam(QString text);

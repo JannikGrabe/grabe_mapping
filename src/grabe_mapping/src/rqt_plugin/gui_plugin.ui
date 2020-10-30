@@ -23,7 +23,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="tab_output">
          <attribute name="title">
@@ -283,20 +283,20 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QGroupBox" name="gb_minimization">
+           <widget class="QGroupBox" name="gb_icp_minimization">
             <property name="title">
-             <string>Minimization</string>
+             <string>ICP Minimization</string>
             </property>
             <layout class="QFormLayout" name="formLayout_2">
              <item row="0" column="0">
-              <widget class="QLabel" name="l_minimization">
+              <widget class="QLabel" name="l_icp_minimization">
                <property name="text">
                 <string>Algorithm</string>
                </property>
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QComboBox" name="cb_minimization">
+              <widget class="QComboBox" name="cb_icp_minimization">
                <property name="currentText">
                 <string/>
                </property>

@@ -53,7 +53,7 @@ public slots:
   void on_le_gps_type_text_changed(QString text);
 
   // Algorithms
-  void on_cb_minimization_current_text_changed(QString text);
+  void on_cb_icp_minimization_current_text_changed(QString text);
   void on_cb_nn_current_text_changed(QString text);
   void on_cb_closing_loop_current_text_changed(QString text);
   void on_cb_graphslam_current_text_changed(QString text);
