@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>403</width>
+    <width>505</width>
     <height>306</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab_output">
          <attribute name="title">
@@ -264,6 +264,90 @@
           </item>
           <item row="4" column="2">
            <spacer name="vs2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_general">
+         <attribute name="title">
+          <string>General</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QGroupBox" name="gb_scans">
+            <property name="title">
+             <string>Scans</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="1" column="4">
+              <widget class="QSpinBox" name="sb_last"/>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="l_first">
+               <property name="text">
+                <string>First</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_total">
+               <property name="text">
+                <string>Total</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="3">
+              <widget class="QLabel" name="l_last">
+               <property name="text">
+                <string>Last</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QSpinBox" name="sb_first"/>
+             </item>
+             <item row="1" column="6">
+              <spacer name="hs">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="sb_total"/>
+             </item>
+             <item row="1" column="5">
+              <widget class="QLabel" name="l_info">
+               <property name="font">
+                <font>
+                 <pointsize>8</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>if not specified all scans will be used</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="vs5">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
