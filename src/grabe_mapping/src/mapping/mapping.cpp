@@ -9,7 +9,7 @@ Mapping::Mapping() {
 
     this->initAlgorithms();    
 
-    //QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_process_finished);
+    QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_process_finished);
 }
 
 
@@ -58,7 +58,7 @@ void Mapping::start_slam6D() {
 
     this->watcher.setFuture(slam6D_future);
 
-    this->next_process = &Mapping::showResults;
+    this->next_process = &Mapping::finish_mapping;
 }
 
 void Mapping::showResults() {
@@ -69,7 +69,7 @@ void Mapping::showResults() {
 
     QFuture<int> show_future = QtConcurrent::run(Mapping::run_command, show);
 
-    this->watcher.setFuture(show_future);
+    //this->watcher.setFuture(show_future);
 
     this->next_process = &Mapping::finish_mapping;
 }
