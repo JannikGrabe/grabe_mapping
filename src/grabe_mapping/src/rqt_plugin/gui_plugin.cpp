@@ -60,9 +60,11 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->mapping, &Mapping::finished_mapping, this, &GuiPlugin::on_work_finished);
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
 
-  // ICP
+  // Algorithms
   QObject::connect(this->ui_.cb_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_minimization_current_text_changed);
   QObject::connect(this->ui_.cb_nn, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_nn_current_text_changed);
+  QObject::connect(this->ui_.cb_closing_loop, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_closing_loop_current_text_changed);
+  QObject::connect(this->ui_.cb_graphslam, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_graphslam_current_text_changed);
 
 }
 
@@ -160,6 +162,22 @@ void GuiPlugin::on_cb_nn_current_text_changed(QString text) {
   }
 }
 
+void GuiPlugin::on_cb_closing_loop_current_text_changed(QString text) {
+  if(!this->mapping->set_closing_loop(text)) {
+    QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
+    int i = this->ui_.cb_nn->findText(text);
+    if(i != -1) this->ui_.cb_nn->removeItem(i);
+  }
+}
+
+void GuiPlugin::on_cb_graphslam_current_text_changed(QString text) {
+  if(!this->mapping->set_graphslam(text)) {
+    QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
+    int i = this->ui_.cb_nn->findText(text);
+    if(i != -1) this->ui_.cb_nn->removeItem(i);
+  }
+}
+
   // work
 void GuiPlugin::on_pb_start_pressed() {
 
@@ -216,6 +234,18 @@ void GuiPlugin::initComboBoxes() {
   this->ui_.cb_nn->addItem("cached k-d tree");
   //this->ui_.cb_nn->addItem("ANN tree");
   //this->ui_.cb_nn->addItem("BOC tree");
+
+  this->ui_.cb_closing_loop->addItem("no loop closing");
+  this->ui_.cb_closing_loop->addItem("Euler Angles");
+  this->ui_.cb_closing_loop->addItem("Quaternions");
+  this->ui_.cb_closing_loop->addItem("Unit Quaternions");
+  this->ui_.cb_closing_loop->addItem("SLERP");
+
+  this->ui_.cb_graphslam->addItem("no GraphSLAM");
+  this->ui_.cb_graphslam->addItem("Euler Angles");
+  this->ui_.cb_graphslam->addItem("Unit Quaternions");
+  this->ui_.cb_graphslam->addItem("Helix Approximation");
+  this->ui_.cb_graphslam->addItem("Small Angle Approximation");
 }
 
 // callbacks

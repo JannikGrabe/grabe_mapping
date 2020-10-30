@@ -41,6 +41,7 @@ void Mapping::start_scan_to_file() {
 
     // set watcher to currently last process
     this->watcher.setFuture(scan_to_file_future);
+    this->watcher.setObjectName("scan_to_file");
 
     this->next_process = &Mapping::start_slam6D;
 }
@@ -86,7 +87,8 @@ int Mapping::run_command(std::string command) {
 
 void Mapping::cancel_mapping() {
     this->next_process = &Mapping::finish_mapping;
-    this->run_command("rosnode kill /player");
+    if(QString::compare(this->watcher.objectName(), "scan_to_file") == 0)
+        this->run_command("rosnode kill /player");
 }
 
 void Mapping::stopChildProcesses(qint64 parentProcessId) {
@@ -188,7 +190,7 @@ void Mapping::initAlgorithms() {
     this->graphslam = MappingAlgorithm("no GraphSLAM", "-G", 0);
 
     this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "no graphSLAM", this->graphslam));
+        "no GraphSLAM", this->graphslam));
     this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
         "Euler Angles", MappingAlgorithm("Euler Angles", "-G", 1)));
     this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(

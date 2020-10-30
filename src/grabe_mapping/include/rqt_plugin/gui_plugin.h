@@ -56,6 +56,8 @@ public slots:
   // Algorithms
   void on_cb_minimization_current_text_changed(QString text);
   void on_cb_nn_current_text_changed(QString text);
+  void on_cb_closing_loop_current_text_changed(QString text);
+  void on_cb_graphslam_current_text_changed(QString text);
 
   // output
   void on_pb_output_pressed();

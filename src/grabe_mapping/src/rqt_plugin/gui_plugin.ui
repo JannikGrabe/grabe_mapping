@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>403</width>
-    <height>294</height>
+    <height>306</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tab_output">
          <attribute name="title">
@@ -343,16 +343,51 @@
          <attribute name="title">
           <string>GraphSLAM</string>
          </attribute>
-         <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="l_graphslam">
-            <property name="text">
-             <string>Algorithm</string>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QGroupBox" name="gb_closing_loop">
+            <property name="title">
+             <string>Closing Loop</string>
             </property>
+            <layout class="QFormLayout" name="formLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_closing_loop">
+               <property name="text">
+                <string>Algorithm</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_closing_loop">
+               <property name="currentText">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
-          <item row="1" column="1">
-           <spacer name="vs4">
+          <item>
+           <widget class="QGroupBox" name="gb_graphslam">
+            <property name="title">
+             <string>GraphSLAM Minimization</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_4">
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_graphslam"/>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_graphslam">
+               <property name="text">
+                <string>Algorithm</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
@@ -364,27 +399,18 @@
             </property>
            </spacer>
           </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="cobo_graphslam">
-            <property name="currentText">
-             <string>choose Algorithm</string>
+          <item>
+           <spacer name="vs4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
-            <item>
-             <property name="text">
-              <string>choose Algorithm</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>algorithm 1</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>algorithm 2</string>
-             </property>
-            </item>
-           </widget>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>
