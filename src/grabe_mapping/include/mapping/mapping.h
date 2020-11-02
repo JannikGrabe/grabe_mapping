@@ -81,6 +81,8 @@ private:
 
     bool check_states();
 
+    void init_icp_parameters();
+
     // Algorithms
     void initAlgorithms();
 

@@ -7,7 +7,9 @@ Mapping::Mapping() {
 
     this->init_states();
 
-    this->initAlgorithms();    
+    this->initAlgorithms();   
+
+    this->init_icp_parameters(); 
 
     QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_process_finished);
 }
@@ -136,6 +138,12 @@ bool Mapping::check_states() {
     return true;
 }
 
+void Mapping::init_icp_parameters() {
+    this->icp_epsilon = 0.000001;
+    this->icp_max_iterations = 50;
+    this->nn_max_p2p_distance = 25;
+    this->match_meta_scan = false;
+}
 // Algorithms
 void Mapping::initAlgorithms() {
     // ICP Minimization
