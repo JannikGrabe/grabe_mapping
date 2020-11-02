@@ -312,6 +312,10 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("nearest_neighbor", this->ui_.cb_nn->currentIndex());
   instance_settings.setValue("closing_loop", this->ui_.cb_closing_loop->currentIndex());
   instance_settings.setValue("graphslam", this->ui_.cb_graphslam->currentIndex());
+  instance_settings.setValue("icp_iterations", this->ui_.sb_icp_iterations->value());
+  instance_settings.setValue("icp_epsilon", this->ui_.dsb_icp_epsilon->value());
+  instance_settings.setValue("nn_max_p2p_distance", this->ui_.dsb_nn_p2p_distance->value());
+  instance_settings.setValue("match_metscan", this->ui_.cb_metascan->isChecked());
 }
 
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
@@ -329,6 +333,10 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   this->ui_.cb_nn->setCurrentIndex(instance_settings.value("nearest_neighbor").toInt());
   this->ui_.cb_closing_loop->setCurrentIndex(instance_settings.value("closing_loop").toInt());
   this->ui_.cb_graphslam->setCurrentIndex(instance_settings.value("graphslam").toInt());
+  this->ui_.sb_icp_iterations->setValue(instance_settings.value("icp_iterations").toInt());
+  this->ui_.dsb_icp_epsilon->setValue(instance_settings.value("icp_epsilon").toDouble());
+  this->ui_.dsb_nn_p2p_distance->setValue(instance_settings.value("nn_max_p2p_distance").toDouble());
+  this->ui_.cb_metascan->setChecked(instance_settings.value("match_metascan").toBool());
 }
 
 } 
