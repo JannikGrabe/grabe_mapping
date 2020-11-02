@@ -349,6 +349,31 @@ bool Mapping::set_graphslam(QString text) {
     }
 }
 
+    // parameters
+            // icp
+void Mapping::set_icp_max_iterations(int it) {
+    this->icp_max_iterations = it;
+}
+
+void Mapping::set_icp_epsilon(double eps) {
+    this->icp_epsilon = eps;
+}
+
+            // nearest neighbor
+void Mapping::set_nn_max_p2p_distance(double dist) {
+    this->nn_max_p2p_distance = dist;
+}
+
+            // other icp parameters
+void Mapping::set_match_meta_scan(bool state) {
+    this->match_meta_scan = state;
+}
+
+void Mapping::toggle_match_meta_scan() {
+    this->match_meta_scan = !this->match_meta_scan;
+}
+
+
     // output
 void Mapping::set_output_filepath(QString filename) {
     this->output_filepath = filename;
