@@ -58,6 +58,16 @@ public slots:
   void on_cb_closing_loop_current_text_changed(QString text);
   void on_cb_graphslam_current_text_changed(QString text);
 
+      // icp parameters
+  void on_sb_icp_iterations_value_changed(int val);
+  void on_dsb_icp_epsilon_value_changed(double val);
+
+      // nearest neighbor parameters
+  void on_dsb_nn_p2p_distance_value_changed(double val);
+
+      // other icp params
+  void on_cb_metascan_toggled();
+
   // output
   void on_pb_output_pressed();
   void on_le_output_text_changed(QString text);

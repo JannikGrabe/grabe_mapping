@@ -67,6 +67,11 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->ui_.cb_closing_loop, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_closing_loop_current_text_changed);
   QObject::connect(this->ui_.cb_graphslam, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_graphslam_current_text_changed);
 
+    // icp parameters
+  QObject::connect(this->ui_.sb_icp_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_icp_iterations_value_changed);
+  QObject::connect(this->ui_.dsb_icp_epsilon, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_icp_epsilon_value_changed);
+  QObject::connect(this->ui_.dsb_nn_p2p_distance, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_nn_p2p_distance_value_changed);
+  QObject::connect(this->ui_.cb_metascan, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_metascan_toggled);
 }
 
 /*bool hasConfiguration() const
@@ -177,6 +182,25 @@ void GuiPlugin::on_cb_graphslam_current_text_changed(QString text) {
     int i = this->ui_.cb_nn->findText(text);
     if(i != -1) this->ui_.cb_nn->removeItem(i);
   }
+}
+
+    // icp parameters
+void GuiPlugin::on_sb_icp_iterations_value_changed(int val) {
+  this->mapping->set_icp_max_iterations(val);
+}
+
+void GuiPlugin::on_dsb_icp_epsilon_value_changed(double val) {
+  this->mapping->set_icp_epsilon(val);
+}
+
+      // nearest neighbor parameters
+void GuiPlugin::on_dsb_nn_p2p_distance_value_changed(double val) {
+  this->mapping->set_nn_max_p2p_distance(val);
+}
+
+      // other icp params
+void GuiPlugin::on_cb_metascan_toggled() {
+  this->mapping->toggle_match_meta_scan();
 }
 
   // work
