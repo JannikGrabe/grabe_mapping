@@ -153,54 +153,60 @@ void GuiPlugin::on_le_gps_type_text_changed(QString text) {
 
   // Algorithms
 void GuiPlugin::on_cb_icp_minimization_current_text_changed(QString text) {
-  if(!this->mapping->set_icp_minimization(text)) {
+
+  int index = this->ui_.cb_icp_minimization->findText(text);
+  int param_value = this->ui_.cb_icp_minimization->itemData(index).toInt();
+
+  if(!this->mapping->set_algorithm_parameter("icp_minimization", "-a", param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
-    int i = this->ui_.cb_icp_minimization->findText(text);
-    if(i != -1) this->ui_.cb_icp_minimization->removeItem(i);
   }
 }
 
 void GuiPlugin::on_cb_nn_current_text_changed(QString text) {
-  if(!this->mapping->set_nearest_neighbor(text)) {
+  int index = this->ui_.cb_nn->findText(text);
+  int param_value = this->ui_.cb_nn->itemData(index).toInt();
+
+  if(!this->mapping->set_algorithm_parameter("nearest_neighbor", "-t", param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
-    int i = this->ui_.cb_nn->findText(text);
-    if(i != -1) this->ui_.cb_nn->removeItem(i);
   }
 }
 
 void GuiPlugin::on_cb_closing_loop_current_text_changed(QString text) {
-  if(!this->mapping->set_closing_loop(text)) {
+  int index = this->ui_.cb_closing_loop->findText(text);
+  int param_value = this->ui_.cb_closing_loop->itemData(index).toInt();
+
+  if(!this->mapping->set_algorithm_parameter("closing_loop", "-L", param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
-    int i = this->ui_.cb_nn->findText(text);
-    if(i != -1) this->ui_.cb_nn->removeItem(i);
   }
 }
 
 void GuiPlugin::on_cb_graphslam_current_text_changed(QString text) {
-  if(!this->mapping->set_graphslam(text)) {
+  int index = this->ui_.cb_graphslam->findText(text);
+  int param_value = this->ui_.cb_graphslam->itemData(index).toInt();
+
+  if(!this->mapping->set_algorithm_parameter("graph_slam", "-G", param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
-    int i = this->ui_.cb_nn->findText(text);
-    if(i != -1) this->ui_.cb_nn->removeItem(i);
-  }
+  } 
 }
 
     // icp parameters
 void GuiPlugin::on_sb_icp_iterations_value_changed(int val) {
-  this->mapping->set_icp_max_iterations(val);
+  this->mapping->set_algorithm_parameter("icp_minimization", "-i", val);
 }
 
 void GuiPlugin::on_dsb_icp_epsilon_value_changed(double val) {
-  this->mapping->set_icp_epsilon(val);
+    this->mapping->set_algorithm_parameter("icp_minimization", "--epsICP", val);
+
 }
 
-      // nearest neighbor parameters
+    // nearest neighbor parameters
 void GuiPlugin::on_dsb_nn_p2p_distance_value_changed(double val) {
-  this->mapping->set_nn_max_p2p_distance(val);
+    this->mapping->set_algorithm_parameter("nearest_neighbor", "--dist", val);
 }
 
-      // other icp params
+    // other icp params
 void GuiPlugin::on_cb_metascan_toggled() {
-  this->mapping->toggle_match_meta_scan();
+  //this->mapping->toggle_match_meta_scan();
 }
 
   // work
@@ -253,32 +259,32 @@ void GuiPlugin::initWidgets() {
 }
 
 void GuiPlugin::initComboBoxes() {
-  this->ui_.cb_icp_minimization->addItem("Unit Quaternion"); 
-  this->ui_.cb_icp_minimization->addItem("Singular Value Decomposition");
+  this->ui_.cb_icp_minimization->addItem("Unit Quaternion", QVariant(1)); 
+  this->ui_.cb_icp_minimization->addItem("Singular Value Decomposition", QVariant(2));
   //this->ui_.cb_minimization->addItem("Orthonormal Matrices");
   //this->ui_.cb_minimization->addItem("Dual Quaternions");
   //this->ui_.cb_minimization->addItem("Helix Approximation");
-  this->ui_.cb_icp_minimization->addItem("Small Angle Approximation");
+  this->ui_.cb_icp_minimization->addItem("Small Angle Approximation", QVariant(6));
   //this->ui_.cb_minimization->addItem("Uncertainty Based: Euler Angles");
   //this->ui_.cb_minimization->addItem("Uncertainty Based: Quaternions"); 
   //this->ui_.cb_minimization->addItem("Unit Quaternion with Scale Method");
                     
-  this->ui_.cb_nn->addItem("simple k-d tree"); 
-  this->ui_.cb_nn->addItem("cached k-d tree");
+  this->ui_.cb_nn->addItem("simple k-d tree", QVariant(0)); 
+  this->ui_.cb_nn->addItem("cached k-d tree", QVariant(1));
   //this->ui_.cb_nn->addItem("ANN tree");
   //this->ui_.cb_nn->addItem("BOC tree");
 
-  this->ui_.cb_closing_loop->addItem("no loop closing");
-  this->ui_.cb_closing_loop->addItem("Euler Angles");
-  this->ui_.cb_closing_loop->addItem("Quaternions");
-  this->ui_.cb_closing_loop->addItem("Unit Quaternions");
-  this->ui_.cb_closing_loop->addItem("SLERP");
+  this->ui_.cb_closing_loop->addItem("no loop closing", QVariant(0));
+  this->ui_.cb_closing_loop->addItem("Euler Angles", QVariant(1));
+  this->ui_.cb_closing_loop->addItem("Quaternions", QVariant(2));
+  this->ui_.cb_closing_loop->addItem("Unit Quaternions", QVariant(3));
+  this->ui_.cb_closing_loop->addItem("SLERP", QVariant(4));
 
-  this->ui_.cb_graphslam->addItem("no GraphSLAM");
-  this->ui_.cb_graphslam->addItem("Euler Angles");
-  this->ui_.cb_graphslam->addItem("Unit Quaternions");
-  this->ui_.cb_graphslam->addItem("Helix Approximation");
-  this->ui_.cb_graphslam->addItem("Small Angle Approximation");
+  this->ui_.cb_graphslam->addItem("no GraphSLAM", QVariant(0));
+  this->ui_.cb_graphslam->addItem("Euler Angles", QVariant(1));
+  this->ui_.cb_graphslam->addItem("Unit Quaternions", QVariant(2));
+  this->ui_.cb_graphslam->addItem("Helix Approximation", QVariant(3));
+  this->ui_.cb_graphslam->addItem("Small Angle Approximation", QVariant(4));
 }
 
 // callbacks
