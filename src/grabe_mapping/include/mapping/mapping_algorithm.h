@@ -1,15 +1,15 @@
 #include <string>
 #include <sstream>
+#include <map>
 
 class MappingAlgorithm {
     std::string name;
-    std::string argument;
-    double argument_value;
+
+    std::map<std::string, double> parameters;
 
 public:
-    MappingAlgorithm(std::string name = "placeholder_name", std::string argument = "placeholder_argument",
-                        double argument_value = 0) : 
-        name(name), argument(argument), argument_value(argument_value) 
+    MappingAlgorithm(std::string name = "placeholder_name") : 
+        name(name)
     {
 
     }
@@ -17,8 +17,30 @@ public:
     std::string get_name() const { return this->name; }
     
     std::string to_string() {
-        std::ostringstream value("", std::ios_base::app);
-        value << this->argument_value;
-        return this->argument + " " + value.str();
+        std::ostringstream out("", std::ios_base::app);
+
+        for(std::map<std::string, double>::iterator it = this->parameters.begin(); it != this->parameters.end(); it++) {
+            out << " " << it->first << " " << it->second;
+        }
+
+        return out.str();
+    }
+
+    bool set_parameter(std::string parameter, double value) {
+        if(this->parameters.find(parameter) != this->parameters.end()) {
+            this->parameters[parameter] = value;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    bool add_parameter(std::string parameter, double default_value = 0.0) {
+        if(this->parameters.find(parameter) == this->parameters.end()) {
+            this->parameters.insert(std::pair<std::string, double>(parameter, default_value));
+            return true;
+        } else {
+            return false;
+        }
     }
 };

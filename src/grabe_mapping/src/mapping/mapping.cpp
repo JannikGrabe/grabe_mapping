@@ -9,8 +9,6 @@ Mapping::Mapping() {
 
     this->initAlgorithms();   
 
-    this->init_icp_parameters(); 
-
     QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_process_finished);
 }
 
@@ -49,13 +47,11 @@ void Mapping::start_scan_to_file() {
 }
 
 void Mapping::start_slam6D() {
-    std::string slam6D = "/home/jannik/slam6d-code/bin/slam6D ";
+    std::string slam6D = "/home/jannik/slam6d-code/bin/slam6D";
 
-    slam6D += this->icp_minimization.to_string();
-    slam6D += " " + this->nearest_neighbor.to_string();
-    slam6D += " " + this->closing_loop.to_string();
-    slam6D += " " + this->graphslam.to_string();
-    slam6D += " " + this->output_filepath.toStdString();
+    for(std::map<std::string, MappingAlgorithm*>::iterator it = this->algorithms.begin(); it != this->algorithms.end(); it++) {
+        slam6D += it->second->to_string();
+    }
 
     std::cout << slam6D << std::endl;
 
@@ -118,6 +114,7 @@ void Mapping::init_states() {
 }
 
 bool Mapping::check_states() {
+
     if(this->use_rosbag && this->rosbag_filename.isEmpty()) {
         ROS_ERROR("no rosbag filename set");
         return false;
@@ -138,75 +135,44 @@ bool Mapping::check_states() {
     return true;
 }
 
-void Mapping::init_icp_parameters() {
-    this->icp_epsilon = 0.000001;
-    this->icp_max_iterations = 50;
-    this->nn_max_p2p_distance = 25;
-    this->match_meta_scan = false;
-}
 // Algorithms
 void Mapping::initAlgorithms() {
-    // ICP Minimization
-    this->icp_minimization = MappingAlgorithm("Unit Quaternion", "-a", 1);
+    
+    // ICP 
+    MappingAlgorithm* icp_minimization = new MappingAlgorithm("icp_minimization");
+    icp_minimization->add_parameter("-a", 1);
+    icp_minimization->add_parameter("-i", 50);
+    icp_minimization->add_parameter("--epsICP", 0.000001);
 
-    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Unit Quaternion", this->icp_minimization));
-    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Singular Value Decomposition", MappingAlgorithm("Singular Value Decomposition", "-a", 2)));
-    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Orthonormal Matrices", MappingAlgorithm("Orthonormal Matrices", "-a", 3)));
-    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Dual Quaternions", MappingAlgorithm("Dual Quaternions", "-a", 4)));
-    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Helix Approximation", MappingAlgorithm("Helix Approximation", "-a", 5)));
-    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Small Angle Approximation", MappingAlgorithm("Small Angle Approximation", "-a", 6)));
-    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Uncertainty Based: Euler Angles", MappingAlgorithm("Uncertainty Based: Euler Angles", "-a", 7)));
-    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Uncertainty Based: Quaternions", MappingAlgorithm("Uncertainty Based: Quaternions", "-a", 8)));
-    this->icp_minimization_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Unit Quaternion with Scale Method", MappingAlgorithm("Unit Quaternion with Scale Method", "-a", 9)));
+    this->algorithms.insert(std::pair<std::string, MappingAlgorithm*>("icp_minimization", icp_minimization));
+    
+    // nearest neighbor
+    MappingAlgorithm* nearest_neighbor = new MappingAlgorithm("nearest_neighbor");
+    nearest_neighbor->add_parameter("-t", 0);
+    nearest_neighbor->add_parameter("--dist", 25);
+    
+    this->algorithms.insert(std::pair<std::string, MappingAlgorithm*>("nearest_neighbor", nearest_neighbor));
 
-    // ICP Nearest Neighbor
-    this->nearest_neighbor = MappingAlgorithm("simple k-d tree", "-t", 0);
+    // closing loop
+    MappingAlgorithm* closing_loop = new MappingAlgorithm("closing_loop");
+    closing_loop->add_parameter("-L", 0);
+    closing_loop->add_parameter("--loopsize", 20);
+    closing_loop->add_parameter("--cldist", 500);
+    closing_loop->add_parameter("--clpairs", -1);
+    closing_loop->add_parameter("--distLoop", 700);
+    closing_loop->add_parameter("--iterLoop", 100);
 
-    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "simple k-d tree", this->nearest_neighbor));
-    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "cached k-d tree", MappingAlgorithm("cached k-d tree", "-t", 2)));
-    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "ANN tree", MappingAlgorithm("ANN tree", "-t", 3)));
-    this->nearest_neighbor_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "BOC tree", MappingAlgorithm("BOC tree", "-t", 4))); 
-
-    // closing loop method
-    this->closing_loop = MappingAlgorithm("no loop closing", "-L", 0);
-
-    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "no loop closing", this->closing_loop));
-    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Euler Angles", MappingAlgorithm("Euler Angles", "-L", 1)));
-    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Quaternions", MappingAlgorithm("Quaternions", "-L", 2)));
-    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Unit Quaternions", MappingAlgorithm("Unit Quaternions", "-L", 3)));
-    this->closing_loop_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "SLERP", MappingAlgorithm("SLERP", "-L", 4)));
+    this->algorithms.insert(std::pair<std::string, MappingAlgorithm*>("closing_loop", closing_loop));
 
     // graphslam minimization
-    this->graphslam = MappingAlgorithm("no GraphSLAM", "-G", 0);
+    MappingAlgorithm* graph_slam = new MappingAlgorithm("graph_slam");
+    graph_slam->add_parameter("-G", 0);
+    graph_slam->add_parameter("-I", 50);
+    graph_slam->add_parameter("--epsSLAM", 0.5);
+    graph_slam->add_parameter("--distSLAM", 25);
 
-    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "no GraphSLAM", this->graphslam));
-    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Euler Angles", MappingAlgorithm("Euler Angles", "-G", 1)));
-    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Unit Quaternions", MappingAlgorithm("Unit Quaternions", "-G", 2)));
-    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Helix Approximation", MappingAlgorithm("Helix Approximation", "-G", 3)));
-    this->graphslam_algorithms.insert(std::pair<std::string, MappingAlgorithm>(
-        "Small Angle Approximation", MappingAlgorithm("Small Angle Approximation", "-G", 4)));
+    this->algorithms.insert(std::pair<std::string, MappingAlgorithm*>("graph_slam", graph_slam));
+
 }
 
 // Slots
@@ -247,23 +213,6 @@ QString Mapping::get_odom_topic() const {
 
 QString Mapping::get_gps_topic() const {
     return this->gps_topic;
-}
-
-    // Algorithms
-MappingAlgorithm Mapping::get_icp_minimization() const {
-    return this->icp_minimization;
-}
-
-MappingAlgorithm Mapping::get_nearest_neighbor() const {
-    return this->nearest_neighbor;
-}
-
-MappingAlgorithm Mapping::get_closing_loop() const {
-    return this->closing_loop;
-}
-
-MappingAlgorithm Mapping::get_graphslam() const {
-    return this->graphslam;
 }
 
     // output
@@ -317,70 +266,14 @@ void Mapping::set_gps_topic(QString topic) {
 }
 
     // Algorithms
-bool Mapping::set_icp_minimization(QString text) {
-    std::map<std::string,MappingAlgorithm>::iterator it = this->icp_minimization_algorithms.find(text.toStdString());
-    if(it != this->icp_minimization_algorithms.end()) {
-        this->icp_minimization = it->second;
-        return true;
-    } else {
+
+bool Mapping::set_algorithm_parameter(std::string algorithm_name, std::string parameter_name, double parameter_value) {
+    if(this->algorithms.find(algorithm_name) == this->algorithms.end()) {
         return false;
     }
-}
 
-bool Mapping::set_nearest_neighbor(QString text) {
-    std::map<std::string,MappingAlgorithm>::iterator it = this->nearest_neighbor_algorithms.find(text.toStdString());
-    if(it != this->nearest_neighbor_algorithms.end()) {
-        this->nearest_neighbor = it->second;
-        return true;
-    } else {
-        return false;
-    }
+    return this->algorithms[algorithm_name]->set_parameter(parameter_name, parameter_value);
 }
-
-bool Mapping::set_closing_loop(QString text) {
-    std::map<std::string,MappingAlgorithm>::iterator it = this->closing_loop_algorithms.find(text.toStdString());
-    if(it != this->closing_loop_algorithms.end()) {
-        this->closing_loop = it->second;
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool Mapping::set_graphslam(QString text) {
-    std::map<std::string,MappingAlgorithm>::iterator it = this->graphslam_algorithms.find(text.toStdString());
-    if(it != this->graphslam_algorithms.end()) {
-        this->graphslam = it->second;
-        return true;
-    } else {
-        return false;
-    }
-}
-
-    // parameters
-            // icp
-void Mapping::set_icp_max_iterations(int it) {
-    this->icp_max_iterations = it;
-}
-
-void Mapping::set_icp_epsilon(double eps) {
-    this->icp_epsilon = eps;
-}
-
-            // nearest neighbor
-void Mapping::set_nn_max_p2p_distance(double dist) {
-    this->nn_max_p2p_distance = dist;
-}
-
-            // other icp parameters
-void Mapping::set_match_meta_scan(bool state) {
-    this->match_meta_scan = state;
-}
-
-void Mapping::toggle_match_meta_scan() {
-    this->match_meta_scan = !this->match_meta_scan;
-}
-
 
     // output
 void Mapping::set_output_filepath(QString filename) {

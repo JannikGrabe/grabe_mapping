@@ -26,39 +26,8 @@ private:
     // ouput
     QString output_filepath;
 
-    // ICP
-    MappingAlgorithm icp_minimization;
-    MappingAlgorithm nearest_neighbor;
-    std::map<std::string, MappingAlgorithm> icp_minimization_algorithms;
-    std::map<std::string, MappingAlgorithm> nearest_neighbor_algorithms;
-
-        // ICP parameters
-    int icp_max_iterations;
-    double icp_epsilon;
-
-        // nearest neighbor parameters
-    double nn_max_p2p_distance;
-
-        // other parameters
-    bool match_meta_scan;
-
-    // GraphSlam
-    MappingAlgorithm closing_loop;
-    MappingAlgorithm graphslam;
-    std::map<std::string, MappingAlgorithm> closing_loop_algorithms;
-    std::map<std::string, MappingAlgorithm> graphslam_algorithms;
-
-        // closing loop parameters
-    int loop_size;
-    int max_distance;
-    int min_overlap;
-    int cl_max_p2p_distance;
-    int cl_max_iterations;
-
-        // graphSlam minimization parameters
-    int graph_max_iterations;
-    double graph_epsilon;
-    double graph_max_p2p_distance;
+    // Algorithms
+    std::map<std::string, MappingAlgorithm*> algorithms;
 
     // work 
     std::string script_path;
@@ -80,8 +49,6 @@ private:
     void init_states();
 
     bool check_states();
-
-    void init_icp_parameters();
 
     // Algorithms
     void initAlgorithms();
@@ -111,12 +78,6 @@ public:
     QString get_odom_topic() const;
     QString get_gps_topic() const;
 
-        // Algorithms
-    MappingAlgorithm get_icp_minimization() const;
-    MappingAlgorithm get_nearest_neighbor() const;
-    MappingAlgorithm get_closing_loop() const;
-    MappingAlgorithm get_graphslam() const;
-
         // output
     QString get_output_filepath() const;
 
@@ -135,25 +96,10 @@ public:
     void set_odom_topic(QString topic);
     void set_gps_topic(QString topic);
 
-        // Algorithms
-    bool set_icp_minimization(QString text);
-    bool set_nearest_neighbor(QString text);
-    bool set_closing_loop(QString text);
-    bool set_graphslam(QString text);
-
-        // parameters
-            // icp
-    void set_icp_max_iterations(int it);
-    void set_icp_epsilon(double eps);
-            // nearest neighbor
-    void set_nn_max_p2p_distance(double dist);
-            // other icp parameters
-    void set_match_meta_scan(bool state);
-    void toggle_match_meta_scan();
+    bool set_algorithm_parameter(std::string algorithm_name, std::string parameter_name, double parameter_value);
 
         // output
     void set_output_filepath(QString filename);
-
 
 signals:
     void finished_mapping(int exit_code);

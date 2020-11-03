@@ -23,7 +23,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="tab_output">
          <attribute name="title">
@@ -908,7 +908,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="bg_coordinates"/>
   <buttongroup name="bg_units"/>
+  <buttongroup name="bg_coordinates"/>
  </buttongroups>
 </ui>
