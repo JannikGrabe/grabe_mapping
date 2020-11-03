@@ -53,6 +53,8 @@ void Mapping::start_slam6D() {
         slam6D += it->second->to_string();
     }
 
+    slam6D += " " + this->output_filepath.toStdString();
+
     std::cout << slam6D << std::endl;
 
     QFuture<int> slam6D_future = QtConcurrent::run(Mapping::run_command, slam6D);
@@ -158,7 +160,7 @@ void Mapping::initAlgorithms() {
     closing_loop->add_parameter("-L", 0);
     closing_loop->add_parameter("--loopsize", 20);
     closing_loop->add_parameter("--cldist", 500);
-    closing_loop->add_parameter("--clpairs", -1);
+    closing_loop->add_parameter("--clpairs", -1, false);
     closing_loop->add_parameter("--distLoop", 700);
     closing_loop->add_parameter("--iterLoop", 100);
 

@@ -5,7 +5,16 @@
 class MappingAlgorithm {
     std::string name;
 
-    std::map<std::string, double> parameters;
+    struct Parameter {
+        double value; 
+        bool active;
+
+        Parameter(double value, bool active = true) : value(value), active(active) {
+
+        }
+    };
+
+    std::map<std::string, Parameter> parameters;
 
 public:
     MappingAlgorithm(std::string name = "placeholder_name") : 
@@ -19,8 +28,9 @@ public:
     std::string to_string() {
         std::ostringstream out("", std::ios_base::app);
 
-        for(std::map<std::string, double>::iterator it = this->parameters.begin(); it != this->parameters.end(); it++) {
-            out << " " << it->first << " " << it->second;
+        for(std::map<std::string, Parameter>::iterator it = this->parameters.begin(); it != this->parameters.end(); it++) {
+            if(it->second.active)
+                out << " " << it->first << " " << it->second.value;
         }
 
         return out.str();
@@ -28,16 +38,25 @@ public:
 
     bool set_parameter(std::string parameter, double value) {
         if(this->parameters.find(parameter) != this->parameters.end()) {
-            this->parameters[parameter] = value;
+            this->parameters[parameter] = Parameter(value);
             return true;
         } else {
             return false;
         }
     }
 
-    bool add_parameter(std::string parameter, double default_value = 0.0) {
+    bool set_parameter_active(std::string parameter, bool active) {
+        if(this->parameters.find(parameter) != this->parameters.end()) {
+            this->parameters[parameter].active = active;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    bool add_parameter(std::string parameter, double default_value = 0.0, bool active = true) {
         if(this->parameters.find(parameter) == this->parameters.end()) {
-            this->parameters.insert(std::pair<std::string, double>(parameter, default_value));
+            this->parameters.insert(std::pair<std::string, Parameter>(parameter, Parameter(default_value, active)));
             return true;
         } else {
             return false;
