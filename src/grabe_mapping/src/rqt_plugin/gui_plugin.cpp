@@ -157,7 +157,7 @@ void GuiPlugin::on_cb_icp_minimization_current_text_changed(QString text) {
   int index = this->ui_.cb_icp_minimization->findText(text);
   int param_value = this->ui_.cb_icp_minimization->itemData(index).toInt();
 
-  if(!this->mapping->set_algorithm_parameter("icp_minimization", "-a", param_value)) {
+  if(!this->mapping->set_parameter_value("-a", param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
   }
 }
@@ -166,7 +166,7 @@ void GuiPlugin::on_cb_nn_current_text_changed(QString text) {
   int index = this->ui_.cb_nn->findText(text);
   int param_value = this->ui_.cb_nn->itemData(index).toInt();
 
-  if(!this->mapping->set_algorithm_parameter("nearest_neighbor", "-t", param_value)) {
+  if(!this->mapping->set_parameter_value("-a", param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
   }
 }
@@ -175,7 +175,7 @@ void GuiPlugin::on_cb_closing_loop_current_text_changed(QString text) {
   int index = this->ui_.cb_closing_loop->findText(text);
   int param_value = this->ui_.cb_closing_loop->itemData(index).toInt();
 
-  if(!this->mapping->set_algorithm_parameter("closing_loop", "-L", param_value)) {
+  if(!this->mapping->set_parameter_value("-a", param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
   }
 }
@@ -184,24 +184,25 @@ void GuiPlugin::on_cb_graphslam_current_text_changed(QString text) {
   int index = this->ui_.cb_graphslam->findText(text);
   int param_value = this->ui_.cb_graphslam->itemData(index).toInt();
 
-  if(!this->mapping->set_algorithm_parameter("graph_slam", "-G", param_value)) {
+  if(!this->mapping->set_parameter_value("-a", param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
   } 
 }
 
     // icp parameters
 void GuiPlugin::on_sb_icp_iterations_value_changed(int val) {
-  this->mapping->set_algorithm_parameter("icp_minimization", "-i", val);
+
+  this->mapping->set_parameter_value("-i", val);
 }
 
 void GuiPlugin::on_dsb_icp_epsilon_value_changed(double val) {
-    this->mapping->set_algorithm_parameter("icp_minimization", "--epsICP", val);
+    this->mapping->set_parameter_value("--epsICP", val);
 
 }
 
     // nearest neighbor parameters
 void GuiPlugin::on_dsb_nn_p2p_distance_value_changed(double val) {
-    this->mapping->set_algorithm_parameter("nearest_neighbor", "--dist", val);
+    this->mapping->set_parameter_value("--dist", val);
 }
 
     // other icp params

@@ -49,9 +49,7 @@ void Mapping::start_scan_to_file() {
 void Mapping::start_slam6D() {
     std::string slam6D = "/home/jannik/slam6d-code/bin/slam6D";
 
-    for(std::map<std::string, MappingAlgorithm*>::iterator it = this->algorithms.begin(); it != this->algorithms.end(); it++) {
-        slam6D += it->second->to_string();
-    }
+    slam6D += this->parameters->to_string();
 
     slam6D += " " + this->output_filepath.toStdString();
 
@@ -140,41 +138,39 @@ bool Mapping::check_states() {
 // Algorithms
 void Mapping::initAlgorithms() {
     
-    // ICP 
-    MappingAlgorithm* icp_minimization = new MappingAlgorithm("icp_minimization");
-    icp_minimization->add_parameter("-a", 1);
-    icp_minimization->add_parameter("-i", 50);
-    icp_minimization->add_parameter("--epsICP", 0.000001);
+    this->parameters = new grabe_mapping::Parameter_map();
 
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm*>("icp_minimization", icp_minimization));
+    // ICP 
+    parameters->add_parameter("-a", 1);
+    parameters->add_parameter("-i", 50);
+    parameters->add_parameter("--epsICP", 0.000001);
     
     // nearest neighbor
-    MappingAlgorithm* nearest_neighbor = new MappingAlgorithm("nearest_neighbor");
-    nearest_neighbor->add_parameter("-t", 0);
-    nearest_neighbor->add_parameter("--dist", 25);
-    
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm*>("nearest_neighbor", nearest_neighbor));
+    parameters->add_parameter("-t", 0);
+    parameters->add_parameter("--dist", 25);
 
     // closing loop
-    MappingAlgorithm* closing_loop = new MappingAlgorithm("closing_loop");
-    closing_loop->add_parameter("-L", 0);
-    closing_loop->add_parameter("--loopsize", 20);
-    closing_loop->add_parameter("--cldist", 500);
-    closing_loop->add_parameter("--clpairs", -1, false);
-    closing_loop->add_parameter("--distLoop", 700);
-    closing_loop->add_parameter("--iterLoop", 100);
-
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm*>("closing_loop", closing_loop));
+    parameters->add_parameter("-L", 0);
+    parameters->add_parameter("--loopsize", 20);
+    parameters->add_parameter("--cldist", 500);
+    parameters->add_parameter("--clpairs", -1, false);
+    parameters->add_parameter("--distLoop", 700);
+    parameters->add_parameter("--iterLoop", 100);
 
     // graphslam minimization
-    MappingAlgorithm* graph_slam = new MappingAlgorithm("graph_slam");
-    graph_slam->add_parameter("-G", 0);
-    graph_slam->add_parameter("-I", 50);
-    graph_slam->add_parameter("--epsSLAM", 0.5);
-    graph_slam->add_parameter("--distSLAM", 25);
+    parameters->add_parameter("-G", 0);
+    parameters->add_parameter("-I", 50);
+    parameters->add_parameter("--epsSLAM", 0.5);
+    parameters->add_parameter("--distSLAM", 25);
 
-    this->algorithms.insert(std::pair<std::string, MappingAlgorithm*>("graph_slam", graph_slam));
-
+    // general
+    parameters->add_parameter("-s", 0, false);
+    parameters->add_parameter("-e", 0, false);
+    parameters->add_parameter("--max", -1, false);
+    parameters->add_parameter("--min", -1, false);
+    parameters->add_parameter("--normal-shoot-simple", false);
+    parameters->add_parameter("--point-to-plane-simple", false);
+    parameters->add_parameter("--export-all-points", false);
 }
 
 // Slots
@@ -267,14 +263,26 @@ void Mapping::set_gps_topic(QString topic) {
     this->gps_topic = topic;
 }
 
-    // Algorithms
+    // Parameters
 
-bool Mapping::set_algorithm_parameter(std::string algorithm_name, std::string parameter_name, double parameter_value) {
-    if(this->algorithms.find(algorithm_name) == this->algorithms.end()) {
-        return false;
-    }
+bool Mapping::set_parameter_value(std::string name, double value) {
+    return this->parameters->set_value(name, value);
+}
 
-    return this->algorithms[algorithm_name]->set_parameter(parameter_name, parameter_value);
+bool Mapping::set_parameter_value(std::string name, int value) {
+    return this->parameters->set_value(name, value);
+}
+
+bool Mapping::set_parameter_value(std::string name, std::string value) {
+    return this->parameters->set_value(name, value);
+}
+
+bool Mapping::set_parameter_active(std::string name, bool state) {
+    return this->parameters->set_active(name, state);
+}
+
+bool Mapping::toggle_parameter_active(std::string name) {
+    return this->parameters->toggle_active(name);
 }
 
     // output

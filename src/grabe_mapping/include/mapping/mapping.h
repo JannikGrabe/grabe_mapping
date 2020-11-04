@@ -2,9 +2,9 @@
 #include <QObject>
 #include <QWidget>
 #include <QtConcurrent/QtConcurrent>
-#include "mapping_algorithm.h"
 #include <map>
 #include <QProcess>
+#include "parameter_map.h"
 
 class Mapping : public QWidget {
     Q_OBJECT
@@ -27,7 +27,7 @@ private:
     QString output_filepath;
 
     // Algorithms
-    std::map<std::string, MappingAlgorithm*> algorithms;
+    grabe_mapping::Parameter_map* parameters;
 
     // work 
     std::string script_path;
@@ -96,7 +96,12 @@ public:
     void set_odom_topic(QString topic);
     void set_gps_topic(QString topic);
 
-    bool set_algorithm_parameter(std::string algorithm_name, std::string parameter_name, double parameter_value);
+        // parameters
+    bool set_parameter_value(std::string name, double value);
+    bool set_parameter_value(std::string name, int value);
+    bool set_parameter_value(std::string name, std::string value);
+    bool set_parameter_active(std::string name, bool state);
+    bool toggle_parameter_active(std::string name);
 
         // output
     void set_output_filepath(QString filename);
