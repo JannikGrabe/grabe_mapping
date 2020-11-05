@@ -108,34 +108,42 @@ public:
     }
 
     bool set_active(std::string name, bool state) {
-        if(this->type(name) == 0) {
-            return false;
+        int type = this->type(name);
+
+        switch(type) {
+            case 0:
+                return false;
+            case 1:
+                this->double_parameters[name]->set_active(state);
+                break;
+            case 2:
+                this->int_parameters[name]->set_active(state);
+                break;
+            case 3:
+                this->string_parameters[name]->set_active(state);
+                break;
         }
-        else if(this->type(name) == 1) {
-            this->double_parameters[name]->set_active(state);
-        }
-        else if(this->type(name) == 2) {
-            this->int_parameters[name]->set_active(state);
-        }
-        else if(this->type(name) == 3) {
-            this->string_parameters[name]->set_active(state);
-        }
+
         return true;
     }
 
     bool toggle_active(std::string name) {
-        if(this->type(name) == 0) {
-            return false;
+        int type = this->type(name);
+
+        switch(type) {
+            case 0:
+                return false;
+            case 1:
+                this->double_parameters[name]->toggle_active();
+                break;
+            case 2:
+                this->int_parameters[name]->toggle_active();
+                break;
+            case 3:
+                this->string_parameters[name]->toggle_active();
+                break;
         }
-        else if(this->type(name) == 1) {
-            this->double_parameters[name]->toggle_active();
-        }
-        else if(this->type(name) == 2) {
-            this->int_parameters[name]->toggle_active();
-        }
-        else if(this->type(name) == 3) {
-            this->string_parameters[name]->toggle_active();
-        }
+
         return true;
     }
 

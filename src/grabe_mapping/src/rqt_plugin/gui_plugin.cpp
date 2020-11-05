@@ -61,7 +61,10 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
   QObject::connect(ui_.pb_show, &QPushButton::pressed, this, &GuiPlugin::on_pb_show_pressed);
 
-  // Algorithms
+  // general
+  QObject::connect(this->ui_.sb_first, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_first_value_changed);
+  QObject::connect(this->ui_.sb_last, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_last_value_changed);
+
   QObject::connect(this->ui_.cb_icp_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_icp_minimization_current_text_changed);
   QObject::connect(this->ui_.cb_nn, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_nn_current_text_changed);
   QObject::connect(this->ui_.cb_closing_loop, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_closing_loop_current_text_changed);
@@ -148,6 +151,74 @@ void GuiPlugin::on_le_odom_type_text_changed(QString text) {
 }
 
 void GuiPlugin::on_le_gps_type_text_changed(QString text) {
+
+}
+
+// general
+void GuiPlugin::on_sb_first_value_changed(int val) {
+  
+  int last = this->ui_.sb_last->value();
+
+  if(val == -1) { // set inactive
+    this->mapping->set_parameter_active("-s", false);
+  } else {
+    this->mapping->set_parameter_active("-s", true);
+    this->mapping->set_parameter_value("-s", val);
+
+    if(last != -1 && val >= last) // first is larger than last
+      this->ui_.sb_last->setValue(val + 1);
+  
+  }
+}
+
+void GuiPlugin::on_sb_last_value_changed(int val) {
+  static int previous = -1;
+  int first = this->ui_.sb_first->value();
+
+  if(val == -1) { // set inactive
+    this->mapping->set_parameter_active("-e", false);
+    previous = -1;
+  } else if(val == 0 && previous != -1) {
+    this->ui_.sb_last->setValue(-1);
+  } else if (val == 0 && previous == -1) {
+    this->ui_.sb_last->setValue(1);
+  } else {
+    this->mapping->set_parameter_active("-e", true);
+    this->mapping->set_parameter_value("-e", val);
+
+    if(first != -1 && val <= first) { // last is smaller than first
+      if(previous == -1) {
+        this->ui_.sb_last->setValue(first + 1);
+        return;
+      } else {
+        this->ui_.sb_first->setValue(val - 1);
+      }
+  }
+    previous = val;
+  }
+}
+
+void GuiPlugin::on_dbs_min_value_changed(double val) {
+
+}
+
+void GuiPlugin::on_dbs_max_value_changed(double val) {
+
+}
+
+void GuiPlugin::on_cb_correspondances_current_text_changed(QString text) {
+
+}
+
+void GuiPlugin::on_cb_metascan_state_changed(int state) {
+
+}
+
+void GuiPlugin::on_cb_export_state_changed(int state) {
+
+}
+
+void GuiPlugin::on_pb_export_pressed() {
 
 }
 

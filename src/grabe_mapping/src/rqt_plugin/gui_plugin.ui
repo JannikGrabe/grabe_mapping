@@ -466,13 +466,13 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox">
+           <widget class="QGroupBox" name="gb_matching">
             <property name="title">
              <string>Matching Method</string>
             </property>
             <layout class="QGridLayout" name="gridLayout">
              <item row="0" column="0">
-              <widget class="QCheckBox" name="checkBox">
+              <widget class="QCheckBox" name="cb_metascan">
                <property name="text">
                 <string>match against a meta scan of all previously matched scans</string>
                </property>
@@ -628,13 +628,6 @@
               </widget>
              </item>
             </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cb_metascan">
-            <property name="text">
-             <string>Match against Meta-Scan of all previous Scans</string>
-            </property>
            </widget>
           </item>
           <item>

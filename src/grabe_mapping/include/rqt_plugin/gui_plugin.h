@@ -52,7 +52,17 @@ public slots:
   void on_le_odom_type_text_changed(QString text);
   void on_le_gps_type_text_changed(QString text);
 
-  // Algorithms
+  // parameters
+      // general
+  void on_sb_first_value_changed(int val);
+  void on_sb_last_value_changed(int val);
+  void on_dbs_min_value_changed(double val);
+  void on_dbs_max_value_changed(double val);
+  void on_cb_correspondances_current_text_changed(QString text);
+  void on_cb_metascan_state_changed(int state);
+  void on_cb_export_state_changed(int state);
+  void on_pb_export_pressed();
+
   void on_cb_icp_minimization_current_text_changed(QString text);
   void on_cb_nn_current_text_changed(QString text);
   void on_cb_closing_loop_current_text_changed(QString text);
