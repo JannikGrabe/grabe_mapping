@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>522</width>
-    <height>550</height>
+    <height>565</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="tab_output">
          <attribute name="title">
@@ -290,8 +290,14 @@
             <layout class="QGridLayout" name="gridLayout_2">
              <item row="1" column="4">
               <widget class="QSpinBox" name="sb_last">
+               <property name="minimum">
+                <number>-1</number>
+               </property>
                <property name="maximum">
                 <number>1000000</number>
+               </property>
+               <property name="value">
+                <number>-1</number>
                </property>
               </widget>
              </item>
@@ -318,8 +324,14 @@
              </item>
              <item row="1" column="1">
               <widget class="QSpinBox" name="sb_first">
+               <property name="minimum">
+                <number>-1</number>
+               </property>
                <property name="maximum">
                 <number>1000000</number>
+               </property>
+               <property name="value">
+                <number>-1</number>
                </property>
               </widget>
              </item>
@@ -448,6 +460,22 @@
                  <string>closest point -to-plane distance</string>
                 </property>
                </item>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>Matching Method</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QCheckBox" name="checkBox">
+               <property name="text">
+                <string>match against a meta scan of all previously matched scans</string>
+               </property>
               </widget>
              </item>
             </layout>
@@ -908,7 +936,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="bg_units"/>
   <buttongroup name="bg_coordinates"/>
+  <buttongroup name="bg_units"/>
  </buttongroups>
 </ui>

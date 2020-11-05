@@ -141,7 +141,7 @@ void Mapping::initAlgorithms() {
     this->parameters = new grabe_mapping::Parameter_map();
 
     // ICP 
-    parameters->add_parameter("-a", 1);
+    parameters->add_parameter("--a", 1);
     parameters->add_parameter("-i", 50);
     parameters->add_parameter("--epsICP", 0.000001);
     
@@ -164,13 +164,15 @@ void Mapping::initAlgorithms() {
     parameters->add_parameter("--distSLAM", 25);
 
     // general
-    parameters->add_parameter("-s", 0, false);
-    parameters->add_parameter("-e", 0, false);
+    parameters->add_parameter("-s", -1, false);
+    parameters->add_parameter("-e", -1, false);
     parameters->add_parameter("--max", -1, false);
     parameters->add_parameter("--min", -1, false);
     parameters->add_parameter("--normal-shoot-simple", false);
     parameters->add_parameter("--point-to-plane-simple", false);
     parameters->add_parameter("--export-all-points", false);
+    parameters->add_parameter("--metascan", false);
+    parameters->add_parameter("--loopclosefile", (this->output_filepath + "loopclose.pts").toStdString());
 }
 
 // Slots
