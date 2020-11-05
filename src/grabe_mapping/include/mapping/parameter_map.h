@@ -11,7 +11,6 @@ private:
     std::map<std::string, Parameter<std::string>*> string_parameters;
 
     int type(std::string name) {
-        std::cout << name << std::endl;
         if(this->double_parameters.find(name) != this->double_parameters.end()) {
             return 1;
         }

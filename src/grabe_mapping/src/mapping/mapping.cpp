@@ -166,11 +166,11 @@ void Mapping::initAlgorithms() {
     // general
     parameters->add_parameter("-s", -1, false);
     parameters->add_parameter("-e", -1, false);
-    parameters->add_parameter("--max", -1, false);
-    parameters->add_parameter("--min", -1, false);
+    parameters->add_parameter("--max", -1.0, false);
+    parameters->add_parameter("--min", -1.0, false);
     parameters->add_parameter("--normal-shoot-simple", false);
     parameters->add_parameter("--point-to-plane-simple", false);
-    parameters->add_parameter("--export-all-points", false);
+    parameters->add_parameter("--exportAllPoints", false);
     parameters->add_parameter("--metascan", false);
     parameters->add_parameter("--loopclosefile", (this->output_filepath + "loopclose.pts").toStdString());
 }

@@ -64,6 +64,11 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   // general
   QObject::connect(this->ui_.sb_first, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_first_value_changed);
   QObject::connect(this->ui_.sb_last, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_last_value_changed);
+  QObject::connect(this->ui_.dsb_min, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_min_value_changed);
+  QObject::connect(this->ui_.dsb_max, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_max_value_changed);
+  QObject::connect(this->ui_.cb_correspondances, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_correspondances_current_text_changed);
+  QObject::connect(this->ui_.cb_metascan, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_metascan_state_changed);
+  QObject::connect(this->ui_.cb_export, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_export_state_changed);
 
   QObject::connect(this->ui_.cb_icp_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_icp_minimization_current_text_changed);
   QObject::connect(this->ui_.cb_nn, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_nn_current_text_changed);
@@ -74,7 +79,6 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->ui_.sb_icp_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_icp_iterations_value_changed);
   QObject::connect(this->ui_.dsb_icp_epsilon, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_icp_epsilon_value_changed);
   QObject::connect(this->ui_.dsb_nn_p2p_distance, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_nn_p2p_distance_value_changed);
-  QObject::connect(this->ui_.cb_metascan, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_metascan_toggled);
 }
 
 /*bool hasConfiguration() const
@@ -167,7 +171,6 @@ void GuiPlugin::on_sb_first_value_changed(int val) {
 
     if(last != -1 && val >= last) // first is larger than last
       this->ui_.sb_last->setValue(val + 1);
-  
   }
 }
 
@@ -178,19 +181,19 @@ void GuiPlugin::on_sb_last_value_changed(int val) {
   if(val == -1) { // set inactive
     this->mapping->set_parameter_active("-e", false);
     previous = -1;
-  } else if(val == 0 && previous != -1) {
+  } else if(val == 0 && previous != -1) { // skip 0 to -1
     this->ui_.sb_last->setValue(-1);
-  } else if (val == 0 && previous == -1) {
+  } else if (val == 0 && previous == -1) { // skip 0 to 1
     this->ui_.sb_last->setValue(1);
   } else {
     this->mapping->set_parameter_active("-e", true);
     this->mapping->set_parameter_value("-e", val);
 
     if(first != -1 && val <= first) { // last is smaller than first
-      if(previous == -1) {
+      if(previous == -1) {            // was inactive -> set to one higher than first
         this->ui_.sb_last->setValue(first + 1);
         return;
-      } else {
+      } else {                        // wasn't inactive -> set first one lower than this
         this->ui_.sb_first->setValue(val - 1);
       }
   }
@@ -198,24 +201,74 @@ void GuiPlugin::on_sb_last_value_changed(int val) {
   }
 }
 
-void GuiPlugin::on_dbs_min_value_changed(double val) {
+void GuiPlugin::on_dsb_min_value_changed(double val) {
+  double max = this->ui_.dsb_max->value();
+  
+  if(val < 0.0) { // set inactive
+    this->mapping->set_parameter_active("--min", false);
+  } else {
+    this->mapping->set_parameter_active("--min", true);
+    this->mapping->set_parameter_value("--min", val);
 
+    if(max >= 0.0 && val >= max) // first is larger than last
+      this->ui_.dsb_max->setValue(val + 1.0);
+  }
 }
 
-void GuiPlugin::on_dbs_max_value_changed(double val) {
+void GuiPlugin::on_dsb_max_value_changed(double val) {
+  static double previous = -1;
+  double min = this->ui_.dsb_min->value();
 
+  if(val < 0.0) { // set inactive
+    this->mapping->set_parameter_active("-e", false);
+    previous = val;
+  } else {
+    this->mapping->set_parameter_active("-e", true);
+    this->mapping->set_parameter_value("-e", val);
+
+    if(min >= 0.0 && val <= min) { // last is smaller than first
+      if(previous < 0.0) {            // was inactive -> set to one higher than first
+        this->ui_.dsb_max->setValue(min + 1.0);
+        return;
+      } else {                         // wasn't inactive -> set first one lower than this
+        this->ui_.dsb_min->setValue(val - 1.0);
+      }
+  }
+    previous = val;
+  }
 }
 
 void GuiPlugin::on_cb_correspondances_current_text_changed(QString text) {
-
+  if(text == "default") {
+    this->mapping->set_parameter_active("--normal-shoot-simple", false);
+    this->mapping->set_parameter_active("--point-to-plane-simple", false);
+  } else if(text == "closest along normal") {
+    this->mapping->set_parameter_active("--normal-shoot-simple", true);
+    this->mapping->set_parameter_active("--point-to-plane-simple", false);
+  } else if(text == "closest point-to-plane distance") {
+    this->mapping->set_parameter_active("--normal-shoot-simple", false);
+    this->mapping->set_parameter_active("--point-to-plane-simple", true);
+  }
 }
 
 void GuiPlugin::on_cb_metascan_state_changed(int state) {
-
+  if(state) {
+    this->mapping->set_parameter_active("--metascan", true);
+  } else {
+    this->mapping->set_parameter_active("--metascan", false);
+  }
 }
 
 void GuiPlugin::on_cb_export_state_changed(int state) {
-
+  if(state) {
+    this->mapping->set_parameter_active("--exportAllPoints", true);
+    this->ui_.le_export->setEnabled(true);
+    this->ui_.pb_export->setEnabled(true);
+  } else {
+    this->mapping->set_parameter_active("--exportAllPoints", false);
+    this->ui_.le_export->setEnabled(false);
+    this->ui_.pb_export->setEnabled(false);
+  }
 }
 
 void GuiPlugin::on_pb_export_pressed() {
@@ -274,11 +327,6 @@ void GuiPlugin::on_dsb_icp_epsilon_value_changed(double val) {
     // nearest neighbor parameters
 void GuiPlugin::on_dsb_nn_p2p_distance_value_changed(double val) {
     this->mapping->set_parameter_value("--dist", val);
-}
-
-    // other icp params
-void GuiPlugin::on_cb_metascan_toggled() {
-  //this->mapping->toggle_match_meta_scan();
 }
 
   // work

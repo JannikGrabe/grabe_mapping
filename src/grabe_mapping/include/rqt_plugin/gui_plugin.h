@@ -56,27 +56,23 @@ public slots:
       // general
   void on_sb_first_value_changed(int val);
   void on_sb_last_value_changed(int val);
-  void on_dbs_min_value_changed(double val);
-  void on_dbs_max_value_changed(double val);
+  void on_dsb_min_value_changed(double val);
+  void on_dsb_max_value_changed(double val);
   void on_cb_correspondances_current_text_changed(QString text);
   void on_cb_metascan_state_changed(int state);
   void on_cb_export_state_changed(int state);
   void on_pb_export_pressed();
 
-  void on_cb_icp_minimization_current_text_changed(QString text);
-  void on_cb_nn_current_text_changed(QString text);
+  
   void on_cb_closing_loop_current_text_changed(QString text);
   void on_cb_graphslam_current_text_changed(QString text);
 
       // icp parameters
+  void on_cb_icp_minimization_current_text_changed(QString text);
+  void on_cb_nn_current_text_changed(QString text);
   void on_sb_icp_iterations_value_changed(int val);
   void on_dsb_icp_epsilon_value_changed(double val);
-
-      // nearest neighbor parameters
   void on_dsb_nn_p2p_distance_value_changed(double val);
-
-      // other icp params
-  void on_cb_metascan_toggled();
 
   // output
   void on_pb_output_pressed();
