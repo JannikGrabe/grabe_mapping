@@ -23,7 +23,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab_output">
          <attribute name="title">
@@ -47,7 +47,11 @@
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QLineEdit" name="le_output"/>
+             <widget class="QLineEdit" name="le_output">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -81,7 +85,11 @@
           <item>
            <layout class="QGridLayout" name="gl_rosbag">
             <item row="1" column="0">
-             <widget class="QLineEdit" name="le_filePath"/>
+             <widget class="QLineEdit" name="le_filePath">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
             <item row="1" column="1">
              <widget class="QPushButton" name="pb_fileDialog">
