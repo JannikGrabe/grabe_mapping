@@ -426,14 +426,27 @@ void GuiPlugin::shutdownPlugin()
 void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
     qt_gui_cpp::Settings& instance_settings) const
 {
+  // rosbag
   instance_settings.setValue("rosbag_filename", this->mapping->get_rosbag_filename());
   instance_settings.setValue("input_is_meter", this->mapping->get_input_is_meter());
   instance_settings.setValue("input_is_lefthanded", this->mapping->get_input_is_lefthanded());
+  // topics
   instance_settings.setValue("scan_topic", this->mapping->get_scan_topic());
   instance_settings.setValue("odom_topic", this->mapping->get_odom_topic());
   instance_settings.setValue("gps_topic", this->mapping->get_gps_topic());
+  // output
   instance_settings.setValue("output_filepath", this->mapping->get_output_filepath());
   instance_settings.setValue("use_output_files", !this->mapping->get_use_rosbag());
+  // general
+  instance_settings.setValue("total", this->ui_.le_total->text());
+  instance_settings.setValue("first_scan", this->ui_.sb_first->value());
+  instance_settings.setValue("last_scan", this->ui_.sb_last->value());
+  instance_settings.setValue("min_distance", this->ui_.dsb_min->value());
+  instance_settings.setValue("max_distance", this->ui_.dsb_max->value());
+  instance_settings.setValue("correspondances", this->ui_.cb_correspondances->currentIndex());
+  instance_settings.setValue("metascan", this->ui_.cb_metascan->isChecked());
+  instance_settings.setValue("export", this->ui_.cb_export->isChecked());
+  // parameters
   instance_settings.setValue("icp_minimization", this->ui_.cb_icp_minimization->currentIndex());
   instance_settings.setValue("nearest_neighbor", this->ui_.cb_nn->currentIndex());
   instance_settings.setValue("closing_loop", this->ui_.cb_closing_loop->currentIndex());
@@ -441,7 +454,6 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("icp_iterations", this->ui_.sb_icp_iterations->value());
   instance_settings.setValue("icp_epsilon", this->ui_.dsb_icp_epsilon->value());
   instance_settings.setValue("nn_max_p2p_distance", this->ui_.dsb_nn_p2p_distance->value());
-  instance_settings.setValue("match_metscan", this->ui_.cb_metascan->isChecked());
 }
 
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
