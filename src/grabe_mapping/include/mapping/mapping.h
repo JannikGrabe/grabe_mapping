@@ -38,6 +38,8 @@ private:
     // Mapping
     void start_scan_to_file();
 
+    void finish_scan_to_file();
+
     void start_slam6D();
 
     void finish_mapping();
@@ -109,6 +111,7 @@ public:
 
 signals:
     void finished_mapping(int exit_code);
+    void finished_rosbag();
 
 public slots:
     void on_process_finished();

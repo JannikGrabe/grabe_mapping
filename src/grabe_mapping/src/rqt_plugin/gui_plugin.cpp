@@ -58,6 +58,7 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   // work
   QObject::connect(this->mapping, &Mapping::finished_mapping, this, &GuiPlugin::on_work_finished);
+  QObject::connect(this->mapping, &Mapping::finished_rosbag, this, &GuiPlugin::on_rosbag_finished);
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
   QObject::connect(ui_.pb_show, &QPushButton::pressed, this, &GuiPlugin::on_pb_show_pressed);
   QObject::connect(this->ui_.pb_cancel, &QPushButton::pressed, this, &GuiPlugin::on_pb_cancel_pressed);
@@ -397,9 +398,14 @@ void GuiPlugin::on_work_finished(int exit_code) {
   }
 }
 
+void GuiPlugin::on_rosbag_finished() {
+  this->ui_.sb_last->setMaximum(this->ui_.le_total->text().toInt() - 1);
+  this->ui_.sb_first->setMaximum(this->ui_.le_total->text().toInt() - 2);
+}
+
 void GuiPlugin::on_pb_show_pressed() {
   this->mapping->showResults();
-  this->ui_.pb_show->setEnabled(false);
+  this->ui_.pb_show->setVisible(false);
 }
 
 void GuiPlugin::on_pb_cancel_pressed() {
@@ -425,7 +431,6 @@ void GuiPlugin::on_cb_update_scans_state_changed(int state) {
     this->mapping->set_use_rosbag(true);
   }
 }
-
 
 // init
 void GuiPlugin::initWidgets() {
@@ -525,6 +530,7 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("show_button", this->ui_.pb_show->isVisible());
   instance_settings.setValue("update_scans_visible", this->ui_.cb_update_scans->isVisible());
   instance_settings.setValue("update_scans_state", this->ui_.cb_update_scans->isChecked());
+  instance_settings.setValue("active_tab", this->ui_.tb_settings->currentIndex());
 }
 
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
@@ -570,6 +576,7 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   this->ui_.pb_show->setVisible(instance_settings.value("show_button").toBool());
   this->ui_.cb_update_scans->setVisible(instance_settings.value("update_scans_visible").toBool());
   this->ui_.cb_update_scans->setChecked(instance_settings.value("update_scans_state").toBool());
+  this->ui_.tb_settings->setCurrentIndex(instance_settings.value("active_tab").toInt());
 }
 
 } 

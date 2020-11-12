@@ -43,7 +43,13 @@ void Mapping::start_scan_to_file() {
     this->watcher.setFuture(scan_to_file_future);
     this->watcher.setObjectName("scan_to_file");
 
+    this->next_process = &Mapping::finish_scan_to_file;
+}
+
+void Mapping::finish_scan_to_file() {
+    emit this->finished_rosbag();
     this->next_process = &Mapping::start_slam6D;
+    this->on_process_finished();
 }
 
 void Mapping::start_slam6D() {
@@ -118,6 +124,7 @@ void Mapping::init_states() {
     this->input_is_lefthanded = false;
     this->script_path = ros::package::getPath("grabe_mapping") + "/scripts";
     this->cancelled = false;
+    this->next_process = &Mapping::finish_mapping;
 }
 
 bool Mapping::check_states() {

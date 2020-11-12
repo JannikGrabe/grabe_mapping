@@ -41,6 +41,7 @@ public slots:
   // work
   void on_pb_start_pressed();
   void on_work_finished(int exit_code);
+  void on_rosbag_finished();
   void on_pb_show_pressed();
   void on_pb_cancel_pressed();
   void on_cb_update_scans_state_changed(int state);
