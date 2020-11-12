@@ -384,7 +384,6 @@ void GuiPlugin::on_pb_save_config_pressed() {
   QString filename = QFileDialog::getSaveFileName(this->widget_, "save config", "config.ini",
         tr("Config file (*.ini)"));
 
-
   QSettings settings(filename, QSettings::IniFormat, this->widget_);
 
   // rosbag
@@ -425,11 +424,6 @@ void GuiPlugin::on_pb_save_config_pressed() {
   settings.setValue("slam_iterations", this->ui_.sb_slam_iterations->value());
   settings.setValue("slam_epsilon", this->ui_.dsb_graph_epsilon->value());
   settings.setValue("slam_p2p_distance", this->ui_.dsb_graph_p2p_distance->value());
-  // work
-  settings.setValue("show_button", this->ui_.pb_show->isVisible());
-  settings.setValue("update_scans_visible", this->ui_.cb_update_scans->isVisible());
-  settings.setValue("update_scans_state", this->ui_.cb_update_scans->isChecked());
-  settings.setValue("active_tab", this->ui_.tb_settings->currentIndex());
 }
 
 void GuiPlugin::on_pb_load_config_pressed() {
@@ -480,11 +474,6 @@ void GuiPlugin::on_pb_load_config_pressed() {
   this->ui_.sb_slam_iterations->setValue(instance_settings.value("slam_iterations").toInt());
   this->ui_.dsb_graph_epsilon->setValue(instance_settings.value("slam_epsilon").toDouble());
   this->ui_.dsb_graph_p2p_distance->setValue(instance_settings.value("slam_p2p_distance").toDouble());
-  // work
-  this->ui_.pb_show->setVisible(instance_settings.value("show_button").toBool());
-  this->ui_.cb_update_scans->setVisible(instance_settings.value("update_scans_visible").toBool());
-  this->ui_.cb_update_scans->setChecked(instance_settings.value("update_scans_state").toBool());
-  this->ui_.tb_settings->setCurrentIndex(instance_settings.value("active_tab").toInt());
 
   this->ui_.tb_settings->setCurrentIndex(0);
 }
@@ -493,7 +482,6 @@ void GuiPlugin::on_pb_load_config_pressed() {
 void GuiPlugin::on_pb_start_pressed() {
 
   this->ui_.pb_start->setEnabled(false);
-  this->ui_.pb_show->setVisible(false);
   this->ui_.pb_cancel->setVisible(true);
   this->ui_.pb_progress->setVisible(true);
   this->ui_.pb_progress->setRange(0, 0);
@@ -508,10 +496,6 @@ void GuiPlugin::on_work_finished(int exit_code) {
 
   if(exit_code == 1) {
     ROS_ERROR("Something went wrong");
-  } else {
-    this->ui_.pb_show->setVisible(true);
-    this->ui_.cb_update_scans->setVisible(true);
-    this->ui_.cb_update_scans->setChecked(false);
   }
 }
 
@@ -522,7 +506,6 @@ void GuiPlugin::on_rosbag_finished() {
 
 void GuiPlugin::on_pb_show_pressed() {
   this->mapping->showResults();
-  this->ui_.pb_show->setVisible(false);
 }
 
 void GuiPlugin::on_pb_cancel_pressed() {
@@ -559,11 +542,7 @@ void GuiPlugin::on_cb_update_scans_state_changed(int state) {
 void GuiPlugin::initWidgets() {
   this->initComboBoxes();
   this->ui_.pb_progress->setVisible(false);
-  this->ui_.pb_show->setVisible(false);
   this->ui_.pb_cancel->setVisible(false);
-  this->ui_.cb_update_scans->setVisible(false);
-
-  
 }
 
 void GuiPlugin::initComboBoxes() {
@@ -655,8 +634,6 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("slam_epsilon", this->ui_.dsb_graph_epsilon->value());
   instance_settings.setValue("slam_p2p_distance", this->ui_.dsb_graph_p2p_distance->value());
   // work
-  instance_settings.setValue("show_button", this->ui_.pb_show->isVisible());
-  instance_settings.setValue("update_scans_visible", this->ui_.cb_update_scans->isVisible());
   instance_settings.setValue("update_scans_state", this->ui_.cb_update_scans->isChecked());
   instance_settings.setValue("active_tab", this->ui_.tb_settings->currentIndex());
 }
@@ -703,8 +680,6 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   this->ui_.dsb_graph_epsilon->setValue(instance_settings.value("slam_epsilon").toDouble());
   this->ui_.dsb_graph_p2p_distance->setValue(instance_settings.value("slam_p2p_distance").toDouble());
   // work
-  this->ui_.pb_show->setVisible(instance_settings.value("show_button").toBool());
-  this->ui_.cb_update_scans->setVisible(instance_settings.value("update_scans_visible").toBool());
   this->ui_.cb_update_scans->setChecked(instance_settings.value("update_scans_state").toBool());
   this->ui_.tb_settings->setCurrentIndex(instance_settings.value("active_tab").toInt());
 }
