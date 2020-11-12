@@ -56,13 +56,6 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="cb_use_output_files">
-            <property name="text">
-             <string>use files from this directory instead of rosbag</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <spacer name="vs">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -357,7 +350,7 @@
               </spacer>
              </item>
              <item row="1" column="5">
-              <widget class="QLabel" name="l_info">
+              <widget class="QLabel" name="l_scans_info">
                <property name="font">
                 <font>
                  <pointsize>8</pointsize>
@@ -385,11 +378,27 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_6">
              <item>
-              <widget class="QLabel" name="l_distance">
-               <property name="text">
-                <string>Use points within min and max:</string>
-               </property>
-              </widget>
+              <layout class="QHBoxLayout" name="hl_distance">
+               <item>
+                <widget class="QLabel" name="l_distance">
+                 <property name="text">
+                  <string>Use points within min and max:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="l_distance_info">
+                 <property name="font">
+                  <font>
+                   <pointsize>8</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>if not specified all points will be used</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
               <layout class="QFormLayout" name="fl_distance">
@@ -742,21 +751,21 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="0">
+             <item row="5" column="0">
               <widget class="QLabel" name="l_cl_p2p_distance">
                <property name="text">
                 <string>Max P2P Distance</string>
                </property>
               </widget>
              </item>
-             <item row="5" column="0">
+             <item row="6" column="0">
               <widget class="QLabel" name="l_cl_iterations">
                <property name="text">
                 <string>Max Iterations</string>
                </property>
               </widget>
              </item>
-             <item row="5" column="1">
+             <item row="6" column="1">
               <widget class="QSpinBox" name="sb_cl_iterations">
                <property name="maximum">
                 <number>1000000</number>
@@ -766,7 +775,7 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="1">
+             <item row="5" column="1">
               <widget class="QDoubleSpinBox" name="dsb_cl_p2p_distance">
                <property name="decimals">
                 <number>4</number>
@@ -776,6 +785,18 @@
                </property>
                <property name="value">
                 <double>700.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QLabel" name="l_cl_min_overlap_info">
+               <property name="font">
+                <font>
+                 <pointsize>8</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>if not specified max distance will be used</string>
                </property>
               </widget>
              </item>
@@ -910,9 +931,26 @@
          </spacer>
         </item>
         <item>
+         <widget class="QCheckBox" name="cb_update_scans">
+          <property name="text">
+           <string>Update Scans</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="pb_show">
           <property name="text">
            <string>show Results</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_cancel">
+          <property name="text">
+           <string>Cancel</string>
           </property>
          </widget>
         </item>

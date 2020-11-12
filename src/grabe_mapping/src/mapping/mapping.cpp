@@ -76,7 +76,12 @@ void Mapping::showResults() {
 }
 
 void Mapping::finish_mapping() {
-    emit this->finished_mapping(0);
+    if(this->cancelled) {
+        emit this->finished_mapping(1);
+        this->cancelled = false;
+    } else {
+        emit this->finished_mapping(0);
+    }
 }
 
 int Mapping::run_command(std::string command) {
@@ -84,6 +89,7 @@ int Mapping::run_command(std::string command) {
 }
 
 void Mapping::cancel_mapping() {
+    this->cancelled = true;
     this->next_process = &Mapping::finish_mapping;
     if(QString::compare(this->watcher.objectName(), "scan_to_file") == 0)
         this->run_command("rosnode kill /player");
@@ -111,6 +117,7 @@ void Mapping::init_states() {
     this->input_is_meter = false;
     this->input_is_lefthanded = false;
     this->script_path = ros::package::getPath("grabe_mapping") + "/scripts";
+    this->cancelled = false;
 }
 
 bool Mapping::check_states() {

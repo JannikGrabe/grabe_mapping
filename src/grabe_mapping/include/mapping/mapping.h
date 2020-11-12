@@ -33,6 +33,7 @@ private:
     std::string script_path;
     QFutureWatcher<void> watcher;
     void (Mapping::*next_process)();
+    bool cancelled;
 
     // Mapping
     void start_scan_to_file();

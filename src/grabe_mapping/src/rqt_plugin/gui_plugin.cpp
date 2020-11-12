@@ -41,7 +41,7 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   context.addWidget(widget_);
 
   // rosbag
-  QObject::connect(ui_.cb_use_output_files, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_use_output_files_state_changed);
+  QObject::connect(ui_.cb_update_scans, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_update_scans_state_changed);
   QObject::connect(ui_.pb_fileDialog, &QPushButton::pressed, this, &GuiPlugin::on_pb_fileDialog_pressed);
   QObject::connect(ui_.rb_lefthanded, &QRadioButton::toggled, this, &GuiPlugin::on_rb_lefthanded_toggled);
   QObject::connect(ui_.rb_meter, &QRadioButton::toggled, this, &GuiPlugin::on_rb_meter_toggled);
@@ -60,6 +60,7 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->mapping, &Mapping::finished_mapping, this, &GuiPlugin::on_work_finished);
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
   QObject::connect(ui_.pb_show, &QPushButton::pressed, this, &GuiPlugin::on_pb_show_pressed);
+  QObject::connect(this->ui_.pb_cancel, &QPushButton::pressed, this, &GuiPlugin::on_pb_cancel_pressed);
 
   // general
   QObject::connect(this->ui_.sb_first, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_first_value_changed);
@@ -102,22 +103,6 @@ void triggerConfiguration()
 
 // slots
   // rosbag
-void GuiPlugin::on_cb_use_output_files_state_changed(int state) {
-  if(state == 2) {
-    this->ui_.tb_settings->removeTab(2);
-    this->ui_.tb_settings->removeTab(1);
-    this->mapping->set_use_rosbag(false);
-  }
-  else if(state == 0) {
-    QWidget* tab_topics = this->ui_.tb_settings->findChild<QWidget*>("tab_topics");
-    this->ui_.tb_settings->insertTab(1, tab_topics, "Topics");
-
-    QWidget* tab_rosbag = this->ui_.tb_settings->findChild<QWidget*>("tab_rosbag");
-    this->ui_.tb_settings->insertTab(1, tab_rosbag, "Rosbag");
-    this->mapping->set_use_rosbag(true);
-  }
-}
-
 void GuiPlugin::on_pb_fileDialog_pressed() {
   
   QString rosbag_filename = QFileDialog::getOpenFileName(
@@ -369,33 +354,7 @@ void GuiPlugin::on_dsb_graph_p2p_distance_value_changed(double val) {
   this->mapping->set_parameter_value("--distSLAM", val);
 }
 
-// work
-void GuiPlugin::on_pb_start_pressed() {
-
-  this->ui_.pb_start->setEnabled(false);
-  this->ui_.pb_show->setEnabled(false);
-  this->ui_.pb_progress->setVisible(true);
-  this->ui_.pb_progress->setRange(0, 0);
-
-  this->mapping->start_mapping();
-}
-
-void GuiPlugin::on_work_finished(int exit_code) {
-  this->ui_.pb_start->setEnabled(true);
-  this->ui_.pb_progress->setVisible(false);
-  this->ui_.pb_show->setEnabled(true);
-
-  if(exit_code == 1) {
-    ROS_ERROR("Something went wrong");
-  }
-}
-
-void GuiPlugin::on_pb_show_pressed() {
-  this->mapping->showResults();
-  this->ui_.pb_show->setEnabled(false);
-}
-
-  // output
+// output
 void GuiPlugin::on_pb_output_pressed() {
   QString output_filepath = QFileDialog::getExistingDirectory(
     widget_,
@@ -411,11 +370,70 @@ void GuiPlugin::on_le_output_text_changed(QString text) {
   this->mapping->set_output_filepath(text);
 }
 
+
+// work
+void GuiPlugin::on_pb_start_pressed() {
+
+  this->ui_.pb_start->setEnabled(false);
+  this->ui_.pb_show->setVisible(false);
+  this->ui_.pb_cancel->setVisible(true);
+  this->ui_.pb_progress->setVisible(true);
+  this->ui_.pb_progress->setRange(0, 0);
+
+  this->mapping->start_mapping();
+}
+
+void GuiPlugin::on_work_finished(int exit_code) {
+  this->ui_.pb_start->setEnabled(true);
+  this->ui_.pb_progress->setVisible(false);
+  this->ui_.pb_cancel->setVisible(false);
+
+  if(exit_code == 1) {
+    ROS_ERROR("Something went wrong");
+  } else {
+    this->ui_.pb_show->setVisible(true);
+    this->ui_.cb_update_scans->setVisible(true);
+    this->ui_.cb_update_scans->setChecked(false);
+  }
+}
+
+void GuiPlugin::on_pb_show_pressed() {
+  this->mapping->showResults();
+  this->ui_.pb_show->setEnabled(false);
+}
+
+void GuiPlugin::on_pb_cancel_pressed() {
+  int ret = QMessageBox::warning(this->widget_, "Cancel", "Are you sure you want to caancel?", QMessageBox::Ok, QMessageBox::No);
+
+  if( ret == QMessageBox::Ok) {
+    this->mapping->cancel_mapping();
+  }
+}
+
+void GuiPlugin::on_cb_update_scans_state_changed(int state) {
+  if(state == 0) {
+    this->ui_.tb_settings->removeTab(2);
+    this->ui_.tb_settings->removeTab(1);
+    this->mapping->set_use_rosbag(false);
+  }
+  else if(state == 2) {
+    QWidget* tab_topics = this->ui_.tb_settings->findChild<QWidget*>("tab_topics");
+    this->ui_.tb_settings->insertTab(1, tab_topics, "Topics");
+
+    QWidget* tab_rosbag = this->ui_.tb_settings->findChild<QWidget*>("tab_rosbag");
+    this->ui_.tb_settings->insertTab(1, tab_rosbag, "Rosbag");
+    this->mapping->set_use_rosbag(true);
+  }
+}
+
+
 // init
 void GuiPlugin::initWidgets() {
   this->initComboBoxes();
   this->ui_.pb_progress->setVisible(false);
-  this->ui_.pb_show->setEnabled(false);
+  this->ui_.pb_show->setVisible(false);
+  this->ui_.pb_cancel->setVisible(false);
+  this->ui_.cb_update_scans->setVisible(false);
 }
 
 void GuiPlugin::initComboBoxes() {
@@ -450,6 +468,7 @@ void GuiPlugin::initComboBoxes() {
 // callbacks
 void GuiPlugin::scan_to_file_count_callback(const std_msgs::Int32::ConstPtr& count) {
   this->mapping->set_file_count(count->data);
+  this->ui_.le_total->setText(QString::number(count->data));
 }
 
 // work stuff
@@ -476,7 +495,6 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("gps_topic", this->mapping->get_gps_topic());
   // output
   instance_settings.setValue("output_filepath", this->mapping->get_output_filepath());
-  instance_settings.setValue("use_output_files", !this->mapping->get_use_rosbag());
   // general
   instance_settings.setValue("total", this->ui_.le_total->text());
   instance_settings.setValue("first_scan", this->ui_.sb_first->value());
@@ -503,6 +521,10 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("slam_iterations", this->ui_.sb_slam_iterations->value());
   instance_settings.setValue("slam_epsilon", this->ui_.dsb_graph_epsilon->value());
   instance_settings.setValue("slam_p2p_distance", this->ui_.dsb_graph_p2p_distance->value());
+  // work
+  instance_settings.setValue("show_button", this->ui_.pb_show->isVisible());
+  instance_settings.setValue("update_scans_visible", this->ui_.cb_update_scans->isVisible());
+  instance_settings.setValue("update_scans_state", this->ui_.cb_update_scans->isChecked());
 }
 
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
@@ -518,7 +540,6 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   this->ui_.le_gps->setText(instance_settings.value("gps_topic").toString());
   // output
   this->ui_.le_output->setText(instance_settings.value("output_filepath").toString());
-  this->ui_.cb_use_output_files->setChecked(instance_settings.value("use_output_files").toBool());
   // general
   this->ui_.le_total->setText(instance_settings.value("total").toString());
   this->ui_.sb_first->setValue(instance_settings.value("first_scan").toInt());
@@ -545,6 +566,10 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   this->ui_.sb_slam_iterations->setValue(instance_settings.value("slam_iterations").toInt());
   this->ui_.dsb_graph_epsilon->setValue(instance_settings.value("slam_epsilon").toDouble());
   this->ui_.dsb_graph_p2p_distance->setValue(instance_settings.value("slam_p2p_distance").toDouble());
+  // work
+  this->ui_.pb_show->setVisible(instance_settings.value("show_button").toBool());
+  this->ui_.cb_update_scans->setVisible(instance_settings.value("update_scans_visible").toBool());
+  this->ui_.cb_update_scans->setChecked(instance_settings.value("update_scans_state").toBool());
 }
 
 } 

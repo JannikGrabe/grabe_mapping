@@ -33,7 +33,6 @@ public:
 
 public slots:
   // rosbag
-  void on_cb_use_output_files_state_changed(int state);
   void on_pb_fileDialog_pressed();
   void on_rb_lefthanded_toggled();
   void on_rb_meter_toggled();
@@ -43,6 +42,8 @@ public slots:
   void on_pb_start_pressed();
   void on_work_finished(int exit_code);
   void on_pb_show_pressed();
+  void on_pb_cancel_pressed();
+  void on_cb_update_scans_state_changed(int state);
 
   // topics
   void on_le_scan_text_changed(QString text);
@@ -81,7 +82,7 @@ public slots:
   void on_sb_slam_iterations_value_changed(int val); 
   void on_dsb_graph_epsilon_value_changed(double val);
   void on_dsb_graph_p2p_distance_value_changed(double val);
-  
+
   // output
   void on_pb_output_pressed();
   void on_le_output_text_changed(QString text);
