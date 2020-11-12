@@ -459,14 +459,27 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
     const qt_gui_cpp::Settings& instance_settings)
 {
+  // rosbag
   this->ui_.le_filePath->setText(instance_settings.value("rosbag_filename").toString());
   this->ui_.rb_meter->setChecked(instance_settings.value("input_is_meter").toBool());
   this->ui_.rb_lefthanded->setChecked(instance_settings.value("input_is_lefthanded").toBool());
+  // topics
   this->ui_.le_scan->setText(instance_settings.value("scan_topic").toString());
   this->ui_.le_odom->setText(instance_settings.value("odom_topic").toString());
   this->ui_.le_gps->setText(instance_settings.value("gps_topic").toString());
+  // output
   this->ui_.le_output->setText(instance_settings.value("output_filepath").toString());
   this->ui_.cb_use_output_files->setChecked(instance_settings.value("use_output_files").toBool());
+  // general
+  this->ui_.le_total->setText(instance_settings.value("total").toString());
+  this->ui_.sb_first->setValue(instance_settings.value("first_scan").toInt());
+  this->ui_.sb_last->setValue(instance_settings.value("last_scan").toInt());
+  this->ui_.dsb_min->setValue(instance_settings.value("min_distance").toDouble());
+  this->ui_.dsb_max->setValue(instance_settings.value("max_distance").toDouble());
+  this->ui_.cb_correspondances->setCurrentIndex(instance_settings.value("correspondances").toInt());
+  this->ui_.cb_metascan->setChecked(instance_settings.value("metascan").toBool());
+  this->ui_.cb_export->setChecked(instance_settings.value("export").toBool());
+  // parameters
   this->ui_.cb_icp_minimization->setCurrentIndex(instance_settings.value("icp_minimization").toInt());
   this->ui_.cb_nn->setCurrentIndex(instance_settings.value("nearest_neighbor").toInt());
   this->ui_.cb_closing_loop->setCurrentIndex(instance_settings.value("closing_loop").toInt());
