@@ -381,15 +381,112 @@ void GuiPlugin::on_le_output_text_changed(QString text) {
 
 // config
 void GuiPlugin::on_pb_save_config_pressed() {
-  QString filename = QFileDialog::getSaveFileName(this->widget_, "save config", "",
+  QString filename = QFileDialog::getSaveFileName(this->widget_, "save config", "config.ini",
         tr("Config file (*.ini)"));
 
 
   QSettings settings(filename, QSettings::IniFormat, this->widget_);
+
+  // rosbag
+  settings.setValue("rosbag_filename", this->mapping->get_rosbag_filename());
+  settings.setValue("input_is_meter", this->mapping->get_input_is_meter());
+  settings.setValue("input_is_lefthanded", this->mapping->get_input_is_lefthanded());
+  // topics
+  settings.setValue("scan_topic", this->mapping->get_scan_topic());
+  settings.setValue("odom_topic", this->mapping->get_odom_topic());
+  settings.setValue("gps_topic", this->mapping->get_gps_topic());
+  // output
+  settings.setValue("output_filepath", this->mapping->get_output_filepath());
+  // general
+  settings.setValue("total", this->ui_.le_total->text());
+  settings.setValue("first_scan", this->ui_.sb_first->value());
+  settings.setValue("first_scan_max", this->ui_.sb_first->maximum());
+  settings.setValue("last_scan_max", this->ui_.sb_last->maximum());
+  settings.setValue("last_scan", this->ui_.sb_last->value());
+  settings.setValue("min_distance", this->ui_.dsb_min->value());
+  settings.setValue("max_distance", this->ui_.dsb_max->value());
+  settings.setValue("correspondances", this->ui_.cb_correspondances->currentIndex());
+  settings.setValue("metascan", this->ui_.cb_metascan->isChecked());
+  settings.setValue("export", this->ui_.cb_export->isChecked());
+  // ICP
+  settings.setValue("icp_minimization", this->ui_.cb_icp_minimization->currentIndex());
+  settings.setValue("nearest_neighbor", this->ui_.cb_nn->currentIndex());
+  settings.setValue("icp_iterations", this->ui_.sb_icp_iterations->value());
+  settings.setValue("icp_epsilon", this->ui_.dsb_icp_epsilon->value());
+  settings.setValue("nn_max_p2p_distance", this->ui_.dsb_nn_p2p_distance->value());
+  // GraphSLAM
+  settings.setValue("closing_loop", this->ui_.cb_closing_loop->currentIndex());
+  settings.setValue("graphslam", this->ui_.cb_graphslam->currentIndex());
+  settings.setValue("loop_size", this->ui_.sb_loop_size->value());
+  settings.setValue("cl_max_distance", this->ui_.sb_cl_max_distance->value());
+  settings.setValue("cl_min_overlap", this->ui_.sb_cl_min_overlap->value());
+  settings.setValue("cl_p2p_distance", this->ui_.dsb_cl_p2p_distance->value());
+  settings.setValue("cl_iterations", this->ui_.sb_cl_iterations->value());
+  settings.setValue("slam_iterations", this->ui_.sb_slam_iterations->value());
+  settings.setValue("slam_epsilon", this->ui_.dsb_graph_epsilon->value());
+  settings.setValue("slam_p2p_distance", this->ui_.dsb_graph_p2p_distance->value());
+  // work
+  settings.setValue("show_button", this->ui_.pb_show->isVisible());
+  settings.setValue("update_scans_visible", this->ui_.cb_update_scans->isVisible());
+  settings.setValue("update_scans_state", this->ui_.cb_update_scans->isChecked());
+  settings.setValue("active_tab", this->ui_.tb_settings->currentIndex());
 }
 
 void GuiPlugin::on_pb_load_config_pressed() {
+  QString filename = QFileDialog::getOpenFileName(
+    widget_,
+    tr("Select Config File"),
+    "",
+    tr("*.ini")
+  );
 
+  QSettings instance_settings(filename, QSettings::IniFormat, this->widget_);
+  
+  // rosbag
+  this->ui_.le_filePath->setText(instance_settings.value("rosbag_filename").toString());
+  this->ui_.rb_meter->setChecked(instance_settings.value("input_is_meter").toBool());
+  this->ui_.rb_lefthanded->setChecked(instance_settings.value("input_is_lefthanded").toBool());
+  // topics
+  this->ui_.le_scan->setText(instance_settings.value("scan_topic").toString());
+  this->ui_.le_odom->setText(instance_settings.value("odom_topic").toString());
+  this->ui_.le_gps->setText(instance_settings.value("gps_topic").toString());
+  // output
+  this->ui_.le_output->setText(instance_settings.value("output_filepath").toString());
+  // general
+  this->ui_.le_total->setText(instance_settings.value("total").toString());
+  this->ui_.sb_first->setValue(instance_settings.value("first_scan").toInt());
+  this->ui_.sb_first->setMaximum(instance_settings.value("first_scan_max").toInt());
+  this->ui_.sb_last->setValue(instance_settings.value("last_scan").toInt());
+  this->ui_.sb_last->setMaximum(instance_settings.value("last_scan_max").toInt());
+  this->ui_.dsb_min->setValue(instance_settings.value("min_distance").toDouble());
+  this->ui_.dsb_max->setValue(instance_settings.value("max_distance").toDouble());
+  this->ui_.cb_correspondances->setCurrentIndex(instance_settings.value("correspondances").toInt());
+  this->ui_.cb_metascan->setChecked(instance_settings.value("metascan").toBool());
+  this->ui_.cb_export->setChecked(instance_settings.value("export").toBool());
+  // ICP
+  this->ui_.cb_icp_minimization->setCurrentIndex(instance_settings.value("icp_minimization").toInt());
+  this->ui_.cb_nn->setCurrentIndex(instance_settings.value("nearest_neighbor").toInt());
+  this->ui_.sb_icp_iterations->setValue(instance_settings.value("icp_iterations").toInt());
+  this->ui_.dsb_icp_epsilon->setValue(instance_settings.value("icp_epsilon").toDouble());
+  this->ui_.dsb_nn_p2p_distance->setValue(instance_settings.value("nn_max_p2p_distance").toDouble());
+  // GraphSLAM
+  this->ui_.cb_closing_loop->setCurrentIndex(instance_settings.value("closing_loop").toInt());
+  this->ui_.cb_graphslam->setCurrentIndex(instance_settings.value("graphslam").toInt());
+  this->ui_.sb_loop_size->setValue(instance_settings.value("loop_size").toInt());
+  this->ui_.sb_cl_max_distance->setValue(instance_settings.value("cl_max_distance").toInt());
+  this->ui_.sb_cl_min_overlap->setValue(instance_settings.value("cl_min_overlap").toInt());
+  this->ui_.dsb_cl_p2p_distance->setValue(instance_settings.value("cl_p2p_distance").toDouble());
+  this->ui_.sb_cl_iterations->setValue(instance_settings.value("cl_iterations").toInt());
+  this->ui_.sb_slam_iterations->setValue(instance_settings.value("slam_iterations").toInt());
+  this->ui_.dsb_graph_epsilon->setValue(instance_settings.value("slam_epsilon").toDouble());
+  this->ui_.dsb_graph_p2p_distance->setValue(instance_settings.value("slam_p2p_distance").toDouble());
+  // work
+  this->ui_.pb_show->setVisible(instance_settings.value("show_button").toBool());
+  this->ui_.cb_update_scans->setVisible(instance_settings.value("update_scans_visible").toBool());
+  this->ui_.cb_update_scans->setChecked(instance_settings.value("update_scans_state").toBool());
+  this->ui_.tb_settings->setCurrentIndex(instance_settings.value("active_tab").toInt());
+
+  this->ui_.tb_settings->setCurrentIndex(0);
 }
 
 // work
