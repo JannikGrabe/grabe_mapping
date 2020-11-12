@@ -70,16 +70,25 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->ui_.cb_metascan, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_metascan_state_changed);
   QObject::connect(this->ui_.cb_export, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_export_state_changed);
 
+  // ICP
   QObject::connect(this->ui_.cb_icp_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_icp_minimization_current_text_changed);
   QObject::connect(this->ui_.cb_nn, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_nn_current_text_changed);
-  QObject::connect(this->ui_.cb_closing_loop, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_closing_loop_current_text_changed);
-  QObject::connect(this->ui_.cb_graphslam, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_graphslam_current_text_changed);
-
-    // icp parameters
   QObject::connect(this->ui_.sb_icp_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_icp_iterations_value_changed);
   QObject::connect(this->ui_.dsb_icp_epsilon, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_icp_epsilon_value_changed);
   QObject::connect(this->ui_.dsb_nn_p2p_distance, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_nn_p2p_distance_value_changed);
-}
+
+  // graphSLAM  
+  QObject::connect(this->ui_.cb_closing_loop, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_closing_loop_current_text_changed);
+  QObject::connect(this->ui_.cb_graphslam, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_graphslam_current_text_changed);
+  QObject::connect(this->ui_.sb_loop_size, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_loop_size_value_changed);
+  QObject::connect(this->ui_.sb_cl_max_distance, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_cl_max_distance_value_changed);
+  QObject::connect(this->ui_.sb_cl_min_overlap, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_cl_min_overlap_value_changed); 
+  QObject::connect(this->ui_.dsb_cl_p2p_distance, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_cl_p2p_distance_value_changed);
+  QObject::connect(this->ui_.sb_cl_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_cl_iterations_value_changed); 
+  QObject::connect(this->ui_.sb_slam_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_slam_iterations_value_changed); 
+  QObject::connect(this->ui_.dsb_graph_epsilon, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_graph_epsilon_value_changed);
+  QObject::connect(this->ui_.dsb_graph_p2p_distance, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_graph_p2p_distance_value_changed);
+  }
 
 /*bool hasConfiguration() const
 {
@@ -220,11 +229,11 @@ void GuiPlugin::on_dsb_max_value_changed(double val) {
   double min = this->ui_.dsb_min->value();
 
   if(val < 0.0) { // set inactive
-    this->mapping->set_parameter_active("-e", false);
+    this->mapping->set_parameter_active("--max", false);
     previous = val;
   } else {
-    this->mapping->set_parameter_active("-e", true);
-    this->mapping->set_parameter_value("-e", val);
+    this->mapping->set_parameter_active("--max", true);
+    this->mapping->set_parameter_value("--max", val);
 
     if(min >= 0.0 && val <= min) { // last is smaller than first
       if(previous < 0.0) {            // was inactive -> set to one higher than first
@@ -275,7 +284,7 @@ void GuiPlugin::on_pb_export_pressed() {
 
 }
 
-  // Algorithms
+// ICP
 void GuiPlugin::on_cb_icp_minimization_current_text_changed(QString text) {
 
   int index = this->ui_.cb_icp_minimization->findText(text);
@@ -290,30 +299,11 @@ void GuiPlugin::on_cb_nn_current_text_changed(QString text) {
   int index = this->ui_.cb_nn->findText(text);
   int param_value = this->ui_.cb_nn->itemData(index).toInt();
 
-  if(!this->mapping->set_parameter_value("-a", param_value)) {
+  if(!this->mapping->set_parameter_value("-t", param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
   }
 }
 
-void GuiPlugin::on_cb_closing_loop_current_text_changed(QString text) {
-  int index = this->ui_.cb_closing_loop->findText(text);
-  int param_value = this->ui_.cb_closing_loop->itemData(index).toInt();
-
-  if(!this->mapping->set_parameter_value("-a", param_value)) {
-    QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
-  }
-}
-
-void GuiPlugin::on_cb_graphslam_current_text_changed(QString text) {
-  int index = this->ui_.cb_graphslam->findText(text);
-  int param_value = this->ui_.cb_graphslam->itemData(index).toInt();
-
-  if(!this->mapping->set_parameter_value("-a", param_value)) {
-    QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
-  } 
-}
-
-    // icp parameters
 void GuiPlugin::on_sb_icp_iterations_value_changed(int val) {
 
   this->mapping->set_parameter_value("-i", val);
@@ -324,12 +314,62 @@ void GuiPlugin::on_dsb_icp_epsilon_value_changed(double val) {
 
 }
 
-    // nearest neighbor parameters
 void GuiPlugin::on_dsb_nn_p2p_distance_value_changed(double val) {
     this->mapping->set_parameter_value("--dist", val);
 }
 
-  // work
+// GraphSLAM
+void GuiPlugin::on_cb_closing_loop_current_text_changed(QString text) {
+  int index = this->ui_.cb_closing_loop->findText(text);
+  int param_value = this->ui_.cb_closing_loop->itemData(index).toInt();
+
+  if(!this->mapping->set_parameter_value("-L", param_value)) {
+    QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
+  }
+}
+
+void GuiPlugin::on_cb_graphslam_current_text_changed(QString text) {
+  int index = this->ui_.cb_graphslam->findText(text);
+  int param_value = this->ui_.cb_graphslam->itemData(index).toInt();
+
+  if(!this->mapping->set_parameter_value("-G", param_value)) {
+    QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
+  } 
+}
+
+void GuiPlugin::on_sb_loop_size_value_changed(int val) {
+  this->mapping->set_parameter_value("--loopsize", val);
+}
+
+void GuiPlugin::on_sb_cl_max_distance_value_changed(int val) {
+  this->mapping->set_parameter_value("--cldist", val);
+}
+
+void GuiPlugin::on_sb_cl_min_overlap_value_changed(int val) {
+  this->mapping->set_parameter_value("--clpairs", val);
+}
+
+void GuiPlugin::on_dsb_cl_p2p_distance_value_changed(double val) {
+  this->mapping->set_parameter_value("--distLoop", val);
+}
+
+void GuiPlugin::on_sb_cl_iterations_value_changed(int val) {
+  this->mapping->set_parameter_value("--iterLoop", val);
+}
+
+void GuiPlugin::on_sb_slam_iterations_value_changed(int val) {
+  this->mapping->set_parameter_value("-I", val);
+}
+
+void GuiPlugin::on_dsb_graph_epsilon_value_changed(double val) {
+  this->mapping->set_parameter_value("--epsSLAM", val);
+}
+
+void GuiPlugin::on_dsb_graph_p2p_distance_value_changed(double val) {
+  this->mapping->set_parameter_value("--distSLAM", val);
+}
+
+// work
 void GuiPlugin::on_pb_start_pressed() {
 
   this->ui_.pb_start->setEnabled(false);
@@ -446,14 +486,23 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("correspondances", this->ui_.cb_correspondances->currentIndex());
   instance_settings.setValue("metascan", this->ui_.cb_metascan->isChecked());
   instance_settings.setValue("export", this->ui_.cb_export->isChecked());
-  // parameters
+  // ICP
   instance_settings.setValue("icp_minimization", this->ui_.cb_icp_minimization->currentIndex());
   instance_settings.setValue("nearest_neighbor", this->ui_.cb_nn->currentIndex());
-  instance_settings.setValue("closing_loop", this->ui_.cb_closing_loop->currentIndex());
-  instance_settings.setValue("graphslam", this->ui_.cb_graphslam->currentIndex());
   instance_settings.setValue("icp_iterations", this->ui_.sb_icp_iterations->value());
   instance_settings.setValue("icp_epsilon", this->ui_.dsb_icp_epsilon->value());
   instance_settings.setValue("nn_max_p2p_distance", this->ui_.dsb_nn_p2p_distance->value());
+  // GraphSLAM
+  instance_settings.setValue("closing_loop", this->ui_.cb_closing_loop->currentIndex());
+  instance_settings.setValue("graphslam", this->ui_.cb_graphslam->currentIndex());
+  instance_settings.setValue("loop_size", this->ui_.sb_loop_size->value());
+  instance_settings.setValue("cl_max_distance", this->ui_.sb_cl_max_distance->value());
+  instance_settings.setValue("cl_min_overlap", this->ui_.sb_cl_min_overlap->value());
+  instance_settings.setValue("cl_p2p_distance", this->ui_.dsb_cl_p2p_distance->value());
+  instance_settings.setValue("cl_iterations", this->ui_.sb_cl_iterations->value());
+  instance_settings.setValue("slam_iterations", this->ui_.sb_slam_iterations->value());
+  instance_settings.setValue("slam_epsilon", this->ui_.dsb_graph_epsilon->value());
+  instance_settings.setValue("slam_p2p_distance", this->ui_.dsb_graph_p2p_distance->value());
 }
 
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
@@ -479,15 +528,23 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   this->ui_.cb_correspondances->setCurrentIndex(instance_settings.value("correspondances").toInt());
   this->ui_.cb_metascan->setChecked(instance_settings.value("metascan").toBool());
   this->ui_.cb_export->setChecked(instance_settings.value("export").toBool());
-  // parameters
+  // ICP
   this->ui_.cb_icp_minimization->setCurrentIndex(instance_settings.value("icp_minimization").toInt());
   this->ui_.cb_nn->setCurrentIndex(instance_settings.value("nearest_neighbor").toInt());
-  this->ui_.cb_closing_loop->setCurrentIndex(instance_settings.value("closing_loop").toInt());
-  this->ui_.cb_graphslam->setCurrentIndex(instance_settings.value("graphslam").toInt());
   this->ui_.sb_icp_iterations->setValue(instance_settings.value("icp_iterations").toInt());
   this->ui_.dsb_icp_epsilon->setValue(instance_settings.value("icp_epsilon").toDouble());
   this->ui_.dsb_nn_p2p_distance->setValue(instance_settings.value("nn_max_p2p_distance").toDouble());
-  this->ui_.cb_metascan->setChecked(instance_settings.value("match_metascan").toBool());
+  // GraphSLAM
+  this->ui_.cb_closing_loop->setCurrentIndex(instance_settings.value("closing_loop").toInt());
+  this->ui_.cb_graphslam->setCurrentIndex(instance_settings.value("graphslam").toInt());
+  this->ui_.sb_loop_size->setValue(instance_settings.value("loop_size").toInt());
+  this->ui_.sb_cl_max_distance->setValue(instance_settings.value("cl_max_distance").toInt());
+  this->ui_.sb_cl_min_overlap->setValue(instance_settings.value("cl_min_overlap").toInt());
+  this->ui_.dsb_cl_p2p_distance->setValue(instance_settings.value("cl_p2p_distance").toDouble());
+  this->ui_.sb_cl_iterations->setValue(instance_settings.value("cl_iterations").toInt());
+  this->ui_.sb_slam_iterations->setValue(instance_settings.value("slam_iterations").toInt());
+  this->ui_.dsb_graph_epsilon->setValue(instance_settings.value("slam_epsilon").toDouble());
+  this->ui_.dsb_graph_p2p_distance->setValue(instance_settings.value("slam_p2p_distance").toDouble());
 }
 
 } 

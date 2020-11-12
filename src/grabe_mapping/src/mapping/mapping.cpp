@@ -141,27 +141,27 @@ void Mapping::initAlgorithms() {
     this->parameters = new grabe_mapping::Parameter_map();
 
     // ICP 
-    parameters->add_parameter("--a", 1);
+    parameters->add_parameter("-a", 1);
     parameters->add_parameter("-i", 50);
     parameters->add_parameter("--epsICP", 0.000001);
     
     // nearest neighbor
     parameters->add_parameter("-t", 0);
-    parameters->add_parameter("--dist", 25);
+    parameters->add_parameter("--dist", 25.0);
 
     // closing loop
     parameters->add_parameter("-L", 0);
     parameters->add_parameter("--loopsize", 20);
     parameters->add_parameter("--cldist", 500);
     parameters->add_parameter("--clpairs", -1, false);
-    parameters->add_parameter("--distLoop", 700);
+    parameters->add_parameter("--distLoop", 700.0);
     parameters->add_parameter("--iterLoop", 100);
 
     // graphslam minimization
     parameters->add_parameter("-G", 0);
     parameters->add_parameter("-I", 50);
     parameters->add_parameter("--epsSLAM", 0.5);
-    parameters->add_parameter("--distSLAM", 25);
+    parameters->add_parameter("--distSLAM", 25.0);
 
     // general
     parameters->add_parameter("-s", -1, false);

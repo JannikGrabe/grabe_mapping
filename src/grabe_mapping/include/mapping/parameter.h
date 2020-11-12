@@ -38,12 +38,10 @@ public:
 
     void set_value(T value) {
         this->value = value;
-        std::cout << this->value << std::endl;
     }
 
     void set_active(bool state) {
         this->active = state;
-        std::cout << this->active << std::endl;
     }
 
     void toggle_active() {
