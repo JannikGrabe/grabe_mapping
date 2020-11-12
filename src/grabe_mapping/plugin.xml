@@ -1,4 +1,4 @@
-<library path="lib/libgrabe_mapping_plugin"> <!--Name of library in name file-->
+<library path="lib/libgrabe_mapping_plugin"> <!--Name of library in make file-->
   <class name="GrabeMapping" type="grabe_mapping::GuiPlugin" base_class_type="rqt_gui_cpp::Plugin">
     <description>
       GUI Plugin for Mapping Tool

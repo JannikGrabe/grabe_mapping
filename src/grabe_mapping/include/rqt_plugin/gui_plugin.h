@@ -88,6 +88,10 @@ public slots:
   void on_pb_output_pressed();
   void on_le_output_text_changed(QString text);
 
+  // config
+  void on_pb_save_config_pressed();
+  void on_pb_load_config_pressed();
+
   // callbacks
   void scan_to_file_count_callback(const std_msgs::Int32::ConstPtr& count);
 

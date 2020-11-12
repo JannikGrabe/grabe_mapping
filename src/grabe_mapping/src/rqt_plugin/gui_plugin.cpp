@@ -7,6 +7,7 @@
 #include <QLineEdit>
 #include <QProgressBar>
 #include <QMessageBox>
+#include <QSettings>
 
 namespace grabe_mapping
 {
@@ -19,9 +20,6 @@ GuiPlugin::GuiPlugin()
 
   // give QObjects reasonable names
   setObjectName("GuiPlugin");
-
-  this->count_sub = this->n.subscribe("mapping/scan_to_file_count", 10, &GuiPlugin::scan_to_file_count_callback, this);
-
 }
 
 void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
@@ -33,6 +31,12 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   // extend the widget with all attributes and children from UI file
   ui_.setupUi(widget_);
   // add widget to the user interface
+
+  QCoreApplication::setOrganizationName("GrabeMapping");
+  QCoreApplication::setOrganizationDomain("grabe-mapping.grb");
+  QCoreApplication::setApplicationName("Grabe Mapping");
+
+  this->count_sub = this->n.subscribe("mapping/scan_to_file_count", 10, &GuiPlugin::scan_to_file_count_callback, this);
 
   this->mapping = new Mapping();
 
@@ -90,7 +94,11 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->ui_.sb_slam_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_slam_iterations_value_changed); 
   QObject::connect(this->ui_.dsb_graph_epsilon, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_graph_epsilon_value_changed);
   QObject::connect(this->ui_.dsb_graph_p2p_distance, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_graph_p2p_distance_value_changed);
-  }
+  
+  // config
+  QObject::connect(this->ui_.pb_save_config, &QPushButton::pressed, this, &GuiPlugin::on_pb_save_config_pressed);
+  QObject::connect(this->ui_.pb_load_config, &QPushButton::pressed, this, &GuiPlugin::on_pb_load_config_pressed);
+}
 
 /*bool hasConfiguration() const
 {
@@ -371,6 +379,18 @@ void GuiPlugin::on_le_output_text_changed(QString text) {
   this->mapping->set_output_filepath(text);
 }
 
+// config
+void GuiPlugin::on_pb_save_config_pressed() {
+  QString filename = QFileDialog::getSaveFileName(this->widget_, "save config", "",
+        tr("Config file (*.ini)"));
+
+
+  QSettings settings(filename, QSettings::IniFormat, this->widget_);
+}
+
+void GuiPlugin::on_pb_load_config_pressed() {
+
+}
 
 // work
 void GuiPlugin::on_pb_start_pressed() {
@@ -421,6 +441,9 @@ void GuiPlugin::on_cb_update_scans_state_changed(int state) {
     this->ui_.tb_settings->removeTab(2);
     this->ui_.tb_settings->removeTab(1);
     this->mapping->set_use_rosbag(false);
+
+    this->ui_.sb_last->setMaximum(this->ui_.le_total->text().toInt() - 1);
+    this->ui_.sb_first->setMaximum(this->ui_.le_total->text().toInt() - 2);
   }
   else if(state == 2) {
     QWidget* tab_topics = this->ui_.tb_settings->findChild<QWidget*>("tab_topics");
@@ -429,6 +452,9 @@ void GuiPlugin::on_cb_update_scans_state_changed(int state) {
     QWidget* tab_rosbag = this->ui_.tb_settings->findChild<QWidget*>("tab_rosbag");
     this->ui_.tb_settings->insertTab(1, tab_rosbag, "Rosbag");
     this->mapping->set_use_rosbag(true);
+
+    this->ui_.sb_first->setMaximum(1000000);
+    this->ui_.sb_last->setMaximum(1000000);
   }
 }
 
@@ -439,6 +465,8 @@ void GuiPlugin::initWidgets() {
   this->ui_.pb_show->setVisible(false);
   this->ui_.pb_cancel->setVisible(false);
   this->ui_.cb_update_scans->setVisible(false);
+
+  
 }
 
 void GuiPlugin::initComboBoxes() {
@@ -481,8 +509,9 @@ int GuiPlugin::runCommand(std::string command) {
   return system(command.c_str());
 }
 
-void GuiPlugin::shutdownPlugin()
+void GuiPlugin::shutdownPlugin() 
 {
+  this->n.shutdown();
   // unregister all publishers here
   this->mapping->cancel_mapping();
 }
@@ -503,6 +532,8 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   // general
   instance_settings.setValue("total", this->ui_.le_total->text());
   instance_settings.setValue("first_scan", this->ui_.sb_first->value());
+  instance_settings.setValue("first_scan_max", this->ui_.sb_first->maximum());
+  instance_settings.setValue("last_scan_max", this->ui_.sb_last->maximum());
   instance_settings.setValue("last_scan", this->ui_.sb_last->value());
   instance_settings.setValue("min_distance", this->ui_.dsb_min->value());
   instance_settings.setValue("max_distance", this->ui_.dsb_max->value());
@@ -549,7 +580,9 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   // general
   this->ui_.le_total->setText(instance_settings.value("total").toString());
   this->ui_.sb_first->setValue(instance_settings.value("first_scan").toInt());
+  this->ui_.sb_first->setMaximum(instance_settings.value("first_scan_max").toInt());
   this->ui_.sb_last->setValue(instance_settings.value("last_scan").toInt());
+  this->ui_.sb_last->setMaximum(instance_settings.value("last_scan_max").toInt());
   this->ui_.dsb_min->setValue(instance_settings.value("min_distance").toDouble());
   this->ui_.dsb_max->setValue(instance_settings.value("max_distance").toDouble());
   this->ui_.cb_correspondances->setCurrentIndex(instance_settings.value("correspondances").toInt());
