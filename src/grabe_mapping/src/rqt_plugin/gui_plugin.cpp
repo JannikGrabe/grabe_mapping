@@ -419,6 +419,7 @@ void GuiPlugin::on_pb_save_config_pressed() {
   settings.setValue("correspondances", this->ui_.cb_correspondances->currentIndex());
   settings.setValue("metascan", this->ui_.cb_metascan->isChecked());
   settings.setValue("export", this->ui_.cb_export->isChecked());
+  settings.setValue("export_path", this->ui_.le_export->text());
   // ICP
   settings.setValue("icp_minimization", this->ui_.cb_icp_minimization->currentIndex());
   settings.setValue("nearest_neighbor", this->ui_.cb_nn->currentIndex());
@@ -469,6 +470,7 @@ void GuiPlugin::on_pb_load_config_pressed() {
   this->ui_.cb_correspondances->setCurrentIndex(instance_settings.value("correspondances").toInt());
   this->ui_.cb_metascan->setChecked(instance_settings.value("metascan").toBool());
   this->ui_.cb_export->setChecked(instance_settings.value("export").toBool());
+  this->ui_.le_export->setText(instance_settings.value("export_path").toString());
   // ICP
   this->ui_.cb_icp_minimization->setCurrentIndex(instance_settings.value("icp_minimization").toInt());
   this->ui_.cb_nn->setCurrentIndex(instance_settings.value("nearest_neighbor").toInt());
@@ -628,6 +630,7 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("correspondances", this->ui_.cb_correspondances->currentIndex());
   instance_settings.setValue("metascan", this->ui_.cb_metascan->isChecked());
   instance_settings.setValue("export", this->ui_.cb_export->isChecked());
+  instance_settings.setValue("export_path", this->ui_.le_export->text());
   // ICP
   instance_settings.setValue("icp_minimization", this->ui_.cb_icp_minimization->currentIndex());
   instance_settings.setValue("nearest_neighbor", this->ui_.cb_nn->currentIndex());
@@ -674,6 +677,7 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   this->ui_.cb_correspondances->setCurrentIndex(instance_settings.value("correspondances").toInt());
   this->ui_.cb_metascan->setChecked(instance_settings.value("metascan").toBool());
   this->ui_.cb_export->setChecked(instance_settings.value("export").toBool());
+  this->ui_.le_export->setText(instance_settings.value("export_path").toString());
   // ICP
   this->ui_.cb_icp_minimization->setCurrentIndex(instance_settings.value("icp_minimization").toInt());
   this->ui_.cb_nn->setCurrentIndex(instance_settings.value("nearest_neighbor").toInt());
