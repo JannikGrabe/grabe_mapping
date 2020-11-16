@@ -31,6 +31,7 @@ private:
 
     // work 
     std::string script_path;
+    QString export_path;
     QFutureWatcher<void> watcher;
     void (Mapping::*next_process)();
     bool cancelled;
@@ -105,6 +106,7 @@ public:
     bool set_parameter_value(std::string name, std::string value);
     bool set_parameter_active(std::string name, bool state);
     bool toggle_parameter_active(std::string name);
+    void set_export_path(QString text);
 
         // output
     void set_output_filepath(QString filename);

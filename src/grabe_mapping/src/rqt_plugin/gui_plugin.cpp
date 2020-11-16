@@ -75,6 +75,8 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->ui_.cb_correspondances, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_correspondances_current_text_changed);
   QObject::connect(this->ui_.cb_metascan, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_metascan_state_changed);
   QObject::connect(this->ui_.cb_export, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_export_state_changed);
+  QObject::connect(this->ui_.le_export, &QLineEdit::textChanged, this, &GuiPlugin::on_le_export_text_changed);
+  QObject::connect(this->ui_.pb_export, &QPushButton::pressed, this, &GuiPlugin::on_pb_export_pressed);
 
   // ICP
   QObject::connect(this->ui_.cb_icp_minimization, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_icp_minimization_current_text_changed);
@@ -275,7 +277,17 @@ void GuiPlugin::on_cb_export_state_changed(int state) {
 }
 
 void GuiPlugin::on_pb_export_pressed() {
+  QString filename = QFileDialog::getSaveFileName(
+        this->widget_,
+        "export file", 
+        this->mapping->get_output_filepath() +  "/points.pts",
+        tr("export file (*.pts)"));
 
+  this->ui_.le_export->setText(filename);
+}
+
+void GuiPlugin::on_le_export_text_changed(QString text) {
+  this->mapping->set_export_path(text);
 }
 
 // ICP

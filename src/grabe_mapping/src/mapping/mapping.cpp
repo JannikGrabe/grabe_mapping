@@ -87,6 +87,16 @@ void Mapping::finish_mapping() {
         this->cancelled = false;
     } else {
         emit this->finished_mapping(0);
+
+        bool export_points = false;
+        this->parameters->get_is_active("--exportAllPoints", export_points);
+
+        if(export_points) {
+            std::string move_export = "mv " + QDir::current().absolutePath().toStdString() + "/points.pts "
+                                    + this->export_path.toStdString();
+            
+            this->run_command(move_export);
+        }
     }
 }
 
@@ -129,6 +139,9 @@ void Mapping::init_states() {
 
 bool Mapping::check_states() {
 
+    bool export_points = false;
+    this->parameters->get_is_active("--exportAllPoints", export_points);
+
     if(this->use_rosbag && this->rosbag_filename.isEmpty()) {
         ROS_ERROR("no rosbag filename set");
         return false;
@@ -138,10 +151,10 @@ bool Mapping::check_states() {
     } else if(this->use_rosbag && this->odom_topic.isEmpty()) {
         ROS_ERROR("no odom topic set");
         return false;
-    } /*else if(this->gps_topic.isEmpty()) {
-        ROS_ERROR("no gps topic set");
+    } else if(export_points && this->export_path.isEmpty()) {
+        ROS_ERROR("no export path set");
         return false;
-    }*/ else if(this->output_filepath.isEmpty()) {
+    } else if(this->output_filepath.isEmpty()) {
         ROS_ERROR("no output filepath set");
         return false;
     }
@@ -299,6 +312,10 @@ bool Mapping::set_parameter_active(std::string name, bool state) {
 
 bool Mapping::toggle_parameter_active(std::string name) {
     return this->parameters->toggle_active(name);
+}
+
+void Mapping::set_export_path(QString text) {
+    this->export_path = text;
 }
 
     // output

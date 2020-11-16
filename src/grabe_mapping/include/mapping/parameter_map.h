@@ -177,6 +177,26 @@ public:
         return false;
     }
 
+    bool get_is_active(std::string name, bool& is_active) {
+        int type = this->type(name);
+
+        switch(type) {
+            case 0:
+                return false;
+            case 1:
+                is_active = this->double_parameters[name]->get_is_active();
+                break;
+            case 2:
+                is_active = this->int_parameters[name]->get_is_active();
+                break;
+            case 3:
+                is_active = this->string_parameters[name]->get_is_active();
+                break;
+        }
+
+        return true;
+    }
+
     std::string to_string() {
         std::ostringstream out("", std::ios_base::app);
 

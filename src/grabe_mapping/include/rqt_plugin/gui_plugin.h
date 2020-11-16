@@ -64,6 +64,7 @@ public slots:
   void on_cb_metascan_state_changed(int state);
   void on_cb_export_state_changed(int state);
   void on_pb_export_pressed();
+  void on_le_export_text_changed(QString text);
 
       // icp parameters
   void on_cb_icp_minimization_current_text_changed(QString text);
