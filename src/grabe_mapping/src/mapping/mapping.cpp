@@ -304,5 +304,6 @@ bool Mapping::toggle_parameter_active(std::string name) {
     // output
 void Mapping::set_output_filepath(QString filename) {
     this->output_filepath = filename;
+    this->set_parameter_value("--loopclosefile", (this->output_filepath + "/loopclose.pts").toStdString());
 }
 
