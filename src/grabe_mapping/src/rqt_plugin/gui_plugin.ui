@@ -291,6 +291,9 @@
             <layout class="QGridLayout" name="gridLayout_2">
              <item row="1" column="4">
               <widget class="QSpinBox" name="sb_last">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="minimum">
                 <number>-1</number>
                </property>
@@ -298,7 +301,7 @@
                 <number>1000000</number>
                </property>
                <property name="value">
-                <number>-1</number>
+                <number>1</number>
                </property>
               </widget>
              </item>
@@ -325,6 +328,9 @@
              </item>
              <item row="1" column="1">
               <widget class="QSpinBox" name="sb_first">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="minimum">
                 <number>-1</number>
                </property>
@@ -332,7 +338,7 @@
                 <number>1000000</number>
                </property>
                <property name="value">
-                <number>-1</number>
+                <number>0</number>
                </property>
               </widget>
              </item>
@@ -363,8 +369,11 @@
              </item>
              <item row="0" column="1">
               <widget class="QLineEdit" name="le_total">
+               <property name="text">
+                <string>0</string>
+               </property>
                <property name="readOnly">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>

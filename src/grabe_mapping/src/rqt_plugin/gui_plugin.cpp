@@ -68,6 +68,7 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->ui_.pb_cancel, &QPushButton::pressed, this, &GuiPlugin::on_pb_cancel_pressed);
 
   // general
+  QObject::connect(this->ui_.le_total, &QLineEdit::textChanged, this, &GuiPlugin::on_le_total_text_changed);
   QObject::connect(this->ui_.sb_first, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_first_value_changed);
   QObject::connect(this->ui_.sb_last, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_last_value_changed);
   QObject::connect(this->ui_.dsb_min, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_min_value_changed);
@@ -164,45 +165,49 @@ void GuiPlugin::on_le_gps_type_text_changed(QString text) {
 }
 
 // general
-void GuiPlugin::on_sb_first_value_changed(int val) {
-  
-  int last = this->ui_.sb_last->value();
-
-  if(val == -1) { // set inactive
-    this->mapping->set_parameter_active("-s", false);
+void GuiPlugin::on_le_total_text_changed(QString text) {
+  this->mapping->set_file_count(text.toInt());
+  if(text.toInt() <= 1 ) {
+    this->ui_.sb_first->setEnabled(false);
+    this->ui_.sb_last->setEnabled(false);
   } else {
-    this->mapping->set_parameter_active("-s", true);
+    this->ui_.sb_first->setEnabled(true);
+    this->ui_.sb_last->setEnabled(true);
+    this->ui_.sb_last->setValue(text.toInt() - 1);
+  }
+}
+
+void GuiPlugin::on_sb_first_value_changed(int val) {
+  int total = this->ui_.le_total->text().toInt();
+  int last = this->ui_.sb_last->value(); 
+
+  if(val > total - 2) {
+    this->ui_.sb_first->setValue(0);
+  } else if(val < 0) {
+    this->ui_.sb_first->setValue(last - 1);
+  } else {
     this->mapping->set_parameter_value("-s", val);
 
-    if(last != -1 && val >= last) // first is larger than last
+    if(val >= last) { // first is larger than last
       this->ui_.sb_last->setValue(val + 1);
+    }
   }
 }
 
 void GuiPlugin::on_sb_last_value_changed(int val) {
-  static int previous = -1;
+  int total = this->ui_.le_total->text().toInt();
   int first = this->ui_.sb_first->value();
 
-  if(val == -1) { // set inactive
-    this->mapping->set_parameter_active("-e", false);
-    previous = -1;
-  } else if(val == 0 && previous != -1) { // skip 0 to -1
-    this->ui_.sb_last->setValue(-1);
-  } else if (val == 0 && previous == -1) { // skip 0 to 1
-    this->ui_.sb_last->setValue(1);
-  } else {
-    this->mapping->set_parameter_active("-e", true);
+  if(val < 1) {
+    this->ui_.sb_last->setValue(total - 1);
+  } else if (val > total - 1) {
+    this->ui_.sb_last->setValue(first + 1);
+  } else{
     this->mapping->set_parameter_value("-e", val);
 
-    if(first != -1 && val <= first) { // last is smaller than first
-      if(previous == -1) {            // was inactive -> set to one higher than first
-        this->ui_.sb_last->setValue(first + 1);
-        return;
-      } else {                        // wasn't inactive -> set first one lower than this
-        this->ui_.sb_first->setValue(val - 1);
-      }
-  }
-    previous = val;
+    if(val < first) { // last is smaller than first
+      this->ui_.sb_first->setValue(val - 1);// set first one lower than this
+    }
   }
 }
 
@@ -411,8 +416,6 @@ void GuiPlugin::on_pb_save_config_pressed() {
   // general
   settings.setValue("total", this->ui_.le_total->text());
   settings.setValue("first_scan", this->ui_.sb_first->value());
-  settings.setValue("first_scan_max", this->ui_.sb_first->maximum());
-  settings.setValue("last_scan_max", this->ui_.sb_last->maximum());
   settings.setValue("last_scan", this->ui_.sb_last->value());
   settings.setValue("min_distance", this->ui_.dsb_min->value());
   settings.setValue("max_distance", this->ui_.dsb_max->value());
@@ -462,9 +465,7 @@ void GuiPlugin::on_pb_load_config_pressed() {
   // general
   this->ui_.le_total->setText(instance_settings.value("total").toString());
   this->ui_.sb_first->setValue(instance_settings.value("first_scan").toInt());
-  this->ui_.sb_first->setMaximum(instance_settings.value("first_scan_max").toInt());
   this->ui_.sb_last->setValue(instance_settings.value("last_scan").toInt());
-  this->ui_.sb_last->setMaximum(instance_settings.value("last_scan_max").toInt());
   this->ui_.dsb_min->setValue(instance_settings.value("min_distance").toDouble());
   this->ui_.dsb_max->setValue(instance_settings.value("max_distance").toDouble());
   this->ui_.cb_correspondances->setCurrentIndex(instance_settings.value("correspondances").toInt());
@@ -514,8 +515,7 @@ void GuiPlugin::on_work_finished(int exit_code) {
 }
 
 void GuiPlugin::on_rosbag_finished() {
-  this->ui_.sb_last->setMaximum(this->ui_.le_total->text().toInt() - 1);
-  this->ui_.sb_first->setMaximum(this->ui_.le_total->text().toInt() - 2);
+  this->ui_.le_total->setText(QString::number(this->mapping->get_file_count()));
 }
 
 void GuiPlugin::on_pb_show_pressed() {
@@ -591,7 +591,6 @@ void GuiPlugin::initComboBoxes() {
 // callbacks
 void GuiPlugin::scan_to_file_count_callback(const std_msgs::Int32::ConstPtr& count) {
   this->mapping->set_file_count(count->data);
-  this->ui_.le_total->setText(QString::number(count->data));
 }
 
 // work stuff
@@ -622,8 +621,6 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   // general
   instance_settings.setValue("total", this->ui_.le_total->text());
   instance_settings.setValue("first_scan", this->ui_.sb_first->value());
-  instance_settings.setValue("first_scan_max", this->ui_.sb_first->maximum());
-  instance_settings.setValue("last_scan_max", this->ui_.sb_last->maximum());
   instance_settings.setValue("last_scan", this->ui_.sb_last->value());
   instance_settings.setValue("min_distance", this->ui_.dsb_min->value());
   instance_settings.setValue("max_distance", this->ui_.dsb_max->value());
@@ -669,9 +666,7 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   // general
   this->ui_.le_total->setText(instance_settings.value("total").toString());
   this->ui_.sb_first->setValue(instance_settings.value("first_scan").toInt());
-  this->ui_.sb_first->setMaximum(instance_settings.value("first_scan_max").toInt());
   this->ui_.sb_last->setValue(instance_settings.value("last_scan").toInt());
-  this->ui_.sb_last->setMaximum(instance_settings.value("last_scan_max").toInt());
   this->ui_.dsb_min->setValue(instance_settings.value("min_distance").toDouble());
   this->ui_.dsb_max->setValue(instance_settings.value("max_distance").toDouble());
   this->ui_.cb_correspondances->setCurrentIndex(instance_settings.value("correspondances").toInt());

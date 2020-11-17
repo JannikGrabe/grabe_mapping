@@ -135,6 +135,7 @@ void Mapping::init_states() {
     this->script_path = ros::package::getPath("grabe_mapping") + "/scripts";
     this->cancelled = false;
     this->next_process = &Mapping::finish_mapping;
+    this->file_count = 0;
 }
 
 bool Mapping::check_states() {
@@ -156,6 +157,9 @@ bool Mapping::check_states() {
         return false;
     } else if(this->output_filepath.isEmpty()) {
         ROS_ERROR("no output filepath set");
+        return false;
+    } else if(this->file_count <= 1) {
+        ROS_ERROR("no total number of scans set");
         return false;
     }
 
@@ -191,8 +195,8 @@ void Mapping::initAlgorithms() {
     parameters->add_parameter("--distSLAM", 25.0);
 
     // general
-    parameters->add_parameter("-s", -1, false);
-    parameters->add_parameter("-e", -1, false);
+    parameters->add_parameter("-s", 0);
+    parameters->add_parameter("-e", 1);
     parameters->add_parameter("--max", -1.0, false);
     parameters->add_parameter("--min", -1.0, false);
     parameters->add_parameter("--normal-shoot-simple", false);
