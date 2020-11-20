@@ -250,6 +250,8 @@ public:
                 break;
         }
 
+        out << " ";
+
         return out.str();
     }
 };
