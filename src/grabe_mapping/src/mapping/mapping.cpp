@@ -158,7 +158,7 @@ bool Mapping::check_states() {
     } else if(this->output_filepath.isEmpty()) {
         ROS_ERROR("no output filepath set");
         return false;
-    } else if(this->file_count <= 1) {
+    } else if(!this->use_rosbag && this->file_count <= 1) {
         ROS_ERROR("no total number of scans set");
         return false;
     }
