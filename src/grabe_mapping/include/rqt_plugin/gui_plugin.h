@@ -65,7 +65,7 @@ public slots:
   void on_cb_export_state_changed(int state);
   void on_pb_export_pressed();
   void on_le_export_text_changed(QString text);
-  void on_le_total_text_changed(QString text);
+  void on_sb_total_value_changed(int val);
 
       // icp parameters
   void on_cb_icp_minimization_current_text_changed(QString text);
