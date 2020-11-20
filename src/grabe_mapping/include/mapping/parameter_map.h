@@ -229,6 +229,29 @@ public:
 
         return out.str();
     }
+
+    std::string to_string(std::string name) {
+        int type = this->type(name);
+
+        std::ostringstream out("", std::ios_base::app);
+
+        switch(type) {
+            case 0:
+                break;
+            case 1:
+                out << " " << this->double_parameters[name]->get_value();
+                break;
+            case 2:
+                out << " " << this->int_parameters[name]->get_value();                
+                break;
+            case 3:
+                if(this->string_parameters[name]->get_has_value())
+                    out << " " << this->string_parameters[name]->get_value();
+                break;
+        }
+
+        return out.str();
+    }
 };
 
 }
