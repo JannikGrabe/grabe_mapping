@@ -72,6 +72,8 @@ void Mapping::showResults() {
 
     // build command to run show
     std::string show = "/home/jannik/slam6d-code/bin/show ";
+    show += this->parameters->to_string("-s");
+    show += this->parameters->to_string("-e");
     show += this->output_filepath.toStdString();
 
     QFuture<int> show_future = QtConcurrent::run(Mapping::run_command, show);
