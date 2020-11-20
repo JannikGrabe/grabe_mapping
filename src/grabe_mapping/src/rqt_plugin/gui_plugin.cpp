@@ -252,13 +252,13 @@ void GuiPlugin::on_dsb_max_value_changed(double val) {
 
 void GuiPlugin::on_cb_correspondances_current_text_changed(QString text) {
   if(text == "default") {
-    this->mapping->set_parameter_active("--normal-shoot-simple", false);
+    this->mapping->set_parameter_active("--normal_shoot-simple", false);
     this->mapping->set_parameter_active("--point-to-plane-simple", false);
   } else if(text == "closest along normal") {
-    this->mapping->set_parameter_active("--normal-shoot-simple", true);
+    this->mapping->set_parameter_active("--normal_shoot-simple", true);
     this->mapping->set_parameter_active("--point-to-plane-simple", false);
   } else if(text == "closest point-to-plane distance") {
-    this->mapping->set_parameter_active("--normal-shoot-simple", false);
+    this->mapping->set_parameter_active("--normal_shoot-simple", false);
     this->mapping->set_parameter_active("--point-to-plane-simple", true);
   }
 }

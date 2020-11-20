@@ -80,8 +80,6 @@ public:
         }
 
         this->double_parameters[name]->set_value(value);
-
-        std::cout << name << " " << value << std::endl;
         return true;
     }
 
@@ -90,8 +88,6 @@ public:
             return false;
         }
         this->int_parameters[name]->set_value(value);
-
-        std::cout << name << " " << value << std::endl;
         return true;
     }
 
@@ -104,7 +100,6 @@ public:
 
         if(param->get_has_value()) {
             param->set_value(value);
-            std::cout << name << " " << value << std::endl;
             return true;
         } else {
             return false;

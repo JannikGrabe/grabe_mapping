@@ -199,7 +199,7 @@ void Mapping::initAlgorithms() {
     parameters->add_parameter("-e", 1);
     parameters->add_parameter("--max", -1.0, false);
     parameters->add_parameter("--min", -1.0, false);
-    parameters->add_parameter("--normal-shoot-simple", false);
+    parameters->add_parameter("--normal_shoot-simple", false);
     parameters->add_parameter("--point-to-plane-simple", false);
     parameters->add_parameter("--exportAllPoints", false);
     parameters->add_parameter("--metascan", false);
