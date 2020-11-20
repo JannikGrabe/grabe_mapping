@@ -239,14 +239,14 @@ public:
             case 0:
                 break;
             case 1:
-                out << " " << this->double_parameters[name]->get_value();
+                out << name << " " << this->double_parameters[name]->get_value();
                 break;
             case 2:
-                out << " " << this->int_parameters[name]->get_value();                
+                out << name << " "  << this->int_parameters[name]->get_value();                
                 break;
             case 3:
                 if(this->string_parameters[name]->get_has_value())
-                    out << " " << this->string_parameters[name]->get_value();
+                    out << name << " "  << this->string_parameters[name]->get_value();
                 break;
         }
 
