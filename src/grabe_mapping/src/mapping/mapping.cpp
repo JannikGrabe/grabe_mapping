@@ -174,7 +174,7 @@ void Mapping::initAlgorithms() {
     // ICP 
     parameters->add_parameter("-a", 1);
     parameters->add_parameter("-i", 50);
-    parameters->add_parameter("--epsICP", 0.000001);
+    parameters->add_parameter("--epsICP", 0.00001);
     
     // nearest neighbor
     parameters->add_parameter("-t", 0);
