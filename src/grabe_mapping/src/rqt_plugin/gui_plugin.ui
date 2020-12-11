@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>522</width>
-    <height>590</height>
+    <width>547</width>
+    <height>707</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
          <bool>true</bool>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab_output">
          <attribute name="title">
@@ -962,6 +962,28 @@
        </widget>
       </item>
       <item>
+       <widget class="QTableWidget" name="tw_results">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <column>
+         <property name="text">
+          <string>from</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>to</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>error</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item>
        <widget class="Line" name="line">
         <property name="frameShadow">
          <enum>QFrame::Sunken</enum>
@@ -979,6 +1001,13 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="hl_start">
+        <item>
+         <widget class="QPushButton" name="pb_back">
+          <property name="text">
+           <string>Back</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <spacer name="hs2">
           <property name="orientation">

@@ -8,6 +8,7 @@
 #include <QProgressBar>
 #include <QMessageBox>
 #include <QSettings>
+#include <QTableView>
 
 namespace grabe_mapping
 {
@@ -66,6 +67,8 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
   QObject::connect(ui_.pb_show, &QPushButton::pressed, this, &GuiPlugin::on_pb_show_pressed);
   QObject::connect(this->ui_.pb_cancel, &QPushButton::pressed, this, &GuiPlugin::on_pb_cancel_pressed);
+  QObject::connect(this->ui_.pb_back, &QPushButton::pressed, this, &GuiPlugin::on_pb_back_pressed);
+
 
   // general
   QObject::connect(this->ui_.sb_total, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_total_value_changed);
@@ -544,6 +547,34 @@ void GuiPlugin::on_work_finished(int exit_code) {
 
   if(exit_code == 1) {
     ROS_ERROR("Something went wrong");
+  } else {
+    this->ui_.tw_results->setEnabled(true);
+    this->ui_.tw_results->clear();
+    this->ui_.tw_results->setRowCount(0);
+    this->ui_.tw_results->verticalHeader()->setVisible(false);
+
+    this->ui_.tw_results->setHorizontalHeaderItem(0, new QTableWidgetItem("from"));
+    this->ui_.tw_results->setHorizontalHeaderItem(0, new QTableWidgetItem("to"));
+    this->ui_.tw_results->setHorizontalHeaderItem(0, new QTableWidgetItem("error"));
+
+    std::vector<std::string> icp_results = this->mapping->get_icp_results();
+
+    for(int i = 0; i < icp_results.size(); i++) {
+      this->ui_.tw_results->insertRow(i);
+
+      QTableWidgetItem* item = new QTableWidgetItem(QString::number(this->ui_.sb_first->value() + i));
+      this->ui_.tw_results->setItem(i, 0, item);
+
+      item = new QTableWidgetItem(QString::number(this->ui_.sb_first->value() + i + 1));
+      this->ui_.tw_results->setItem(i, 1, item);
+
+      item = new QTableWidgetItem(QString::fromStdString(icp_results[i]));
+      this->ui_.tw_results->setItem(i, 2, item);
+    }
+
+    this->ui_.tb_settings->setVisible(false);
+    this->ui_.tw_results->setVisible(true);
+    this->ui_.pb_back->setVisible(true);
   }
 }
 
@@ -579,11 +610,19 @@ void GuiPlugin::on_cb_update_scans_state_changed(int state) {
   }
 }
 
+void GuiPlugin::on_pb_back_pressed() {
+  this->ui_.tw_results->setVisible(false);
+  this->ui_.tb_settings->setVisible(true);
+  this->ui_.pb_back->setVisible(false);
+}
+
 // init
 void GuiPlugin::initWidgets() {
   this->initComboBoxes();
   this->ui_.pb_progress->setVisible(false);
   this->ui_.pb_cancel->setVisible(false);
+  this->ui_.tw_results->setVisible(false);
+  this->ui_.pb_back->setVisible(false);
 }
 
 void GuiPlugin::initComboBoxes() {

@@ -2,6 +2,7 @@
 #include "ros/ros.h"
 #include "ros/package.h"
 #include <QProcess>
+#include <fstream>
 
 Mapping::Mapping() {
 
@@ -59,6 +60,8 @@ void Mapping::start_slam6D() {
 
     slam6D += " " + this->output_filepath.toStdString();
 
+    slam6D += " | tee " + this->output_filepath.toStdString() + "/results.txt";
+
     std::cout << slam6D << std::endl;
 
     QFuture<int> slam6D_future = QtConcurrent::run(Mapping::run_command, slam6D);
@@ -88,8 +91,7 @@ void Mapping::finish_mapping() {
         emit this->finished_mapping(1);
         this->cancelled = false;
     } else {
-        emit this->finished_mapping(0);
-
+        
         bool export_points = false;
         this->parameters->get_is_active("--exportAllPoints", export_points);
 
@@ -99,6 +101,37 @@ void Mapping::finish_mapping() {
             
             this->run_command(move_export);
         }
+
+        this->read_results();
+        emit this->finished_mapping(0);
+    }
+}
+
+void Mapping::read_results() { 
+    this->icp_results.clear();
+
+    std::ifstream results_file((this->output_filepath + "/results.txt").toStdString().c_str());
+
+    if(!results_file.is_open()) {
+        std::cout << "could not open results file" << std::endl;
+    }
+    std::string line_new = "";
+    std::string line_old = "";
+
+    while(std::getline(results_file, line_new)) {
+        std::string first_word;
+
+        std::stringstream ss(line_new);
+        ss >> first_word;
+
+        if(first_word.compare("TIME") == 0) {
+            std::istringstream iss(line_old);
+            std::vector<std::string> words((std::istream_iterator<std::string>(iss)),
+                                            std::istream_iterator<std::string>());
+
+            this->icp_results.push_back(words[5]);
+        }
+        line_old = line_new;
     }
 }
 
@@ -251,6 +284,11 @@ QString Mapping::get_gps_topic() const {
     // output
 QString Mapping::get_output_filepath() const {
     return this->output_filepath;
+}
+
+    // work
+std::vector<std::string> Mapping::get_icp_results() const {
+    return this->icp_results;
 }
 
 // setter

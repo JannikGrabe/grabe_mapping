@@ -5,6 +5,7 @@
 #include <map>
 #include <QProcess>
 #include "parameter_map.h"
+#include <vector>
 
 class Mapping : public QWidget {
     Q_OBJECT
@@ -35,6 +36,7 @@ private:
     QFutureWatcher<void> watcher;
     void (Mapping::*next_process)();
     bool cancelled;
+    std::vector<std::string> icp_results;
 
     // Mapping
     void start_scan_to_file();
@@ -44,6 +46,8 @@ private:
     void start_slam6D();
 
     void finish_mapping();
+
+    void read_results();
 
     static int run_command(std::string command);
 
@@ -84,6 +88,9 @@ public:
 
         // output
     QString get_output_filepath() const;
+
+        // work
+    std::vector<std::string> get_icp_results() const;
 
     // setter
         // rosbag
