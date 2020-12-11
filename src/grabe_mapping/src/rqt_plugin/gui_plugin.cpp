@@ -554,8 +554,8 @@ void GuiPlugin::on_work_finished(int exit_code) {
     this->ui_.tw_results->verticalHeader()->setVisible(false);
 
     this->ui_.tw_results->setHorizontalHeaderItem(0, new QTableWidgetItem("from"));
-    this->ui_.tw_results->setHorizontalHeaderItem(0, new QTableWidgetItem("to"));
-    this->ui_.tw_results->setHorizontalHeaderItem(0, new QTableWidgetItem("error"));
+    this->ui_.tw_results->setHorizontalHeaderItem(1, new QTableWidgetItem("to"));
+    this->ui_.tw_results->setHorizontalHeaderItem(2, new QTableWidgetItem("error"));
 
     std::vector<std::string> icp_results = this->mapping->get_icp_results();
 
