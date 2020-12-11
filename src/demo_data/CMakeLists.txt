@@ -208,3 +208,6 @@ target_link_libraries(tf_broadcaster ${catkin_LIBRARIES})
 
 add_executable(pose_publisher src/pose_publisher.cpp)
 target_link_libraries(pose_publisher ${catkin_LIBRARIES})
+
+add_executable(tf_test_broadcaster src/tf_test_broadcaster.cpp)
+target_link_libraries(tf_test_broadcaster ${catkin_LIBRARIES})
