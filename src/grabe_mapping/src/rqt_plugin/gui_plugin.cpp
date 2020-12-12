@@ -556,20 +556,26 @@ void GuiPlugin::on_work_finished(int exit_code) {
     this->ui_.tw_results->setHorizontalHeaderItem(0, new QTableWidgetItem("from"));
     this->ui_.tw_results->setHorizontalHeaderItem(1, new QTableWidgetItem("to"));
     this->ui_.tw_results->setHorizontalHeaderItem(2, new QTableWidgetItem("error"));
+    this->ui_.tw_results->setHorizontalHeaderItem(3, new QTableWidgetItem("# of points"));
+
 
     std::vector<std::string> icp_results = this->mapping->get_icp_results();
 
-    for(int i = 0; i < icp_results.size(); i++) {
-      this->ui_.tw_results->insertRow(i);
+    for(int i = 0; i < icp_results.size(); i += 2) {
+      int row = this->ui_.tw_results->rowCount();
+      this->ui_.tw_results->insertRow(row);
 
       QTableWidgetItem* item = new QTableWidgetItem(QString::number(this->ui_.sb_first->value() + i));
-      this->ui_.tw_results->setItem(i, 0, item);
+      this->ui_.tw_results->setItem(row, 0, item);
 
       item = new QTableWidgetItem(QString::number(this->ui_.sb_first->value() + i + 1));
-      this->ui_.tw_results->setItem(i, 1, item);
+      this->ui_.tw_results->setItem(row, 1, item);
 
       item = new QTableWidgetItem(QString::fromStdString(icp_results[i]));
-      this->ui_.tw_results->setItem(i, 2, item);
+      this->ui_.tw_results->setItem(row, 2, item);
+
+      item = new QTableWidgetItem(QString::fromStdString(icp_results[i+1]));
+      this->ui_.tw_results->setItem(row, 3, item);
     }
 
     this->ui_.tb_settings->setVisible(false);

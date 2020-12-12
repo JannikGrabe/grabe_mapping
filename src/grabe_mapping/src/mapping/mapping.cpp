@@ -130,6 +130,7 @@ void Mapping::read_results() {
                                             std::istream_iterator<std::string>());
 
             this->icp_results.push_back(words[5]);
+            this->icp_results.push_back(words[7]);
         }
         line_old = line_new;
     }
