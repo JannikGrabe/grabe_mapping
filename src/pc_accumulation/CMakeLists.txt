@@ -216,3 +216,6 @@ target_link_libraries(pointcloud_to_file ${catkin_LIBRARIES})
 add_executable(velodyne_frame_publisher src/velodyne_frame_publisher.cpp)
 target_link_libraries(velodyne_frame_publisher ${catkin_LIBRARIES})
 
+add_executable(xyz2pcd_node src/xyz2pcd.cpp)
+target_link_libraries(xyz2pcd_node ${catkin_LIBRARIES})
+
