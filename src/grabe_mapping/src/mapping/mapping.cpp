@@ -3,6 +3,8 @@
 #include "ros/package.h"
 #include <QProcess>
 #include <fstream>
+#include <pcl/common/transforms.h>
+#include "io/io.h"
 
 Mapping::Mapping() {
 
@@ -134,6 +136,8 @@ void Mapping::read_results() {
         }
         line_old = line_new;
     }
+
+    this->calculate_crispnesss(0, 1);
 }
 
 int Mapping::run_command(std::string command) {
@@ -161,6 +165,54 @@ void Mapping::stopChildProcesses(qint64 parentProcessId) {
     QProcess kill_children;
     kill_children.start("kill " + childIds);
     kill_children.waitForFinished();
+}
+
+
+// PointCloud stuff
+std::vector<double> Mapping::calculate_crispnesss(int scan1, int scan2) {
+    std::ostringstream scan1_base(this->output_filepath.toStdString() + "/scan", std::ios_base::app);
+    scan1_base << std::setfill('0') << std::setw(3) << scan1;
+
+    std::ostringstream scan2_base(this->output_filepath.toStdString() + "/scan", std::ios_base::app);
+    scan2_base << std::setfill('0') << std::setw(3) << scan2;
+
+    pcl::PointCloud<pcl::PointXYZ>* cloud = new pcl::PointCloud<pcl::PointXYZ>;
+    
+    try {
+        pcl::PointCloud<pcl::PointXYZ>* cloud1;
+        pcl::PointCloud<pcl::PointXYZ>* cloud2;
+
+        IO::read_pointcloud_from_xyz_file(cloud1, scan1_base.str() + ".3d");
+        IO::read_pointcloud_from_xyz_file(cloud2, scan2_base.str() + ".3d");
+    
+        Eigen::Matrix4d* frame1;
+        Eigen::Matrix4d* frame2;
+    
+        IO::read_frame_from_file(frame1, scan1_base.str() + ".frames");
+        IO::read_frame_from_file(frame2, scan2_base.str() + ".frames");
+    
+
+        pcl::transformPointCloud(*cloud1, *cloud1, *frame1);
+        pcl::transformPointCloud(*cloud2, *cloud2, *frame2);
+
+        
+        *cloud = *cloud1 + *cloud2;
+        
+        IO::write_pointcloud_to_xyz_file(cloud, "home/jannik/Bachelorarbeit/data/test.xyz");
+   
+    } catch (Bad_file_exception e) {
+        std::cout << e.what() << std::endl;
+        std::cout << e.get_filename() << std::endl;
+        std::cout << e.get_source() << std::endl;
+        return std::vector<double>(0);
+    } catch (Bad_point_exception e) {
+        std::cout << e.what() << std::endl;
+        std::cout << e.get_filename() << std::endl;
+        std::cout << e.get_source() << std::endl;
+        return std::vector<double>(0);
+    }
+
+    return std::vector<double>(0);
 }
 
 // States

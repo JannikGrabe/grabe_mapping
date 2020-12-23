@@ -565,10 +565,10 @@ void GuiPlugin::on_work_finished(int exit_code) {
       int row = this->ui_.tw_results->rowCount();
       this->ui_.tw_results->insertRow(row);
 
-      QTableWidgetItem* item = new QTableWidgetItem(QString::number(this->ui_.sb_first->value() + i));
+      QTableWidgetItem* item = new QTableWidgetItem(QString::number(this->ui_.sb_first->value() + row));
       this->ui_.tw_results->setItem(row, 0, item);
 
-      item = new QTableWidgetItem(QString::number(this->ui_.sb_first->value() + i + 1));
+      item = new QTableWidgetItem(QString::number(this->ui_.sb_first->value() + row + 1));
       this->ui_.tw_results->setItem(row, 1, item);
 
       item = new QTableWidgetItem(QString::fromStdString(icp_results[i]));

@@ -53,6 +53,9 @@ private:
 
     void stopChildProcesses(qint64 parentProcessId);
 
+    // PointCloud stuff
+    std::vector<double> calculate_crispnesss(int scan1, int scan2);
+
     // States
     void init_states();
 

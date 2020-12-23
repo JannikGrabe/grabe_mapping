@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(grabe_mapping)
 
-## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  pcl_ros
   message_filters
   nav_msgs
   roscpp
@@ -17,31 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
 )
-
-##### Boost #####
-
-find_package( Boost COMPONENTS serialization graph regex filesystem system thread date_time program_options system REQUIRED)
-
-link_directories(${BOOST_LIBRARY_DIRS})
-include_directories(${Boost_INCLUDE_DIRS})
-add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
-
-##### 3rd party software for slam6d #####
-
-find_package(ANN)
-if (NOT ANN_FOUND)
-  add_subdirectory("3rdparty/ann")
-  set(ANN_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/3rdparty/ann/ann_1.1.1_modified/include")
-  set(ANN_LIBRARIES ann)
-endif()
-
-find_package(Newmat)
-if(NOT NEWMAT_FOUND)
-  add_subdirectory("3rdparty/newmat")
-  set(NEWMAT_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/3rdparty/newmat/newmat-10")
-  set(NEWMAT_LIBRARIES newmat)
-endif()
-
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -158,28 +133,20 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-####### slam6d ########
-
-if(WITH_OPENMP)
-  message(STATUS "With OpenMP ")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMAX_OPENMP_NUM_THREADS=${NUMBER_OF_CPUS} -DOPENMP_NUM_THREADS=${NUMBER_OF_CPUS} ${OpenMP_CXX_FLAGS} -DOPENMP")
-else()
-  message(STATUS "Without OpenMP")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMAX_OPENMP_NUM_THREADS=1 -DOPENMP_NUM_THREADS=1")
-endif()
-
-add_subdirectory(src/slam6d)
-
 ####### Plugin ########
 
 set (${PROJECT_NAME}_PLUGIN_SRCS
   src/rqt_plugin/gui_plugin.cpp
   src/mapping/mapping.cpp
+  src/io/io.cpp
 )
 
 set(${PROJECT_NAME}_PLUGIN_HDRS
   include/rqt_plugin/gui_plugin.h
   include/mapping/mapping.h
+  include/exceptions/bad_file_exception.h
+  include/exceptions/bad_point_exception.h
+  include/io/io.h
 )
 
 set(${PROJECT_NAME}_PLUGIN_UIS
@@ -320,3 +287,5 @@ install(TARGETS scan_to_file_node
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+
