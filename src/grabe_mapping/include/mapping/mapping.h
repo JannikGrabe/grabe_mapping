@@ -6,6 +6,8 @@
 #include <QProcess>
 #include "parameter_map.h"
 #include <vector>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 class Mapping : public QWidget {
     Q_OBJECT
@@ -53,9 +55,6 @@ private:
 
     void stopChildProcesses(qint64 parentProcessId);
 
-    // PointCloud stuff
-    std::vector<double> calculate_crispnesss(int scan1, int scan2);
-
     // States
     void init_states();
 
@@ -75,6 +74,15 @@ public:
     void cancel_mapping();
 
     void showResults();
+
+    // PointCloud stuff
+    void transform_cloud(pcl::PointCloud<pcl::PointXYZ> *in, pcl::PointCloud<pcl::PointXYZ> *out, double *angles, double *translation);
+
+    void calculate_crispnesses(int scan1, int scan2);
+
+    //double gaussian(Eigen::Vector3d x, Eigen::Matrix3d cov);
+
+    //double calculate_crispness(pcl::PointCloud<pcl::PointXYZ> *in);
 
     // getter
         // rosbag

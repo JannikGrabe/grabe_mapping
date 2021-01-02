@@ -5,6 +5,8 @@
 #include <fstream>
 #include <pcl/common/transforms.h>
 #include "io/io.h"
+#include <string>
+#include <cmath>
 
 Mapping::Mapping() {
 
@@ -136,8 +138,6 @@ void Mapping::read_results() {
         }
         line_old = line_new;
     }
-
-    this->calculate_crispnesss(0, 1);
 }
 
 int Mapping::run_command(std::string command) {
@@ -167,53 +167,111 @@ void Mapping::stopChildProcesses(qint64 parentProcessId) {
     kill_children.waitForFinished();
 }
 
-
 // PointCloud stuff
-std::vector<double> Mapping::calculate_crispnesss(int scan1, int scan2) {
+void Mapping::transform_cloud(pcl::PointCloud<pcl::PointXYZ> *in, pcl::PointCloud<pcl::PointXYZ> *out, double *angles, double *translation) {
+    Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    transform.translation() << translation[0], translation[1], translation[2];
+    transform.rotate(Eigen::AngleAxisf (angles[0], Eigen::Vector3f::UnitX()));
+    transform.rotate(Eigen::AngleAxisf (angles[1], Eigen::Vector3f::UnitY()));
+    transform.rotate(Eigen::AngleAxisf (angles[2], Eigen::Vector3f::UnitZ()));
+
+    pcl::transformPointCloud(*in, *out, transform);
+}
+
+void Mapping::calculate_crispnesses(int scan1, int scan2) {
     std::ostringstream scan1_base(this->output_filepath.toStdString() + "/scan", std::ios_base::app);
     scan1_base << std::setfill('0') << std::setw(3) << scan1;
 
     std::ostringstream scan2_base(this->output_filepath.toStdString() + "/scan", std::ios_base::app);
     scan2_base << std::setfill('0') << std::setw(3) << scan2;
 
-    pcl::PointCloud<pcl::PointXYZ>* cloud = new pcl::PointCloud<pcl::PointXYZ>;
-    
+    pcl::PointCloud<pcl::PointXYZ>* cloud_pose_transformed = new pcl::PointCloud<pcl::PointXYZ>;
+    pcl::PointCloud<pcl::PointXYZ>* cloud_transformed = new pcl::PointCloud<pcl::PointXYZ>;
+
     try {
+
+        // CLOUD 1
+        // read cloud1
         pcl::PointCloud<pcl::PointXYZ>* cloud1;
-        pcl::PointCloud<pcl::PointXYZ>* cloud2;
-
         IO::read_pointcloud_from_xyz_file(cloud1, scan1_base.str() + ".3d");
+        IO::write_pointcloud_to_xyz_file(cloud1, "/home/jannik/Bachelorarbeit/data/cloud1.xyz");
+
+        // read pose1 and transform
+        double *euler = new double[3](), *trans = new double[3]();
+        IO::read_pose_from_file(euler, trans, scan1_base.str() + ".pose");
+        this->transform_cloud(cloud1, cloud1, euler, trans);
+
+        *cloud_pose_transformed += *cloud1;
+
+        // read frame1 and transform
+        IO::read_frame_from_file(euler, trans, scan1_base.str() + ".frames");
+        this->transform_cloud(cloud1, cloud1, euler, trans);
+
+        // CLOUD 2
+        // read cloud2
+        pcl::PointCloud<pcl::PointXYZ>* cloud2;
         IO::read_pointcloud_from_xyz_file(cloud2, scan2_base.str() + ".3d");
-    
-        Eigen::Matrix4d* frame1;
-        Eigen::Matrix4d* frame2;
-    
-        IO::read_frame_from_file(frame1, scan1_base.str() + ".frames");
-        IO::read_frame_from_file(frame2, scan2_base.str() + ".frames");
-    
+        IO::write_pointcloud_to_xyz_file(cloud2, "/home/jannik/Bachelorarbeit/data/cloud2.xyz");
 
-        pcl::transformPointCloud(*cloud1, *cloud1, *frame1);
-        pcl::transformPointCloud(*cloud2, *cloud2, *frame2);
+        // read pose2 and transform
+        IO::read_pose_from_file(euler, trans, scan2_base.str() + ".pose");
+        this->transform_cloud(cloud2, cloud2, euler, trans);
 
-        
-        *cloud = *cloud1 + *cloud2;
-        
-        IO::write_pointcloud_to_xyz_file(cloud, "home/jannik/Bachelorarbeit/data/test.xyz");
-   
+        *cloud_pose_transformed += *cloud2;
+        IO::write_pointcloud_to_xyz_file(cloud_pose_transformed, "/home/jannik/Bachelorarbeit/data/cloud_pose_transformed.xyz");
+
+        // read frame2 and transform
+        IO::read_frame_from_file(euler, trans, scan2_base.str() + ".frames");
+        this->transform_cloud(cloud2, cloud2, euler, trans);
+
+        // concat cloud1 and cloud2
+        *cloud_transformed = *cloud1 + *cloud2;
+        IO::write_pointcloud_to_xyz_file(cloud_transformed, "/home/jannik/Bachelorarbeit/data/cloud_transformed.xyz");
+
+        //std::cout << this->calculate_crispness(cloud_transformed) << std::endl;
+
     } catch (Bad_file_exception e) {
         std::cout << e.what() << std::endl;
         std::cout << e.get_filename() << std::endl;
-        std::cout << e.get_source() << std::endl;
-        return std::vector<double>(0);
+        std::cout << e.get_source() << std::endl;   
+        return;
     } catch (Bad_point_exception e) {
         std::cout << e.what() << std::endl;
         std::cout << e.get_filename() << std::endl;
         std::cout << e.get_source() << std::endl;
-        return std::vector<double>(0);
+        return;
+    } catch (std::exception e) {
+        std::cout << e.what() << std::endl;
     }
 
-    return std::vector<double>(0);
+    std::cout << "done" << std::endl;
+    return;
 }
+
+// double Mapping::gaussian(Eigen::Vector3d x, Eigen::Matrix3d cov) {
+//     return 1.0/(std::pow(2*M_PI, 3/2.0)*cov.determinant()) * std::exp(-0.5*x.transpose()*cov.inverse()*x);
+// }
+
+// double Mapping::calculate_crispness(pcl::PointCloud<pcl::PointXYZ> *in) {
+//     // double dev = 0.1;
+//     //     Eigen::Matrix3d cov = Eigen::Matrix3d::Identity();
+//     //     cov*dev*dev;
+
+//     //     double E = 0.0;
+//     //     int N = in->points.size();
+//     //     for(int i = 0; i < N; i++) {
+//     //         for(int j = i; j < N; j++) {
+//     //             Eigen::Vector3d xi;
+//     //             Eigen::Vector3d xj;
+//     //             xi << in->points[i].x, in->points[i].y, in->points[i].z;
+//     //             xj << in->points[i].x, in->points[i].y, in->points[i].z; 
+//     //             E += this->gaussian(xi - xj, cov);
+//     //         }
+//     //     }
+
+//     //     E = E / N*N;
+//     //     return E = -std::log(E);
+// }
 
 // States
 void Mapping::init_states() {

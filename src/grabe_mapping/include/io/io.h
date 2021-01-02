@@ -10,11 +10,19 @@ public:
 
     static std::vector<std::string> split_string(std::string s, char trenner = ' ');
 
-    static std::vector<double> split_string_to_doubles(std::string s, char trenner = ' ');
+    static std::vector<double> split_string_to_doubles(std::string s);
 
-    static void read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZ>* cloud, std::string filename);
+    static void getEulerFromMatrix4f(const double *matrix4f, double *eulerAngles, double *translation = 0);
 
-    static void read_frame_from_file(Eigen::Matrix4d* frame, std::string filename);
+    static void getQuaternionFromMatrix4f(const double *matrix4f, double *qaternion, double *translation = 0);
 
-    static void write_pointcloud_to_xyz_file(pcl::PointCloud<pcl::PointXYZ>* cloud, std::string filename);
+    static void normalize(double *x, int size = 4);
+
+    static void read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZ>* &cloud, std::string filename);
+
+    static void read_frame_from_file(double* eulerAngles, double* translation, std::string filename);
+    
+    static void read_pose_from_file(double* eulerAngles, double* translation, std::string filename);
+
+    static void write_pointcloud_to_xyz_file(pcl::PointCloud<pcl::PointXYZ>* cloud, std::string filename, double scale_factor = 1.0);
 };
