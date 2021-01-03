@@ -589,7 +589,7 @@ void GuiPlugin::on_rosbag_finished() {
 }
 
 void GuiPlugin::on_pb_show_pressed() {
-  this->mapping->showResults();
+  //this->mapping->showResults();
   this->mapping->calculate_crispnesses(7, 8);
 }
 

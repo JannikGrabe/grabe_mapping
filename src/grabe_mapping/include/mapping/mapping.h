@@ -8,6 +8,7 @@
 #include <vector>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <Eigen/Core>
 
 class Mapping : public QWidget {
     Q_OBJECT
@@ -76,14 +77,14 @@ public:
     void showResults();
 
     // PointCloud stuff
-    void transform_cloud(pcl::PointCloud<pcl::PointXYZ> *in, pcl::PointCloud<pcl::PointXYZ> *out, double *angles, double *translation);
+    void transform_cloud(pcl::PointCloud<pcl::PointXYZI> *in, pcl::PointCloud<pcl::PointXYZI> *out, double *angles, double *translation);
 
     void calculate_crispnesses(int scan1, int scan2);
 
-    //double gaussian(Eigen::Vector3d x, Eigen::Matrix3d cov);
+    double calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in);
 
-    //double calculate_crispness(pcl::PointCloud<pcl::PointXYZ> *in);
-
+    void segmentPointCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
+    
     // getter
         // rosbag
     bool get_use_rosbag() const;

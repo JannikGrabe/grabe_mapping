@@ -7,6 +7,9 @@
 #include "io/io.h"
 #include <string>
 #include <cmath>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <Eigen/Eigenvalues>
+#include <pcl/filters/voxel_grid.h>
 
 Mapping::Mapping() {
 
@@ -168,7 +171,7 @@ void Mapping::stopChildProcesses(qint64 parentProcessId) {
 }
 
 // PointCloud stuff
-void Mapping::transform_cloud(pcl::PointCloud<pcl::PointXYZ> *in, pcl::PointCloud<pcl::PointXYZ> *out, double *angles, double *translation) {
+void Mapping::transform_cloud(pcl::PointCloud<pcl::PointXYZI> *in, pcl::PointCloud<pcl::PointXYZI> *out, double *angles, double *translation) {
     Eigen::Affine3f transform = Eigen::Affine3f::Identity();
     transform.translation() << translation[0], translation[1], translation[2];
     transform.rotate(Eigen::AngleAxisf (angles[0], Eigen::Vector3f::UnitX()));
@@ -185,50 +188,70 @@ void Mapping::calculate_crispnesses(int scan1, int scan2) {
     std::ostringstream scan2_base(this->output_filepath.toStdString() + "/scan", std::ios_base::app);
     scan2_base << std::setfill('0') << std::setw(3) << scan2;
 
-    pcl::PointCloud<pcl::PointXYZ>* cloud_pose_transformed = new pcl::PointCloud<pcl::PointXYZ>;
-    pcl::PointCloud<pcl::PointXYZ>* cloud_transformed = new pcl::PointCloud<pcl::PointXYZ>;
+    pcl::PointCloud<pcl::PointXYZI>* cloud_pose_transformed = new pcl::PointCloud<pcl::PointXYZI>;
+    pcl::PointCloud<pcl::PointXYZI>* cloud_transformed = new pcl::PointCloud<pcl::PointXYZI>;
+
+    IO::scale_factor = 0.01;
 
     try {
 
         // CLOUD 1
         // read cloud1
-        pcl::PointCloud<pcl::PointXYZ>* cloud1;
+        pcl::PointCloud<pcl::PointXYZI>* cloud1;
         IO::read_pointcloud_from_xyz_file(cloud1, scan1_base.str() + ".3d");
-        IO::write_pointcloud_to_xyz_file(cloud1, "/home/jannik/Bachelorarbeit/data/cloud1.xyz");
 
-        // read pose1 and transform
-        double *euler = new double[3](), *trans = new double[3]();
-        IO::read_pose_from_file(euler, trans, scan1_base.str() + ".pose");
-        this->transform_cloud(cloud1, cloud1, euler, trans);
+        std::cout << "-> " << this->calculate_crispness(cloud1) << std::endl;
 
-        *cloud_pose_transformed += *cloud1;
+        double * euler = new double[3]();
+        euler[0] = 2 * M_PI / 180;
+        euler[1] = 0;
+        euler[2] = 0;
 
-        // read frame1 and transform
-        IO::read_frame_from_file(euler, trans, scan1_base.str() + ".frames");
-        this->transform_cloud(cloud1, cloud1, euler, trans);
+        double * trans = new double[3]();
+        trans[0] = 0.1;
+        trans[0] = 0.1;
+        trans[0] = 0.1;
 
-        // CLOUD 2
-        // read cloud2
-        pcl::PointCloud<pcl::PointXYZ>* cloud2;
-        IO::read_pointcloud_from_xyz_file(cloud2, scan2_base.str() + ".3d");
-        IO::write_pointcloud_to_xyz_file(cloud2, "/home/jannik/Bachelorarbeit/data/cloud2.xyz");
+        pcl::PointCloud<pcl::PointXYZI>* cloud2 = new pcl::PointCloud<pcl::PointXYZI>();        
+        this->transform_cloud(cloud1, cloud2, euler, trans);
 
-        // read pose2 and transform
-        IO::read_pose_from_file(euler, trans, scan2_base.str() + ".pose");
-        this->transform_cloud(cloud2, cloud2, euler, trans);
+        *cloud2 += *cloud1;
 
-        *cloud_pose_transformed += *cloud2;
-        IO::write_pointcloud_to_xyz_file(cloud_pose_transformed, "/home/jannik/Bachelorarbeit/data/cloud_pose_transformed.xyz");
+        // IO::write_pointcloud_to_xyz_file(cloud1, "/home/jannik/Bachelorarbeit/data/cloud1.xyz");
 
-        // read frame2 and transform
-        IO::read_frame_from_file(euler, trans, scan2_base.str() + ".frames");
-        this->transform_cloud(cloud2, cloud2, euler, trans);
+        // // read pose1 and transform
+        // double *euler = new double[3](), *trans = new double[3]();
+        // IO::read_pose_from_file(euler, trans, scan1_base.str() + ".pose");
+        // this->transform_cloud(cloud1, cloud1, euler, trans);
 
-        // concat cloud1 and cloud2
-        *cloud_transformed = *cloud1 + *cloud2;
-        IO::write_pointcloud_to_xyz_file(cloud_transformed, "/home/jannik/Bachelorarbeit/data/cloud_transformed.xyz");
+        // *cloud_pose_transformed += *cloud1;
 
-        //std::cout << this->calculate_crispness(cloud_transformed) << std::endl;
+        // // read frame1 and transform
+        // IO::read_frame_from_file(euler, trans, scan1_base.str() + ".frames");
+        // this->transform_cloud(cloud1, cloud1, euler, trans);
+
+        // // CLOUD 2
+        // // read cloud2
+        // pcl::PointCloud<pcl::PointXYZI>* cloud2;
+        // IO::read_pointcloud_from_xyz_file(cloud2, scan2_base.str() + ".3d");
+        // IO::write_pointcloud_to_xyz_file(cloud2, "/home/jannik/Bachelorarbeit/data/cloud2.xyz");
+
+        // // read pose2 and transform
+        // IO::read_pose_from_file(euler, trans, scan2_base.str() + ".pose");
+        // this->transform_cloud(cloud2, cloud2, euler, trans);
+
+        // *cloud_pose_transformed += *cloud2;
+        // IO::write_pointcloud_to_xyz_file(cloud_pose_transformed, "/home/jannik/Bachelorarbeit/data/cloud_pose_transformed.xyz");
+
+        // // read frame2 and transform
+        // IO::read_frame_from_file(euler, trans, scan2_base.str() + ".frames");
+        // this->transform_cloud(cloud2, cloud2, euler, trans);
+
+        // // concat cloud1 and cloud2
+        // *cloud_transformed = *cloud1 + *cloud2;
+        // IO::write_pointcloud_to_xyz_file(cloud_transformed, "/home/jannik/Bachelorarbeit/data/cloud_transformed.xyz");
+
+        std::cout << "-> " << this->calculate_crispness(cloud2) << std::endl;
 
     } catch (Bad_file_exception e) {
         std::cout << e.what() << std::endl;
@@ -243,35 +266,78 @@ void Mapping::calculate_crispnesses(int scan1, int scan2) {
     } catch (std::exception e) {
         std::cout << e.what() << std::endl;
     }
-
-    std::cout << "done" << std::endl;
     return;
 }
 
-// double Mapping::gaussian(Eigen::Vector3d x, Eigen::Matrix3d cov) {
-//     return 1.0/(std::pow(2*M_PI, 3/2.0)*cov.determinant()) * std::exp(-0.5*x.transpose()*cov.inverse()*x);
-// }
+double Mapping::calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in) {
+    
+    int N = in->points.size();
+    double dev = 0.8;
+    Eigen::Matrix3f cov = Eigen::Matrix3f::Identity();
+    cov *= dev * dev;
 
-// double Mapping::calculate_crispness(pcl::PointCloud<pcl::PointXYZ> *in) {
-//     // double dev = 0.1;
-//     //     Eigen::Matrix3d cov = Eigen::Matrix3d::Identity();
-//     //     cov*dev*dev;
+    // calculate squared slength of all points
+    for(int i = 0; i < N; i++) {
+        pcl::PointXYZI* p = &in->points[i];
+        p->intensity = p->x * p->x + p->y * p->y + p->z * p->z;
+    }
 
-//     //     double E = 0.0;
-//     //     int N = in->points.size();
-//     //     for(int i = 0; i < N; i++) {
-//     //         for(int j = i; j < N; j++) {
-//     //             Eigen::Vector3d xi;
-//     //             Eigen::Vector3d xj;
-//     //             xi << in->points[i].x, in->points[i].y, in->points[i].z;
-//     //             xj << in->points[i].x, in->points[i].y, in->points[i].z; 
-//     //             E += this->gaussian(xi - xj, cov);
-//     //         }
-//     //     }
+    // // sort points by length
+    // std::sort(in->points.begin(), in->points.end(), [](pcl::PointXYZI& p1, pcl::PointXYZI& p2) {
+    //     return p1.intensity > p2.intensity;
+    // });
 
-//     //     E = E / N*N;
-//     //     return E = -std::log(E);
-// }
+    // create kd-tree of point cloud
+    pcl::KdTreeFLANN<pcl::PointXYZI> kdtree;
+    kdtree.setInputCloud(in->makeShared());
+
+    // determine radius for kdtree radius search
+    Eigen::EigenSolver<Eigen::Matrix3f> solver(cov, true);
+    double max_eigen_val = solver.eigenvalues()[0].real();
+    
+    double k = 5;
+    
+    double radius = 2*k*max_eigen_val*dev*dev;
+    std::cout << radius << std::endl;
+
+    // caclulate gaussian only of points later in the list 
+    std::vector<int> indeces;
+    std::vector<float> distances;
+    int count = 0;
+    double E = 0.0;
+    Eigen::Matrix3f cov_inv = cov.inverse();
+    double factor = 1.0 / ( std::pow(2 * M_PI, 3 / 2.0) * cov.determinant() );
+
+    Eigen::Vector3f xi;
+    Eigen::Vector3f xj;
+    Eigen::Vector3f x;
+
+    for(int i = 0; i < N; i++) {
+        //if(i % 2000 == 0) std::cout << i << std::endl;
+
+        xi = in->points[i].getVector3fMap();
+
+        if(kdtree.radiusSearch(in->points[i], radius, indeces, distances) > 0) {
+            for(int j = 0; j < indeces.size(); j++) {
+                if(indeces[j] > i) {
+                    xj = in->points[indeces[j]].getVector3fMap();
+
+                    x = xi - xj;
+                    E += factor * std::exp(-0.5*x.transpose()*cov_inv*x); 
+                    count ++;
+                }
+            }
+        }
+
+    }
+
+    E = E / count;
+    return E = -std::log(E);
+}
+
+void Mapping::segmentPointCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud) {
+
+}
 
 // States
 void Mapping::init_states() {

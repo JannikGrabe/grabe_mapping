@@ -8,6 +8,8 @@
 class IO {
 public:
 
+    static double scale_factor;
+
     static std::vector<std::string> split_string(std::string s, char trenner = ' ');
 
     static std::vector<double> split_string_to_doubles(std::string s);
@@ -18,11 +20,11 @@ public:
 
     static void normalize(double *x, int size = 4);
 
-    static void read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZ>* &cloud, std::string filename);
+    static void read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZI>* &cloud, std::string filename);
 
     static void read_frame_from_file(double* eulerAngles, double* translation, std::string filename);
     
     static void read_pose_from_file(double* eulerAngles, double* translation, std::string filename);
 
-    static void write_pointcloud_to_xyz_file(pcl::PointCloud<pcl::PointXYZ>* cloud, std::string filename, double scale_factor = 1.0);
+    static void write_pointcloud_to_xyz_file(pcl::PointCloud<pcl::PointXYZI>* cloud, std::string filename);
 };

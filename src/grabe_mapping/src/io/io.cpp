@@ -1,6 +1,8 @@
 #include "io/io.h"
 #include <fstream>
 
+double IO::scale_factor = 1.0;
+
 std::vector<std::string> IO::split_string(std::string s, char trenner) {
     std::vector<std::string> result;
 
@@ -36,7 +38,7 @@ std::vector<double> IO::split_string_to_doubles(std::string s) {
     return result;
 }
 
-void IO::read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZ>* &cloud, std::string filename) {
+void IO::read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZI>* &cloud, std::string filename) {
     std::ifstream file;
     file.open(filename.c_str());
 
@@ -44,8 +46,8 @@ void IO::read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZ>* &cloud, s
         throw Bad_file_exception(filename.c_str(), "IO::read_pointcloud_from_xyz_file", "can't open file");
     }
     
-    cloud = new pcl::PointCloud<pcl::PointXYZ>;
-    pcl::PointXYZ p;
+    cloud = new pcl::PointCloud<pcl::PointXYZI>;
+    pcl::PointXYZI p;
 
     std::string line = "";
     std::vector<double> results;
@@ -59,9 +61,9 @@ void IO::read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZ>* &cloud, s
            throw Bad_point_exception(filename.c_str(), "IO::read_pointcloud_from_xyz_file", "wrong number of doubles");
         }
 
-        p.x = results[0];
-        p.y = results[1];
-        p.z = results[2];
+        p.x = results[0] * scale_factor;
+        p.y = results[1] * scale_factor;
+        p.z = results[2] * scale_factor;
         
         cloud->points.push_back(p);
     }
@@ -119,9 +121,9 @@ void IO::read_frame_from_file(double* eulerAngles, double* translation, std::str
     // eulerAngles[0] *= -to_rad;
     // eulerAngles[1] *= -to_rad;
     // eulerAngles[2] *= -to_rad;
-    // translation[0] *= -1;
-    // translation[1] *= -1;
-    // translation[2] *= -1;
+    translation[0] *= scale_factor;
+    translation[1] *= scale_factor;
+    translation[2] *= scale_factor;
 }
 
 void IO::read_pose_from_file(double* eulerAngles, double* translation, std::string filename) {
@@ -147,9 +149,12 @@ void IO::read_pose_from_file(double* eulerAngles, double* translation, std::stri
     eulerAngles[0] *= to_rad;
     eulerAngles[1] *= to_rad;
     eulerAngles[2] *= to_rad;
+    translation[0] *= scale_factor;
+    translation[1] *= scale_factor;
+    translation[2] *= scale_factor;
 }
 
-void IO::write_pointcloud_to_xyz_file(pcl::PointCloud<pcl::PointXYZ>* cloud, std::string filename, double scale_factor) {
+void IO::write_pointcloud_to_xyz_file(pcl::PointCloud<pcl::PointXYZI>* cloud, std::string filename) {
     if(filename.size() <= 4 || filename.substr(filename.size() - 4, filename.size() - 1) != ".xyz") {
         throw Bad_file_exception(filename.c_str(), "IO::write_pointcloud_to_xyz_file", ".xyz missing");
     }
