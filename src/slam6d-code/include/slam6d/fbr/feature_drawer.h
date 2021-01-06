@@ -1,0 +1,88 @@
+/**
+ * @file feature_drawer.h
+ * @brife draws features and matches on panorma images
+ * This class is a feature drawer that draws the keypoints found on a scan on a panorama image of the scan.
+ * It also draws the matches between two scan on panorama images and draw a line between them.
+ * @author Hamidreza Houshiar. Jacobs University Bremen gGmbH, Germany.
+ */
+
+#ifndef FEATURE_DRAWER_H_
+#define FEATURE_DRAWER_H_
+
+#include "fbr_global.h"
+#if (CV_MAJOR_VERSION == 3 && WITH_OPENCV_NONFREE)
+  #include "opencv2/xfeatures2d.hpp"
+#else
+  #include "opencv2/features2d/features2d.hpp"
+#endif
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/imgproc/imgproc_c.h"
+
+namespace fbr{
+
+  const int draw_shift_bits = 4;
+  const int draw_multiplier = 1 << draw_shift_bits;
+  /**
+   * @class feature_drawer : draws keypoints on panorama images and also matches between two panorama image
+   */
+  class feature_drawer{
+
+    void _DrawKeypoint( cv::Mat& img, const cv::KeyPoint& p, const cv::Scalar& color,
+#if CV_MAJOR_VERSION >= 4
+		  cv::DrawMatchesFlags
+#else
+		  int
+#endif
+		  flags);
+    void _PrepareImgAndDrawKeypoints( const cv::Mat& img1, const std::vector<cv::KeyPoint>& keypoints1,
+				      const cv::Mat& img2, const std::vector<cv::KeyPoint>& keypoints2,
+				      cv::Mat& outImg, cv::Mat& outImg1, cv::Mat& outImg2,
+				      const cv::Scalar& singlePointColor,
+#if CV_MAJOR_VERSION >= 4
+		  cv::DrawMatchesFlags
+#else
+		  int
+#endif
+		  flags);
+    void _DrawMatch( cv::Mat& outImg, cv::Mat& outImg1, cv::Mat& outImg2 ,
+		     const cv::KeyPoint& kp1, const cv::KeyPoint& kp2, const cv::Scalar& matchColor,
+#if CV_MAJOR_VERSION >= 4
+		  cv::DrawMatchesFlags
+#else
+		  int
+#endif
+		  flags);
+  public:
+    void DrawKeypoints( const cv::Mat& image, const std::vector<cv::KeyPoint>& keypoints, cv::Mat& outImage,
+			const cv::Scalar& _color,
+#if CV_MAJOR_VERSION >= 4
+		  cv::DrawMatchesFlags
+#else
+		  int
+#endif
+		  flags);
+    void DrawMatches( const cv::Mat& img1, const std::vector<cv::KeyPoint>& keypoints1,
+		      const cv::Mat& img2, const std::vector<cv::KeyPoint>& keypoints2,
+		      const std::vector<cv::DMatch>& matches1to2, cv::Mat& outImg,
+		      const cv::Scalar& matchColor, const cv::Scalar& singlePointColor,
+		      const std::vector<char>& matchesMask,
+#if CV_MAJOR_VERSION >= 4
+		  cv::DrawMatchesFlags
+#else
+		  int
+#endif
+		  flags);
+    void DrawMatches( const cv::Mat& img1, const std::vector<cv::KeyPoint>& keypoints1,
+		      const cv::Mat& img2, const std::vector<cv::KeyPoint>& keypoints2,
+		      const std::vector<std::vector<cv::DMatch> >& matches1to2, cv::Mat& outImg,
+		      const cv::Scalar& matchColor, const cv::Scalar& singlePointColor,
+		      const std::vector<std::vector<char> >& matchesMask,
+#if CV_MAJOR_VERSION >= 4
+		  cv::DrawMatchesFlags
+#else
+		  int
+#endif
+		  flags);
+  };
+}
+#endif /*FEATURE_DRAWER_H*/

@@ -591,6 +591,7 @@ void GuiPlugin::on_rosbag_finished() {
 void GuiPlugin::on_pb_show_pressed() {
   //this->mapping->showResults();
   this->mapping->calculate_crispnesses(7, 8);
+  //this->mapping->segmentPointCloud();
 }
 
 void GuiPlugin::on_pb_cancel_pressed() {

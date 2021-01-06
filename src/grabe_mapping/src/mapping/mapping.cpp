@@ -11,6 +11,16 @@
 #include <Eigen/Eigenvalues>
 #include <pcl/filters/voxel_grid.h>
 
+#include <pcl/ModelCoefficients.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/segmentation/extract_clusters.h>
+
+
 Mapping::Mapping() {
 
     this->init_states();
@@ -19,7 +29,6 @@ Mapping::Mapping() {
 
     QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_process_finished);
 }
-
 
 // Mapping
 void Mapping::start_mapping() {
@@ -61,7 +70,8 @@ void Mapping::finish_scan_to_file() {
 }
 
 void Mapping::start_slam6D() {
-    std::string slam6D = "/home/jannik/slam6d-code/bin/slam6D";
+    //std::string slam6D = "/home/jannik/slam6d-code/bin/slam6D";
+    std::string slam6D = ros::package::getPath("three_dtk") + "/bin/slam6D";
 
     slam6D += this->parameters->to_string();
 
@@ -272,15 +282,16 @@ void Mapping::calculate_crispnesses(int scan1, int scan2) {
 double Mapping::calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in) {
     
     int N = in->points.size();
-    double dev = 0.8;
+    double dev = 1;
     Eigen::Matrix3f cov = Eigen::Matrix3f::Identity();
-    cov *= dev * dev;
+    double dev2 = dev * dev;
+    cov *= dev2;
 
-    // calculate squared slength of all points
-    for(int i = 0; i < N; i++) {
-        pcl::PointXYZI* p = &in->points[i];
-        p->intensity = p->x * p->x + p->y * p->y + p->z * p->z;
-    }
+    // // calculate squared slength of all points
+    // for(int i = 0; i < N; i++) {
+    //     pcl::PointXYZI* p = &in->points[i];
+    //     p->intensity = p->x * p->x + p->y * p->y + p->z * p->z;
+    // }
 
     // // sort points by length
     // std::sort(in->points.begin(), in->points.end(), [](pcl::PointXYZI& p1, pcl::PointXYZI& p2) {
@@ -295,7 +306,7 @@ double Mapping::calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in) {
     Eigen::EigenSolver<Eigen::Matrix3f> solver(cov, true);
     double max_eigen_val = solver.eigenvalues()[0].real();
     
-    double k = 5;
+    double k = 10;
     
     double radius = 2*k*max_eigen_val*dev*dev;
     std::cout << radius << std::endl;
@@ -305,25 +316,29 @@ double Mapping::calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in) {
     std::vector<float> distances;
     int count = 0;
     double E = 0.0;
-    Eigen::Matrix3f cov_inv = cov.inverse();
     double factor = 1.0 / ( std::pow(2 * M_PI, 3 / 2.0) * cov.determinant() );
 
-    Eigen::Vector3f xi;
-    Eigen::Vector3f xj;
-    Eigen::Vector3f x;
+    pcl::PointXYZI* pj;
+    double pix, piy, piz;
+    double px, py, pz;
 
     for(int i = 0; i < N; i++) {
-        //if(i % 2000 == 0) std::cout << i << std::endl;
+        if(i % 1000 == 0) std::cout << i << std::endl;
 
-        xi = in->points[i].getVector3fMap();
+        pix = in->points[i].x;
+        piy = in->points[i].y;
+        piz = in->points[i].z;
 
         if(kdtree.radiusSearch(in->points[i], radius, indeces, distances) > 0) {
             for(int j = 0; j < indeces.size(); j++) {
                 if(indeces[j] > i) {
-                    xj = in->points[indeces[j]].getVector3fMap();
-
-                    x = xi - xj;
-                    E += factor * std::exp(-0.5*x.transpose()*cov_inv*x); 
+                    pj = &in->points[indeces[j]];
+                    
+                    px = pix - pj->x;
+                    py = piy - pj->y;
+                    pz = piz - pj->z;
+                    
+                    E += factor * std::exp(-0.5*px*px*dev2+py*py*dev2+pz*pz*dev2); 
                     count ++;
                 }
             }
@@ -335,8 +350,98 @@ double Mapping::calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in) {
     return E = -std::log(E);
 }
 
-void Mapping::segmentPointCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud) {
+void Mapping::segmentPointCloud() {
+    std::ostringstream scan1_base(this->output_filepath.toStdString() + "/scan", std::ios_base::app);
+    scan1_base << std::setfill('0') << std::setw(3) << 4;
 
+    //IO::scale_factor = 0.01;
+    IO::scale_factor = 100;
+    pcl::PointCloud<pcl::PointXYZI>* cloud;
+    IO::read_pointcloud_from_xyz_file(cloud, "/home/jannik/Bachelorarbeit/data/cloud1.xyz");
+    
+    // pcl::VoxelGrid<pcl::PointXYZI> vg;
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZI>);
+    // vg.setInputCloud (cloud->makeShared());
+    // vg.setLeafSize (0.1f, 0.1f, 0.1f);
+    // vg.filter (*cloud_filtered);
+    // std::cout << "PointCloud after filtering has: " << cloud_filtered->size ()  << " data points." << std::endl; //*
+
+    *cloud_filtered = *cloud;
+
+    // Create the segmentation object for the planar model and set all the parameters
+    pcl::SACSegmentation<pcl::PointXYZI> seg;
+    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZI> ());
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZI> ());
+    pcl::PCDWriter writer;
+    seg.setOptimizeCoefficients (true);
+    seg.setModelType (pcl::SACMODEL_PLANE);
+    seg.setMethodType (pcl::SAC_RANSAC);
+    seg.setMaxIterations (100);
+    seg.setDistanceThreshold (0.02);
+
+    int i=0, nr_points = (int) cloud_filtered->size ();
+    while (cloud_filtered->size () > 0.3 * nr_points)
+    {
+        // Segment the largest planar component from the remaining cloud
+        seg.setInputCloud (cloud_filtered);
+        seg.segment (*inliers, *coefficients);
+        if (inliers->indices.size () == 0)
+        {
+            std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
+            break;
+        }
+
+        // Extract the planar inliers from the input cloud
+        pcl::ExtractIndices<pcl::PointXYZI> extract;
+        extract.setInputCloud (cloud_filtered);
+        extract.setIndices (inliers);
+        extract.setNegative (false);
+
+        // Get the points associated with the planar surface
+        extract.filter (*cloud_plane);
+        std::cout << "PointCloud representing the planar component: " << cloud_plane->size () << " data points." << std::endl;
+
+        // Remove the planar inliers, extract the rest
+        extract.setNegative (true);
+        extract.filter (*cloud_f);
+        *cloud_filtered = *cloud_f;
+    }
+
+    writer.write<pcl::PointXYZI> ("/home/jannik/Bachelorarbeit/data/clusters/after_planes.pcd", *cloud_filtered, false); 
+
+    // Creating the KdTree object for the search method of the extraction
+    pcl::search::KdTree<pcl::PointXYZI>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZI>);
+    tree->setInputCloud (cloud_filtered);
+
+    std::vector<pcl::PointIndices> cluster_indices;
+    pcl::EuclideanClusterExtraction<pcl::PointXYZI> ec;
+    ec.setClusterTolerance (0.3); // 2cm
+    ec.setMinClusterSize (10);
+    ec.setMaxClusterSize (25000);
+    ec.setSearchMethod (tree);
+    ec.setInputCloud (cloud_filtered);
+    ec.extract (cluster_indices);
+
+    std::cout << "clusters: " << cluster_indices.size() << std::endl;
+
+    int j = 0;
+    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
+    {
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZI>);
+        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
+            cloud_cluster->push_back ((*cloud_filtered)[*pit]);
+            cloud_cluster->width = cloud_cluster->size ();
+            cloud_cluster->height = 1;
+            cloud_cluster->is_dense = true;
+
+            std::cout << "PointCloud representing the Cluster: " << cloud_cluster->size () << " data points." << std::endl;
+            std::stringstream ss;
+            ss << "/home/jannik/Bachelorarbeit/data/clusters/cloud_cluster_" << j << ".pcd";
+            writer.write<pcl::PointXYZI> (ss.str (), *cloud_cluster, false); 
+            j++;
+    }
 }
 
 // States

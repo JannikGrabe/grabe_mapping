@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   rqt_gui_cpp
   sensor_msgs
   std_msgs
+  three_dtk
 )
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -129,6 +130,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include
+  ${three_dtk_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}/..
   ${catkin_INCLUDE_DIRS}
 )

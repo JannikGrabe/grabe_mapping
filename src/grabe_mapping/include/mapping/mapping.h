@@ -83,7 +83,7 @@ public:
 
     double calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in);
 
-    void segmentPointCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
+    void segmentPointCloud();
     
     // getter
         // rosbag
