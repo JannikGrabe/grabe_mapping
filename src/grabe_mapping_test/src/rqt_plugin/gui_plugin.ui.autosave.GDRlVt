@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Mapping</class>
+ <widget class="QMainWindow" name="Mapping">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>522</width>
+    <height>402</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Mapping</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="1">
+     <layout class="QVBoxLayout" name="vl_settings">
+      <item>
+       <widget class="QTabWidget" name="tb_settings">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="currentIndex">
+         <number>5</number>
+        </property>
+        <widget class="QWidget" name="tab_output">
+         <attribute name="title">
+          <string>Output</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <layout class="QGridLayout" name="gl_output">
+            <item row="1" column="1">
+             <widget class="QPushButton" name="pb_output">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="l_output">
+              <property name="text">
+               <string>directory for any output files</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLineEdit" name="le_output"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cb_use_output_files">
+            <property name="text">
+             <string>use files from this directory instead of rosbag</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="vs">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_rosbag">
+         <attribute name="title">
+          <string>Rosbag</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <layout class="QGridLayout" name="gl_rosbag">
+            <item row="1" column="0">
+             <widget class="QLineEdit" name="le_filePath"/>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="pb_fileDialog">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gl_rosbag2">
+            <item row="2" column="0">
+             <widget class="QLabel" name="l_units">
+              <property name="text">
+               <string>Units</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QRadioButton" name="rb_centimeter">
+              <property name="text">
+               <string>cm</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">bg_units</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QRadioButton" name="rb_lefthanded">
+              <property name="text">
+               <string>left-handed</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">bg_coordinates</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="l_coordinates">
+              <property name="text">
+               <string>Coordinates</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QRadioButton" name="rb_righthanded">
+              <property name="text">
+               <string>right-handed</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">bg_coordinates</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QRadioButton" name="rb_meter">
+              <property name="text">
+               <string>m</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">bg_units</string>
+              </attribute>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="vs1">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_topics">
+         <attribute name="title">
+          <string>Topics</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="3" column="0">
+           <widget class="QLabel" name="l_gps">
+            <property name="text">
+             <string>gps</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="le_scan">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="placeholderText">
+             <string>/scan</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLineEdit" name="le_odom">
+            <property name="placeholderText">
+             <string>/odom</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QLineEdit" name="le_odom_type">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="placeholderText">
+             <string>nav_msgs/Odometry</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLabel" name="l_type">
+            <property name="text">
+             <string>type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QLineEdit" name="le_gps_type">
+            <property name="placeholderText">
+             <string>gps_type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="l_scan">
+            <property name="text">
+             <string>laser sensor</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="l_name">
+            <property name="text">
+             <string>name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="l_odom">
+            <property name="text">
+             <string>odom</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLineEdit" name="le_gps">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="placeholderText">
+             <string>/gps</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLineEdit" name="le_scan_type">
+            <property name="placeholderText">
+             <string>sensor_msgs/LaserScan</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <spacer name="vs2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_general">
+         <attribute name="title">
+          <string>General</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QGroupBox" name="gb_scans">
+            <property name="title">
+             <string>Scans</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="1" column="4">
+              <widget class="QSpinBox" name="sb_last">
+               <property name="maximum">
+                <number>1000000</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="l_first">
+               <property name="text">
+                <string>First</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_total">
+               <property name="text">
+                <string>Total</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="3">
+              <widget class="QLabel" name="l_last">
+               <property name="text">
+                <string>Last</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QSpinBox" name="sb_first">
+               <property name="maximum">
+                <number>1000000</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="6">
+              <spacer name="hs">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="1" column="5">
+              <widget class="QLabel" name="l_info">
+               <property name="font">
+                <font>
+                 <pointsize>8</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>if not specified all scans will be used</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="le_total">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>Distance </string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Use points within min and max:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QGridLayout" name="gridLayout_6">
+               <item row="1" column="1">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>Min</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Max</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+               </item>
+               <item row="0" column="2">
+                <spacer name="horizontalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="vs5">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_icp">
+         <attribute name="title">
+          <string>ICP</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QGroupBox" name="gb_icp_minimization">
+            <property name="title">
+             <string>ICP Minimization</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_2">
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_icp_minimization">
+               <property name="text">
+                <string>Algorithm</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_icp_minimization">
+               <property name="currentText">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="l_icp_iterations">
+               <property name="text">
+                <string>Max Iterations</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QSpinBox" name="sb_icp_iterations">
+               <property name="maximum">
+                <number>1000</number>
+               </property>
+               <property name="value">
+                <number>50</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="gb_nn">
+            <property name="title">
+             <string>Nearest Neighbor</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_3">
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_nn">
+               <property name="text">
+                <string>Algorithm</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_nn"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="vs3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_graphslam">
+         <attribute name="title">
+          <string>GraphSLAM</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QGroupBox" name="gb_closing_loop">
+            <property name="title">
+             <string>Closing Loop</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_closing_loop">
+               <property name="text">
+                <string>Algorithm</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_closing_loop">
+               <property name="currentText">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Loop size</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="gb_graphslam">
+            <property name="title">
+             <string>GraphSLAM Minimization</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout_4">
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cb_graphslam"/>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_graphslam">
+               <property name="text">
+                <string>Algorithm</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="l_slam_iterations">
+               <property name="text">
+                <string>Max Iterations</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QSpinBox" name="sb_slam_iterations">
+               <property name="minimum">
+                <number>-1</number>
+               </property>
+               <property name="maximum">
+                <number>1000</number>
+               </property>
+               <property name="value">
+                <number>50</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="vs4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
+        <property name="lineWidth">
+         <number>3</number>
+        </property>
+        <property name="midLineWidth">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="hl_start">
+        <item>
+         <spacer name="hs2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_show">
+          <property name="text">
+           <string>show Results</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_start">
+          <property name="text">
+           <string>start mapping</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="pb_progress">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="textVisible">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="bg_coordinates"/>
+  <buttongroup name="bg_units"/>
+ </buttongroups>
+</ui>

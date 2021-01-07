@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="rosbag_filename"/>
+	<arg name="scan_topic"/>
+    <arg name="odom_topic"/>
+    <arg name="input_is_meter"/>
+    <arg name="input_is_lefthanded"/>
+    <arg name="output_path"/>
+
+    <param name="use_sim_time" type="boolean" value="true" />
+    <node pkg="rosbag" type="play" name="player" required="true" args="--clock $(arg rosbag_filename)"/>
+	
+	<group ns="mapping">
+    
+		<node pkg="grabe_mapping" type="scan_to_file_node" name="scan_to_file_node" output="screen">
+			<remap from="scan" to="$(arg scan_topic)"/>
+            <remap from="odom" to="$(arg odom_topic)"/>
+            <param name="input_is_meter" type="bool" value="$(arg input_is_meter)"/>
+            <param name="input_is_lefthanded" type="bool" value="$(arg input_is_lefthanded)"/>
+            <param name="output_path" type="string" value="$(arg output_path)"/>
+		</node> 
+
+	</group>
+</launch>
