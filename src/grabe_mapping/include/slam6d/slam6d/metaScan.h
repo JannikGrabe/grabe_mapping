@@ -46,6 +46,8 @@ public:
 
   virtual void saveFrames(bool append = false) {}
 
+  virtual void clearFrames() {}
+
   virtual size_t getFrameCount() { return 0; }
 
   virtual void getFrame(size_t i,

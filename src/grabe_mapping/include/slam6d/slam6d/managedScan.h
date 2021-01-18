@@ -39,6 +39,7 @@ public:
 
   virtual size_t readFrames();
   virtual void saveFrames(bool append = false);
+  virtual void clearFrames();
   virtual size_t getFrameCount();
   virtual void getFrame(size_t i, const double*& pose_matrix, AlgoType& type);
 

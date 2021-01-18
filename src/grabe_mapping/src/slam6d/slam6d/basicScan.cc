@@ -893,7 +893,7 @@ size_t BasicScan::readFrames()
 }
 
 void BasicScan::saveFrames(bool append)
-{
+{ 
   std::string filename = m_path + "scan" + m_identifier + ".frames";
   std::ios_base::openmode open_mode;
 
@@ -907,6 +907,10 @@ void BasicScan::saveFrames(bool append)
   }
   file << std::flush;
   file.close();
+}
+
+void BasicScan::clearFrames() {
+  m_frames.clear();
 }
 
 size_t BasicScan::getFrameCount()

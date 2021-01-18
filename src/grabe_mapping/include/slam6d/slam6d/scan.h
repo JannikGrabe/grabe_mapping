@@ -301,6 +301,7 @@ public:
    * Write the accumulated frames into a .frames-file.
    */
   virtual void saveFrames(bool append = false) = 0;
+  virtual void clearFrames() = 0;
 
   //! Count of frames
   virtual size_t getFrameCount() = 0;

@@ -581,6 +581,8 @@ int main(int argc, char **argv)
             scanserver, pairing_mode, continue_processing, bucketSize,
             loopclose);
 
+  quiet = true;
+
   cout << "slam6D will proceed with the following parameters:" << endl;
   //@@@ to do :-)
   // TODO: writer a proper TODO ^
@@ -692,7 +694,7 @@ int main(int argc, char **argv)
   Timer t = ClientMetric::matching_time.start();
 #endif //WITH_METRICS
 
-  if (mni_lum == -1 && loopSlam6DAlgo == 0) {
+  if (mni_lum == -1 && loopSlam6DAlgo == 0) { // slam iterations not set -> no SLAM && no algo for loop closure => only ICP
     icp6D *my_icp = 0;
     my_icp = new icp6D(my_icp6Dminimizer, mdm, mni, quiet, meta, rand, eP,
                        anim, epsilonICP, nns_method);
@@ -704,7 +706,7 @@ int main(int argc, char **argv)
 
     if (my_icp) my_icp->doICP(Scan::allScans, pairing_mode);
     delete my_icp;
-  } else if (clpairs > -1) {
+  } else if (clpairs > -1) { // for loop closure: minimal number of points for overlap -> apperently only works with Euler SLAM
     //!!!!!!!!!!!!!!!!!!!!!!!!
     icp6D *my_icp = 0;
     my_icp = new icp6D(my_icp6Dminimizer, mdm, mni, quiet, meta, rand, eP,
@@ -718,7 +720,7 @@ int main(int argc, char **argv)
                                           clpairs, loopsize);
 
     //!!!!!!!!!!!!!!!!!!!!!!!!
-  } else {
+  } else { // iterations for SLAM were set and clpairs not set => select SLAM algorithm
     graphSlam6D *my_graphSlam6D = 0;
     switch (lum6DAlgo) {
     case 1 :
@@ -744,6 +746,7 @@ int main(int argc, char **argv)
                                   anim, epsilonICP, nns_method, epsilonSLAM);
       break;
     }
+
     // Construct Network
     if (net != "none") {
       icp6D *my_icp = 0;
@@ -761,12 +764,12 @@ int main(int argc, char **argv)
 
     } else {
       icp6D *my_icp = 0;
-      if(algo > 0) {
+      if(algo > 0) { // unnecessary check because icp has to always be set (wasnt checked before either)
         my_icp = new icp6D(my_icp6Dminimizer, mdm, mni, quiet, meta, rand, eP,
                            anim, epsilonICP, nns_method);
 
         loopSlam6D *my_loopSlam6D = 0;
-        switch(loopSlam6DAlgo) {
+        switch(loopSlam6DAlgo) { // select loop closure
         case 1:
           my_loopSlam6D = new elch6Deuler(veryQuiet, my_icp6Dminimizer,
                                           distLoop, iterLoop,

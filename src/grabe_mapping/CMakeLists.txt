@@ -129,6 +129,14 @@ catkin_package(
 
 ####### Slam6D ######
 
+# Set output directories for libraries and executables
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
+# Set output directories for multi-config builds (like with MSVC)
+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+  string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+  set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/bin )
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/3rdparty/CMakeModules" ${CMAKE_MODULE_PATH})
 
 include(CheckSymbolExists)
@@ -175,6 +183,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 
 find_package(SuiteSparse REQUIRED)
+include_directories(/usr/include/suitesparse)
 
 find_package(ANN)
 if (NOT ANN_FOUND)
@@ -346,7 +355,8 @@ endif()
 #################################################
 # OPERATING SYSTEM SPECIFIC BEHAVIOUR          ##
 #################################################
-
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_CFLAGS}")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ADDITIONAL_CFLAGS}")
 ## Special treatment for system specifics
 if(APPLE)
   add_definitions(-Dfopen64=fopen)
@@ -465,7 +475,11 @@ endif()
 
 # Set include and link dirs ...
 include_directories(${PROJECT_SOURCE_DIR}/include/slam6d)
-set(EXTRA_LIBS "")
+
+
+#include_directories(${PROJECT_SOURCE_DIR}/3rdparty/wxthings/include/)
+link_directories(${PROJECT_SOURCE_DIR}/obj)
+link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 add_subdirectory(src/slam6d/show)
 add_subdirectory(src/slam6d/slam6d)
@@ -554,6 +568,10 @@ add_library(${PROJECT_NAME}_plugin
   ${${PROJECT_NAME}_PLUGIN_UIS_H}
   )
 
+add_library(${PROJECT_NAME}_my_slam6d
+  src/my_slam6d/my_slam6d.cpp
+  )
+
 
 ###### SCAN_TO_FILE #######
 
@@ -592,9 +610,8 @@ set(${PROJECT_NAME}_SCAN_TO_FILE_SRCS
 
 #add_executable(${PROJECT_NAME}_plugin ${${PROJECT_NAME}_PLUGIN_SRCS})
 
-target_link_libraries(${PROJECT_NAME}_plugin scan
-  ${catkin_LIBRARIES}
-)
+target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME}_my_slam6d scan
+  ${catkin_LIBRARIES} )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
   target_link_libraries(${PROJECT_NAME}_plugin Qt5::Widgets)

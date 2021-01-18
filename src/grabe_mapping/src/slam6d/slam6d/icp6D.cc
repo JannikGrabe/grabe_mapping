@@ -125,6 +125,7 @@ int icp6D::match(Scan* PreviousScan, Scan* CurrentScan,
     if (iter == 1) time = GetCurrentTimeInMilliSec();
 
 #ifdef _OPENMP
+    
     // Implementation according to the paper
     // "The Parallel Iterative Closest Point Algorithm"
     // by Langis / Greenspan / Godin, IEEE 3DIM 2001
@@ -234,7 +235,7 @@ int icp6D::match(Scan* PreviousScan, Scan* CurrentScan,
     if (pairs.size() > 3) {
       if (my_icp6Dminimizer->getAlgorithmID() == 3 ||
 	  my_icp6Dminimizer->getAlgorithmID() == 8 ) {
-        memcpy(alignxf, CurrentScan->get_transMat(), sizeof(alignxf));
+        memcpy(alignxf, CurrentScan->get_transMat(), sizeof(alignxf)); // will never happen because algorithm 3 and 8 are not implemented
       }
       ret = my_icp6Dminimizer->Align(pairs, alignxf, centroid_m, centroid_d);
     } else {
@@ -262,15 +263,15 @@ int icp6D::match(Scan* PreviousScan, Scan* CurrentScan,
     }
 
     if (((fabs(ret - prev_ret) < epsilonICP) &&
-	 (fabs(ret - prev_prev_ret) < epsilonICP)) ||
-         (iter == max_num_iterations - 1) ) {
+	      (fabs(ret - prev_prev_ret) < epsilonICP)) ||
+        (iter == max_num_iterations - 1) ) {
       double id[16];
       M4identity(id);
       if(anim == -2) {
-	// write end pose
+	      // write end pose
         CurrentScan->transform(id, Scan::ICP, -1);
       } else {
-	// write end pose
+	      // write end pose
         CurrentScan->transform(id, Scan::ICP, 0);
       }
       break;

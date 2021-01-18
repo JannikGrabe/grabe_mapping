@@ -421,6 +421,10 @@ void ManagedScan::saveFrames(bool append)
   m_shared_scan->saveFrames(append);
 }
 
+void ManagedScan::clearFrames() {
+  m_shared_scan->clearFrames();
+}
+
 size_t ManagedScan::getFrameCount()
 {
   return m_shared_scan->getFrames().size();

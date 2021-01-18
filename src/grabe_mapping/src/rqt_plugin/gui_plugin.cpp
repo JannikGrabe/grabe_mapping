@@ -94,7 +94,6 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->ui_.cb_graphslam, &QComboBox::currentTextChanged, this, &GuiPlugin::on_cb_graphslam_current_text_changed);
   QObject::connect(this->ui_.sb_loop_size, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_loop_size_value_changed);
   QObject::connect(this->ui_.sb_cl_max_distance, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_cl_max_distance_value_changed);
-  QObject::connect(this->ui_.sb_cl_min_overlap, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_cl_min_overlap_value_changed); 
   QObject::connect(this->ui_.dsb_cl_p2p_distance, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &GuiPlugin::on_dsb_cl_p2p_distance_value_changed);
   QObject::connect(this->ui_.sb_cl_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_cl_iterations_value_changed); 
   QObject::connect(this->ui_.sb_slam_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_slam_iterations_value_changed); 
@@ -169,7 +168,6 @@ void GuiPlugin::on_le_gps_type_text_changed(QString text) {
 
 // general
 void GuiPlugin::on_sb_total_value_changed(int val) {
-  this->mapping->set_file_count(val);
   if(val <= 1 ) {
     this->ui_.sb_first->setValue(0);
     this->ui_.sb_last->setValue(1);
@@ -191,7 +189,7 @@ void GuiPlugin::on_sb_first_value_changed(int val) {
   } else if(val < 0) {
     this->ui_.sb_first->setValue(last - 1);
   } else {
-    this->mapping->set_parameter_value("-s", val);
+    this->mapping->set_start(val);
 
     if(val >= last) { // first is larger than last
       this->ui_.sb_last->setValue(val + 1);
@@ -208,7 +206,7 @@ void GuiPlugin::on_sb_last_value_changed(int val) {
   } else if (val > total - 1) {
     this->ui_.sb_last->setValue(first + 1);
   } else{
-    this->mapping->set_parameter_value("-e", val);
+    this->mapping->set_end(val);
 
     if(val < first) { // last is smaller than first
       this->ui_.sb_first->setValue(val - 1);// set first one lower than this
@@ -220,10 +218,9 @@ void GuiPlugin::on_dsb_min_value_changed(double val) {
   double max = this->ui_.dsb_max->value();
   
   if(val < 0.0) { // set inactive
-    this->mapping->set_parameter_active("--min", false);
+    this->mapping->set_min_dist(-1);
   } else {
-    this->mapping->set_parameter_active("--min", true);
-    this->mapping->set_parameter_value("--min", val);
+    this->mapping->set_min_dist(val);
 
     if(max >= 0.0 && val >= max) // first is larger than last
       this->ui_.dsb_max->setValue(val + 1.0);
@@ -235,11 +232,10 @@ void GuiPlugin::on_dsb_max_value_changed(double val) {
   double min = this->ui_.dsb_min->value();
 
   if(val < 0.0) { // set inactive
-    this->mapping->set_parameter_active("--max", false);
+    this->mapping->set_max_dist(-1);
     previous = val;
   } else {
-    this->mapping->set_parameter_active("--max", true);
-    this->mapping->set_parameter_value("--max", val);
+    this->mapping->set_max_dist(val);
 
     if(min >= 0.0 && val <= min) { // last is smaller than first
       if(previous < 0.0) {            // was inactive -> set to one higher than first
@@ -255,42 +251,29 @@ void GuiPlugin::on_dsb_max_value_changed(double val) {
 
 void GuiPlugin::on_cb_correspondances_current_text_changed(QString text) {
   if(text == "default") {
-    this->mapping->set_parameter_active("--normal_shoot-simple", false);
-    this->mapping->set_parameter_active("--point-to-plane-simple", false);
+    this->mapping->set_pairing_mode(0);
   } else if(text == "closest along normal") {
-    this->mapping->set_parameter_active("--normal_shoot-simple", true);
-    this->mapping->set_parameter_active("--point-to-plane-simple", false);
+    this->mapping->set_pairing_mode(1);
   } else if(text == "closest point-to-plane distance") {
-    this->mapping->set_parameter_active("--normal_shoot-simple", false);
-    this->mapping->set_parameter_active("--point-to-plane-simple", true);
+    this->mapping->set_pairing_mode(2);
   }
 }
 
 void GuiPlugin::on_cb_metascan_state_changed(int state) {
-  if(state) {
-    this->mapping->set_parameter_active("--metascan", true);
-  } else {
-    this->mapping->set_parameter_active("--metascan", false);
-  }
+  this->mapping->set_match_meta(state);
 }
 
 void GuiPlugin::on_cb_export_state_changed(int state) {
-  if(state) {
-    this->mapping->set_parameter_active("--exportAllPoints", true);
-    this->ui_.le_export->setEnabled(true);
-    this->ui_.pb_export->setEnabled(true);
-  } else {
-    this->mapping->set_parameter_active("--exportAllPoints", false);
-    this->ui_.le_export->setEnabled(false);
-    this->ui_.pb_export->setEnabled(false);
-  }
+  this->mapping->set_export_pts(state);
+  this->ui_.le_export->setEnabled(state);
+  this->ui_.pb_export->setEnabled(state);
 }
 
 void GuiPlugin::on_pb_export_pressed() {
   QString filename = QFileDialog::getSaveFileName(
         this->widget_,
         "export file", 
-        this->mapping->get_output_filepath() +  "/points.pts",
+        this->ui_.le_output->text() +  "/points.pts",
         tr("export file (*.pts)"));
 
   this->ui_.le_export->setText(filename);
@@ -306,7 +289,7 @@ void GuiPlugin::on_cb_icp_minimization_current_text_changed(QString text) {
   int index = this->ui_.cb_icp_minimization->findText(text);
   int param_value = this->ui_.cb_icp_minimization->itemData(index).toInt();
 
-  if(!this->mapping->set_parameter_value("-a", param_value)) {
+  if(!this->mapping->set_ICP_type(param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
   }
 }
@@ -315,23 +298,23 @@ void GuiPlugin::on_cb_nn_current_text_changed(QString text) {
   int index = this->ui_.cb_nn->findText(text);
   int param_value = this->ui_.cb_nn->itemData(index).toInt();
 
-  if(!this->mapping->set_parameter_value("-t", param_value)) {
+  if(!this->mapping->set_nns_method(param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
   }
 }
 
 void GuiPlugin::on_sb_icp_iterations_value_changed(int val) {
 
-  this->mapping->set_parameter_value("-i", val);
+  this->mapping->set_max_it_ICP(val);
 }
 
 void GuiPlugin::on_dsb_icp_epsilon_value_changed(double val) {
-    this->mapping->set_parameter_value("--epsICP", val);
+    this->mapping->set_epsilon_ICP(val);
 
 }
 
 void GuiPlugin::on_dsb_nn_p2p_distance_value_changed(double val) {
-    this->mapping->set_parameter_value("--dist", val);
+    this->mapping->set_max_p2p_dist_ICP(val);
 }
 
 // GraphSLAM
@@ -339,7 +322,7 @@ void GuiPlugin::on_cb_closing_loop_current_text_changed(QString text) {
   int index = this->ui_.cb_closing_loop->findText(text);
   int param_value = this->ui_.cb_closing_loop->itemData(index).toInt();
 
-  if(!this->mapping->set_parameter_value("-L", param_value)) {
+  if(!this->mapping->set_Loop_type(param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
   }
 }
@@ -348,41 +331,37 @@ void GuiPlugin::on_cb_graphslam_current_text_changed(QString text) {
   int index = this->ui_.cb_graphslam->findText(text);
   int param_value = this->ui_.cb_graphslam->itemData(index).toInt();
 
-  if(!this->mapping->set_parameter_value("-G", param_value)) {
+  if(!this->mapping->set_SLAM_type(param_value)) {
     QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
   } 
 }
 
 void GuiPlugin::on_sb_loop_size_value_changed(int val) {
-  this->mapping->set_parameter_value("--loopsize", val);
+  this->mapping->set_Loopsize(val);
 }
 
 void GuiPlugin::on_sb_cl_max_distance_value_changed(int val) {
-  this->mapping->set_parameter_value("--cldist", val);
-}
-
-void GuiPlugin::on_sb_cl_min_overlap_value_changed(int val) {
-  this->mapping->set_parameter_value("--clpairs", val);
+  this->mapping->set_max_dist_Loop(val);
 }
 
 void GuiPlugin::on_dsb_cl_p2p_distance_value_changed(double val) {
-  this->mapping->set_parameter_value("--distLoop", val);
+  this->mapping->set_max_p2p_dist_Loop(val);
 }
 
 void GuiPlugin::on_sb_cl_iterations_value_changed(int val) {
-  this->mapping->set_parameter_value("--iterLoop", val);
+  this->mapping->set_max_it_Loop(val);
 }
 
 void GuiPlugin::on_sb_slam_iterations_value_changed(int val) {
-  this->mapping->set_parameter_value("-I", val);
+  this->mapping->set_max_it_SLAM(val);
 }
 
 void GuiPlugin::on_dsb_graph_epsilon_value_changed(double val) {
-  this->mapping->set_parameter_value("--epsSLAM", val);
+  this->mapping->set_epsilon_SLAM(val);
 }
 
 void GuiPlugin::on_dsb_graph_p2p_distance_value_changed(double val) {
-  this->mapping->set_parameter_value("--distSLAM", val);
+  this->mapping->set_max_p2p_dist_SLAM(val);
 }
 
 // output
@@ -398,7 +377,9 @@ void GuiPlugin::on_pb_output_pressed() {
 }
 
 void GuiPlugin::on_le_output_text_changed(QString text) {
-  this->mapping->set_output_filepath(text);
+  if(text.at(text.size() - 1) != '/')
+    text += '/';
+  this->mapping->set_dir_path(text);
 }
 
 // config
@@ -409,15 +390,15 @@ void GuiPlugin::on_pb_save_config_pressed() {
   QSettings settings(filename, QSettings::IniFormat, this->widget_);
 
   // rosbag
-  settings.setValue("rosbag_filename", this->mapping->get_rosbag_filename());
-  settings.setValue("input_is_meter", this->mapping->get_input_is_meter());
-  settings.setValue("input_is_lefthanded", this->mapping->get_input_is_lefthanded());
+  settings.setValue("rosbag_filename", this->ui_.le_filePath->text());
+  settings.setValue("input_is_meter", this->ui_.rb_meter->isChecked());
+  settings.setValue("input_is_lefthanded", this->ui_.rb_lefthanded->isChecked());
   // topics
-  settings.setValue("scan_topic", this->mapping->get_scan_topic());
-  settings.setValue("odom_topic", this->mapping->get_odom_topic());
-  settings.setValue("gps_topic", this->mapping->get_gps_topic());
+  settings.setValue("scan_topic", this->ui_.le_scan->text());
+  settings.setValue("odom_topic", this->ui_.le_odom->text());
+  settings.setValue("gps_topic", this->ui_.le_gps->text());
   // output
-  settings.setValue("output_filepath", this->mapping->get_output_filepath());
+  settings.setValue("output_filepath", this->ui_.le_output->text());
   // general
   settings.setValue("total", this->ui_.sb_total->value());
   settings.setValue("first_scan", this->ui_.sb_first->value());
@@ -439,7 +420,6 @@ void GuiPlugin::on_pb_save_config_pressed() {
   settings.setValue("graphslam", this->ui_.cb_graphslam->currentIndex());
   settings.setValue("loop_size", this->ui_.sb_loop_size->value());
   settings.setValue("cl_max_distance", this->ui_.sb_cl_max_distance->value());
-  settings.setValue("cl_min_overlap", this->ui_.sb_cl_min_overlap->value());
   settings.setValue("cl_p2p_distance", this->ui_.dsb_cl_p2p_distance->value());
   settings.setValue("cl_iterations", this->ui_.sb_cl_iterations->value());
   settings.setValue("slam_iterations", this->ui_.sb_slam_iterations->value());
@@ -513,8 +493,6 @@ void GuiPlugin::on_pb_load_config_pressed() {
     this->ui_.sb_loop_size->setValue(instance_settings.value("loop_size").toInt());
   if(instance_settings.contains("cl_max_distance"))
     this->ui_.sb_cl_max_distance->setValue(instance_settings.value("cl_max_distance").toInt());
-  if(instance_settings.contains("cl_min_overlap"))
-    this->ui_.sb_cl_min_overlap->setValue(instance_settings.value("cl_min_overlap").toInt());
   if(instance_settings.contains("cl_p2p_distance"))
     this->ui_.dsb_cl_p2p_distance->setValue(instance_settings.value("cl_p2p_distance").toDouble());
   if(instance_settings.contains("cl_iterations"))
@@ -548,6 +526,12 @@ void GuiPlugin::on_work_finished(int exit_code) {
   if(exit_code == 1) {
     ROS_ERROR("Something went wrong");
   } else {
+    std::vector<double> icp_results = this->mapping->get_icp_results();
+    
+    if(icp_results.size() == 0) {
+      return;
+    }
+
     this->ui_.tw_results->setEnabled(true);
     this->ui_.tw_results->clear();
     this->ui_.tw_results->setRowCount(0);
@@ -556,12 +540,8 @@ void GuiPlugin::on_work_finished(int exit_code) {
     this->ui_.tw_results->setHorizontalHeaderItem(0, new QTableWidgetItem("from"));
     this->ui_.tw_results->setHorizontalHeaderItem(1, new QTableWidgetItem("to"));
     this->ui_.tw_results->setHorizontalHeaderItem(2, new QTableWidgetItem("error"));
-    this->ui_.tw_results->setHorizontalHeaderItem(3, new QTableWidgetItem("# of points"));
 
-
-    std::vector<std::string> icp_results = this->mapping->get_icp_results();
-
-    for(int i = 0; i < icp_results.size(); i += 2) {
+    for(int i = 0; i < icp_results.size(); i++) {
       int row = this->ui_.tw_results->rowCount();
       this->ui_.tw_results->insertRow(row);
 
@@ -571,11 +551,8 @@ void GuiPlugin::on_work_finished(int exit_code) {
       item = new QTableWidgetItem(QString::number(this->ui_.sb_first->value() + row + 1));
       this->ui_.tw_results->setItem(row, 1, item);
 
-      item = new QTableWidgetItem(QString::fromStdString(icp_results[i]));
+      item = new QTableWidgetItem(QString::number(icp_results[i]));
       this->ui_.tw_results->setItem(row, 2, item);
-
-      item = new QTableWidgetItem(QString::fromStdString(icp_results[i+1]));
-      this->ui_.tw_results->setItem(row, 3, item);
     }
 
     this->ui_.tb_settings->setVisible(false);
@@ -585,12 +562,12 @@ void GuiPlugin::on_work_finished(int exit_code) {
 }
 
 void GuiPlugin::on_rosbag_finished() {
-  this->ui_.sb_total->setValue(this->mapping->get_file_count());
+  this->ui_.sb_total->setValue(100);
 }
 
 void GuiPlugin::on_pb_show_pressed() {
-  //this->mapping->showResults();
-  this->mapping->calculate_crispnesses(7, 8);
+  this->mapping->showResults();
+  //this->mapping->calculate_crispnesses(7, 8);
   //this->mapping->segmentPointCloud();
 }
 
@@ -650,7 +627,7 @@ void GuiPlugin::initComboBoxes() {
   //this->ui_.cb_nn->addItem("BOC tree");
 
   this->ui_.cb_closing_loop->addItem("no loop closing", QVariant(0));
-  this->ui_.cb_closing_loop->addItem("Euler Angles", QVariant(1));
+  //this->ui_.cb_closing_loop->addItem("Euler Angles", QVariant(1));
   this->ui_.cb_closing_loop->addItem("Quaternions", QVariant(2));
   this->ui_.cb_closing_loop->addItem("Unit Quaternions", QVariant(3));
   this->ui_.cb_closing_loop->addItem("SLERP", QVariant(4));
@@ -664,7 +641,7 @@ void GuiPlugin::initComboBoxes() {
 
 // callbacks
 void GuiPlugin::scan_to_file_count_callback(const std_msgs::Int32::ConstPtr& count) {
-  this->mapping->set_file_count(count->data);
+  //this->mapping->set_file_count(count->data);
 }
 
 // work stuff
@@ -682,16 +659,16 @@ void GuiPlugin::shutdownPlugin()
 void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
     qt_gui_cpp::Settings& instance_settings) const
 {
-  // rosbag
-  instance_settings.setValue("rosbag_filename", this->mapping->get_rosbag_filename());
-  instance_settings.setValue("input_is_meter", this->mapping->get_input_is_meter());
-  instance_settings.setValue("input_is_lefthanded", this->mapping->get_input_is_lefthanded());
+   // rosbag
+  instance_settings.setValue("rosbag_filename", this->ui_.le_filePath->text());
+  instance_settings.setValue("input_is_meter", this->ui_.rb_meter->isChecked());
+  instance_settings.setValue("input_is_lefthanded", this->ui_.rb_lefthanded->isChecked());
   // topics
-  instance_settings.setValue("scan_topic", this->mapping->get_scan_topic());
-  instance_settings.setValue("odom_topic", this->mapping->get_odom_topic());
-  instance_settings.setValue("gps_topic", this->mapping->get_gps_topic());
+  instance_settings.setValue("scan_topic", this->ui_.le_scan->text());
+  instance_settings.setValue("odom_topic", this->ui_.le_odom->text());
+  instance_settings.setValue("gps_topic", this->ui_.le_gps->text());
   // output
-  instance_settings.setValue("output_filepath", this->mapping->get_output_filepath());
+  instance_settings.setValue("output_filepath", this->ui_.le_output->text());
   // general
   instance_settings.setValue("total", this->ui_.sb_total->value());
   instance_settings.setValue("first_scan", this->ui_.sb_first->value());
@@ -713,7 +690,6 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   instance_settings.setValue("graphslam", this->ui_.cb_graphslam->currentIndex());
   instance_settings.setValue("loop_size", this->ui_.sb_loop_size->value());
   instance_settings.setValue("cl_max_distance", this->ui_.sb_cl_max_distance->value());
-  instance_settings.setValue("cl_min_overlap", this->ui_.sb_cl_min_overlap->value());
   instance_settings.setValue("cl_p2p_distance", this->ui_.dsb_cl_p2p_distance->value());
   instance_settings.setValue("cl_iterations", this->ui_.sb_cl_iterations->value());
   instance_settings.setValue("slam_iterations", this->ui_.sb_slam_iterations->value());
@@ -783,8 +759,6 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
     this->ui_.sb_loop_size->setValue(instance_settings.value("loop_size").toInt());
   if(instance_settings.contains("cl_max_distance"))
     this->ui_.sb_cl_max_distance->setValue(instance_settings.value("cl_max_distance").toInt());
-  if(instance_settings.contains("cl_min_overlap"))
-    this->ui_.sb_cl_min_overlap->setValue(instance_settings.value("cl_min_overlap").toInt());
   if(instance_settings.contains("cl_p2p_distance"))
     this->ui_.dsb_cl_p2p_distance->setValue(instance_settings.value("cl_p2p_distance").toDouble());
   if(instance_settings.contains("cl_iterations"))

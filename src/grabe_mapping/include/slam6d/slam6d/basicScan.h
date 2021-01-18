@@ -53,6 +53,7 @@ public:
   virtual void clear(const std::string& identifier);
   virtual size_t readFrames();
   virtual void saveFrames(bool append = false);
+  virtual void clearFrames();
   virtual void saveBOctTree(std::string & filename);
 
   virtual size_t getFrameCount();

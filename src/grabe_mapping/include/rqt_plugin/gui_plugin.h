@@ -80,7 +80,6 @@ public slots:
   void on_cb_graphslam_current_text_changed(QString text);
   void on_sb_loop_size_value_changed(int val);
   void on_sb_cl_max_distance_value_changed(int val);
-  void on_sb_cl_min_overlap_value_changed(int val);
   void on_dsb_cl_p2p_distance_value_changed(double val);
   void on_sb_cl_iterations_value_changed(int val);
   void on_sb_slam_iterations_value_changed(int val); 
