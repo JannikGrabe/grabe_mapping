@@ -512,12 +512,13 @@ void GuiPlugin::on_pb_load_config_pressed() {
 // work
 void GuiPlugin::on_pb_start_pressed() {
 
-  this->ui_.pb_start->setEnabled(false);
+  //this->ui_.pb_start->setEnabled(false);
   this->ui_.pb_cancel->setVisible(true);
   this->ui_.pb_progress->setVisible(true);
   this->ui_.pb_progress->setRange(0, 0);
 
-  this->mapping->start_mapping();
+  //this->mapping->start_mapping();
+  std::cout << this->mapping->param_to_string() << std::endl;
 }
 
 void GuiPlugin::on_work_finished(int exit_code) {

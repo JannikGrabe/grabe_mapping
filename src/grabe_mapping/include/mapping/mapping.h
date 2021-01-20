@@ -90,7 +90,6 @@ private:
     void finish_mapping();
     void read_results();
     static int run_command(std::string command);
-    std::string param_to_string();
 
     // SLAM
     void updateAlgorithms(int start, int end);
@@ -113,6 +112,7 @@ public:
     void start_mapping();
     void cancel_mapping();
     void showResults();
+    std::string param_to_string();
 
     // SLAM
 
