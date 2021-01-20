@@ -91,6 +91,7 @@ private:
     void finish_mapping();
     void read_results();
     static int run_command(std::string command);
+    std::string param_to_string();
 
     // SLAM
     void updateAlgorithms(int start, int end);
@@ -161,7 +162,7 @@ public slots:
     void set_max_it_Loop(int it);
     void set_max_p2p_dist_Loop(double dist);
     void set_max_dist_Loop(double dist);
-    void set_dist_finalLoop(double dist);
+    void set_max_dist_finalLoop(double dist);
     void set_Loopsize(int size);
     void set_min_overlap_Loop(int size);
     bool set_nns_method(int method);

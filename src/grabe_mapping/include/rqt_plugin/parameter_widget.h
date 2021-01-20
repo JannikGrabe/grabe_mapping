@@ -43,7 +43,7 @@ public:
         QObject::connect(this->ui.cb_graphslam, &QComboBox::currentTextChanged, this, &Parameter_widget::on_cb_graphslam_current_text_changed);
         QObject::connect(this->ui.sb_loop_size, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->mapping, &Mapping::set_Loopsize);
         QObject::connect(this->ui.sb_cl_max_distance, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->mapping, &Mapping::set_max_dist_Loop);
-        QObject::connect(this->ui.sb_cl_max_distance, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->mapping, &Mapping::set_dist_finalLoop);
+        QObject::connect(this->ui.sb_cl_max_distance, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->mapping, &Mapping::set_max_dist_finalLoop);
         QObject::connect(this->ui.dsb_cl_p2p_distance, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this->mapping, &Mapping::set_max_p2p_dist_Loop);
         QObject::connect(this->ui.sb_cl_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->mapping, &Mapping::set_max_it_Loop); 
         QObject::connect(this->ui.sb_slam_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this->mapping, &Mapping::set_max_it_SLAM); 
@@ -82,20 +82,20 @@ public slots:
     }
 
     void on_cb_closing_loop_current_text_changed(QString text) {
-        int index = this->ui_.cb_closing_loop->findText(text);
-        int param_value = this->ui_.cb_closing_loop->itemData(index).toInt();
+        int index = this->ui.cb_closing_loop->findText(text);
+        int param_value = this->ui.cb_closing_loop->itemData(index).toInt();
 
         if(!this->mapping->set_Loop_type(param_value)) {
-            QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
+            QMessageBox::critical(this, "Warning", "Could not find " + text, QMessageBox::Ok);
         }
     }
 
     void on_cb_graphslam_current_text_changed(QString text) {
-        int index = this->ui_.cb_graphslam->findText(text);
-        int param_value = this->ui_.cb_graphslam->itemData(index).toInt();
+        int index = this->ui.cb_graphslam->findText(text);
+        int param_value = this->ui.cb_graphslam->itemData(index).toInt();
 
         if(!this->mapping->set_SLAM_type(param_value)) {
-            QMessageBox::critical(this->widget_, "Warning", "Could not find " + text, QMessageBox::Ok);
+            QMessageBox::critical(this, "Warning", "Could not find " + text, QMessageBox::Ok);
         } 
     }
 };

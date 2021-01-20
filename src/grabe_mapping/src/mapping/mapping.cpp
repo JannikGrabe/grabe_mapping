@@ -156,6 +156,49 @@ void Mapping::cancel_mapping() {
         this->run_command("rosnode kill /player");
 }
 
+std::string Mapping::param_to_string() {
+    std::ostringstream ss("SLAM6D Paramters:\n");
+
+    ss << "start:\t\t\t" << this->start << "\n"
+       << "end:\t\t\t" << this->end << "\n"
+       << "ICP type:\t\t\t" << this->type_ICP << "\n"
+       << "ICP epsilon:\t\t\t" << this->epsilon_ICP << "\n"
+       << "ICP iterations:\t\t\t" << this->max_it_ICP << "\n"
+       << "ICP max p2p distance:\t\t\t" << this->max_p2p_dist_ICP << "\n"
+       << "SLAM type:\t\t\t" << this->type_SLAM << "\n"
+       << "SLAM epsilon:\t\t\t" << this->epsilon_SLAM << "\n"
+       << "SLAM iterations:\t\t\t" << this->max_it_SLAM << "\n"
+       << "SLAM max p2p distance:\t\t\t" << this->max_p2p_dist_SLAM << "\n"
+       << "FINAL SLAM max p2p distance:\t\t\t" << this->max_p2p_dist_finalSLAM << "\n"
+       << "LOOP type:\t\t\t" << this->type_Loop << "\n"
+       << "LOOP iterations:\t\t\t" << this->max_it_Loop << "\n"
+       << "LOOP max p2p distance:\t\t\t" << this->max_p2p_dist_Loop << "\n"
+       << "LOOP max distance:\t\t\t" << this->max_dist_Loop << "\n"
+       << "FINAL LOOP max distance:\t\t\t" << this->max_dist_finalLoop << "\n"
+       << "LOOP min overlap:\t\t\t" << this->min_overlap_Loop << "\n"
+       << "LOOP loopsize:\t\t\t" << this->loopsize << "\n"
+       << "NNS method:\t\t\t" << this->nns_method << "\n"
+       << "NNS bucket size:\t\t\t" << this->bucket_size << "\n"
+       << "NNS pairing mode:\t\t\t" << this->pairing_mode << "\n"
+       << "GENERAL min distance:\t\t\t" << this->min_dist << "\n"
+       << "GENERAL max distance:\t\t\t" << this->max_dist << "\n"
+       << "REDUCTION voxel size:\t\t\t" << this->red_voxel_size << "\n"
+       << "REDUCTION pts p voxel:\t\t\t" << this->octree_red << "\n"
+       << "REDUCTION rand every nth pt:\t\t\t" << this->random_red << "\n"
+       << "GENERAL quiet" << this->quiet << "\n"
+       << "GENERAL very quiet" << this->very_quiet << "\n"
+       << "GENERAL match meta" << this->match_meta << "\n"
+       << "GENERAL extrapolate pose" << this->extrapolate_pose << "\n"
+       << "GENERAL scanserver" << this->scanserver << "\n"
+       << "GENERAL animation" << this->anim << "\n"
+       << "GENERAL export points" << this->export_points << "\n"
+       << "GENERAL export path" << this->export_path.toStdString() << "\n"
+       << "GENERAL loopclose path" << this->loopclose_path.toStdString() << "\n"
+       << "GENERAL directory path" << this->dir_path.toStdString() << "\n";
+       
+       return ss.str();
+}
+
 // SLAM
 void Mapping::updateAlgorithms(int start, int end) {
 
@@ -1134,7 +1177,7 @@ void Mapping::set_max_dist_Loop(double dist) {
     this->max_dist_Loop = dist;
 }
 
-void Mapping::set_dist_finalLoop(double dist) {
+void Mapping::set_max_dist_finalLoop(double dist) {
     this->max_dist_finalLoop = dist;
 }
 
