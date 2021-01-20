@@ -35,11 +35,6 @@ public:
 
 
 public slots:
-  // rosbag
-  void on_pb_fileDialog_pressed();
-  void on_rb_lefthanded_toggled();
-  void on_rb_meter_toggled();
-  void on_le_filePath_text_changed(QString text);
 
   // work
   void on_pb_start_pressed();
@@ -47,51 +42,13 @@ public slots:
   void on_rosbag_finished();
   void on_pb_show_pressed();
   void on_pb_cancel_pressed();
-  void on_cb_update_scans_state_changed(int state);
   void on_pb_back_pressed();
-
-  // topics
-  void on_le_scan_text_changed(QString text);
-  void on_le_odom_text_changed(QString text);
-  void on_le_gps_text_changed(QString text);
-  void on_le_scan_type_text_changed(QString text);
-  void on_le_odom_type_text_changed(QString text);
-  void on_le_gps_type_text_changed(QString text);
 
   // parameters
       // general
-  void on_sb_first_value_changed(int val);
-  void on_sb_last_value_changed(int val);
-  void on_dsb_min_value_changed(double val);
-  void on_dsb_max_value_changed(double val);
-  void on_cb_correspondances_current_text_changed(QString text);
-  void on_cb_metascan_state_changed(int state);
   void on_cb_export_state_changed(int state);
   void on_pb_export_pressed();
   void on_le_export_text_changed(QString text);
-  void on_sb_total_value_changed(int val);
-
-      // icp parameters
-  void on_cb_icp_minimization_current_text_changed(QString text);
-  void on_cb_nn_current_text_changed(QString text);
-  void on_sb_icp_iterations_value_changed(int val);
-  void on_dsb_icp_epsilon_value_changed(double val);
-  void on_dsb_nn_p2p_distance_value_changed(double val);
-
-      // graphslam parameters
-  void on_cb_closing_loop_current_text_changed(QString text);
-  void on_cb_graphslam_current_text_changed(QString text);
-  void on_sb_loop_size_value_changed(int val);
-  void on_sb_cl_max_distance_value_changed(int val);
-  void on_dsb_cl_p2p_distance_value_changed(double val);
-  void on_sb_cl_iterations_value_changed(int val);
-  void on_sb_slam_iterations_value_changed(int val); 
-  void on_dsb_graph_epsilon_value_changed(double val);
-  void on_dsb_graph_p2p_distance_value_changed(double val);
-
-  // output
-  void on_pb_output_pressed();
-  void on_le_output_text_changed(QString text);
 
   // config
   void on_pb_save_config_pressed();
@@ -107,8 +64,6 @@ private:
   Scan_to_file_widget* stfw;
 
   void initWidgets();
-  void initComboBoxes();
-  static int runCommand(std::string command);
 
   Mapping* mapping;
 
