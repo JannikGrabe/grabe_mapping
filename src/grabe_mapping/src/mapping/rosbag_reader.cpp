@@ -17,17 +17,20 @@ void Rosbag_reader::read() {
         for(int i = 0; i < errors.size(); i++) {
             std::cout << errors[i] << std::endl;
         }
+        emit this->finished();
         return;
     }
 
-    std::string exe = ros::package::getPath("grabe_mapping") + "/scripts/scan_to_file_launch.sh";
+    std::string exe = ros::package::getPath("grabe_mapping") + "/scripts/scan_to_file_launch.sh ";
 
     exe += this->rosbag_filename.toStdString();                                            // rosbag_filename
     exe += " " + this->scan_topic.toStdString();                                           // scan_topic name
     exe += " " + this->odom_topic.toStdString();                                           // odom_topic name
     exe += " " + (this->input_is_meter ? std::string("true") : std::string("false"));      // input_is_meter flag
     exe += " " + (this->input_is_lefthanded ? std::string("true") : std::string("false")); // input_is_lefthanded flags
-    exe += " " + this->output_path.toStdString();                                      // path where to put any output files
+    exe += " " + this->output_path.toStdString(); 
+    
+    std::cout << exe << std::endl;                                     // path where to put any output files
 
     emit this->started();
 
@@ -53,9 +56,9 @@ std::vector<std::string> Rosbag_reader::check_states() {
     if(this->odom_topic.isEmpty()) {
         error_msgs.push_back("ROSBAG: odom topic not set");
     }
-    if(this->gps_topic.isEmpty()) {
-        error_msgs.push_back("ROSBAG: gps topic not set");
-    }
+    // if(this->gps_topic.isEmpty()) {
+    //     error_msgs.push_back("ROSBAG: gps topic not set");
+    // }
 
     return error_msgs;
 }

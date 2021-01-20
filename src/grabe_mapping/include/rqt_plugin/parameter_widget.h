@@ -49,7 +49,6 @@ public slots:
     void sb_slam_iterations_value_changed(int val);
     void dsb_graph_epsilon_value_changed(double val);
     void dsb_graph_p2p_distance_value_changed(double val);
-    
 };
 
 }
