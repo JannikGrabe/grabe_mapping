@@ -533,12 +533,16 @@ include_directories(
 
 set (${PROJECT_NAME}_PLUGIN_SRCS
   src/rqt_plugin/gui_plugin.cpp
+  src/rqt_plugin/parameter_widget.cpp
+  src/rqt_plugin/scan_to_file_widget.cpp
   src/mapping/mapping.cpp
   src/io/io.cpp
 )
 
 set(${PROJECT_NAME}_PLUGIN_HDRS
   include/rqt_plugin/gui_plugin.h
+  include/rqt_plugin/parameter_widget.h
+  include/rqt_plugin/scan_to_file_widget.h
   include/mapping/mapping.h
   include/exceptions/bad_file_exception.h
   include/exceptions/bad_point_exception.h
@@ -547,6 +551,8 @@ set(${PROJECT_NAME}_PLUGIN_HDRS
 
 set(${PROJECT_NAME}_PLUGIN_UIS
   src/rqt_plugin/gui_plugin.ui
+  src/rqt_plugin/parameter_widget.ui
+  src/rqt_plugin/scan_to_file_widget.ui
 )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")

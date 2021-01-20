@@ -129,6 +129,8 @@ public:
     // work
     std::vector<double> get_icp_results() const;
 
+public slots:
+
     // setter
         // scan_to_file parameter
     void set_use_rosbag(bool state);

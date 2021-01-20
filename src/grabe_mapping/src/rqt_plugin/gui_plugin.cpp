@@ -1,5 +1,7 @@
 
 #include "rqt_plugin/gui_plugin.h"
+#include "rqt_plugin/parameter_widget.h"
+#include "rqt_plugin/scan_to_file_widget.h"
 #include <pluginlib/class_list_macros.h>
 #include <QtConcurrent/QtConcurrent>
 #include <QStringList>
@@ -566,9 +568,15 @@ void GuiPlugin::on_rosbag_finished() {
 }
 
 void GuiPlugin::on_pb_show_pressed() {
-  this->mapping->showResults();
+  //this->mapping->showResults();
   //this->mapping->calculate_crispnesses(7, 8);
   //this->mapping->segmentPointCloud();
+
+  Parameter_widget* widget = new Parameter_widget("Test");
+  widget->show();
+
+  Scan_to_file_widget* widget_stf = new Scan_to_file_widget("Test");
+  widget_stf->show();
 }
 
 void GuiPlugin::on_pb_cancel_pressed() {

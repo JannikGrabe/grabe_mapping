@@ -141,7 +141,7 @@ void Mapping::read_results() {
     for(int i = 1; i < Scan::allScans.size(); i++) {
         unsigned int* np;
         this->icp_results.push_back(this->my_icp->Point_Point_Error(Scan::allScans[i-1], Scan::allScans[i], 
-                                                                    this->max_p2p_dist_ICP, np));
+                                                                    5, np, 100));
     }
 }
 
