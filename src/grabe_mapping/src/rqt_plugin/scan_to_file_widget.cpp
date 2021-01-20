@@ -128,4 +128,13 @@ void Scan_to_file_widget::le_output_text_changed(QString text) {
     this->mapping->set_dir_path(text);
 }
 
+// start / cancel
+void Scan_to_file_widget::pb_start_pressed() {
+
+}
+
+void Scan_to_file_widget::pb_cancel_pressed() {
+    
+}
+
 }

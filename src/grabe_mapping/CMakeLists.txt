@@ -536,6 +536,7 @@ set (${PROJECT_NAME}_PLUGIN_SRCS
   src/rqt_plugin/parameter_widget.cpp
   src/rqt_plugin/scan_to_file_widget.cpp
   src/mapping/mapping.cpp
+  src/mapping/rosbag_reader.cpp
   src/io/io.cpp
 )
 
@@ -544,6 +545,7 @@ set(${PROJECT_NAME}_PLUGIN_HDRS
   include/rqt_plugin/parameter_widget.h
   include/rqt_plugin/scan_to_file_widget.h
   include/mapping/mapping.h
+  include/mapping/rosbag_reader.h
   include/exceptions/bad_file_exception.h
   include/exceptions/bad_point_exception.h
   include/io/io.h

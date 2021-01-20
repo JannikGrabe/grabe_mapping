@@ -41,6 +41,10 @@ public slots:
     // output
     void pb_output_pressed();
     void le_output_text_changed(QString text);
+
+    // start/cancel
+    void pb_start_pressed();
+    void pb_cancel_pressed();
 };
 
 }
