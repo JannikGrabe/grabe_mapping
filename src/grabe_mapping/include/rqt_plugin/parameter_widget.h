@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <QWidget>
+#include <QMessageBox>
 #include <grabe_mapping/ui_parameter_widget.h>
 #include "mapping/mapping.h"
 
@@ -23,6 +24,38 @@ public:
         this->ui.setupUi(this);
 
         this->setWindowTitle(title);
+
+        // initialize Comboboxes
+        this->ui.cb_correspondances->addItem("closest point", QVariant(0));
+        this->ui.cb_correspondances->addItem("closest along normal", QVariant(1));
+        this->ui.cb_correspondances->addItem("closest point-to-plane distance", QVariant(2));
+
+        this->ui.cb_icp_minimization->addItem("Unit Quaternion", QVariant(1)); 
+        this->ui.cb_icp_minimization->addItem("Singular Value Decomposition", QVariant(2));
+        //this->ui_.cb_minimization->addItem("Orthonormal Matrices");
+        //this->ui_.cb_minimization->addItem("Dual Quaternions");
+        //this->ui_.cb_minimization->addItem("Helix Approximation");
+        this->ui.cb_icp_minimization->addItem("Small Angle Approximation", QVariant(6));
+        //this->ui_.cb_minimization->addItem("Uncertainty Based: Euler Angles");
+        //this->ui_.cb_minimization->addItem("Uncertainty Based: Quaternions"); 
+        //this->ui_.cb_minimization->addItem("Unit Quaternion with Scale Method");
+                            
+        this->ui.cb_nn->addItem("simple k-d tree", QVariant(0)); 
+        this->ui.cb_nn->addItem("cached k-d tree", QVariant(1));
+        //this->ui_.cb_nn->addItem("ANN tree");
+        //this->ui_.cb_nn->addItem("BOC tree");
+
+        this->ui.cb_closing_loop->addItem("no loop closing", QVariant(0));
+        //this->ui_.cb_closing_loop->addItem("Euler Angles", QVariant(1));
+        this->ui.cb_closing_loop->addItem("Quaternions", QVariant(2));
+        this->ui.cb_closing_loop->addItem("Unit Quaternions", QVariant(3));
+        this->ui.cb_closing_loop->addItem("SLERP", QVariant(4));
+
+        this->ui.cb_graphslam->addItem("no GraphSLAM", QVariant(0));
+        this->ui.cb_graphslam->addItem("Euler Angles", QVariant(1));
+        this->ui.cb_graphslam->addItem("Unit Quaternions", QVariant(2));
+        this->ui.cb_graphslam->addItem("Helix Approximation", QVariant(3));
+        this->ui.cb_graphslam->addItem("Small Angle Approximation", QVariant(4));
 
         // connect slots:
             // GENERAL
@@ -52,17 +85,17 @@ public:
     }
 
 public slots:
-    void on_cb_correspondances_current_text_changed(QString text) {
-        if(text == "default") {
-            this->mapping->set_pairing_mode(0);
-        } else if(text == "closest along normal") {
-            this->mapping->set_pairing_mode(1);
-        } else if(text == "closest point-to-plane distance") {
-            this->mapping->set_pairing_mode(2);
+    void on_cb_correspondances_current_text_changed(const QString& text) {
+
+        int index = this->ui.cb_correspondances->findText(text);
+        int param_value = this->ui.cb_correspondances->itemData(index).toInt();
+
+        if(!this->mapping->set_ICP_type(param_value)) {
+            QMessageBox::critical(this, "Warning", "Could not find " + text, QMessageBox::Ok);
         }
     }
 
-    void on_cb_icp_minimization_current_text_changed(QString text) {
+    void on_cb_icp_minimization_current_text_changed(const QString& text) {
 
         int index = this->ui.cb_icp_minimization->findText(text);
         int param_value = this->ui.cb_icp_minimization->itemData(index).toInt();
@@ -72,7 +105,7 @@ public slots:
         }
     }
 
-    void on_cb_nn_current_text_changed(QString text) {
+    void on_cb_nn_current_text_changed(const QString& text) {
         int index = this->ui.cb_nn->findText(text);
         int param_value = this->ui.cb_nn->itemData(index).toInt();
 
@@ -81,7 +114,7 @@ public slots:
         }
     }
 
-    void on_cb_closing_loop_current_text_changed(QString text) {
+    void on_cb_closing_loop_current_text_changed(const QString& text) {
         int index = this->ui.cb_closing_loop->findText(text);
         int param_value = this->ui.cb_closing_loop->itemData(index).toInt();
 
@@ -90,7 +123,7 @@ public slots:
         }
     }
 
-    void on_cb_graphslam_current_text_changed(QString text) {
+    void on_cb_graphslam_current_text_changed(const QString& text) {
         int index = this->ui.cb_graphslam->findText(text);
         int param_value = this->ui.cb_graphslam->itemData(index).toInt();
 

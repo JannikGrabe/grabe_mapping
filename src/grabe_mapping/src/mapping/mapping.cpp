@@ -24,8 +24,6 @@ namespace grabe_mapping {
 
 Mapping::Mapping() {
 
-    this->slam6d = new My_slam6d();
-
     this->init_states();  
 
     QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_process_finished);

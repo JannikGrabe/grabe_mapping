@@ -574,10 +574,6 @@ add_library(${PROJECT_NAME}_plugin
   ${${PROJECT_NAME}_PLUGIN_UIS_H}
   )
 
-add_library(${PROJECT_NAME}_my_slam6d
-  src/my_slam6d/my_slam6d.cpp
-  )
-
 
 ###### SCAN_TO_FILE #######
 
@@ -616,7 +612,7 @@ set(${PROJECT_NAME}_SCAN_TO_FILE_SRCS
 
 #add_executable(${PROJECT_NAME}_plugin ${${PROJECT_NAME}_PLUGIN_SRCS})
 
-target_link_libraries(${PROJECT_NAME}_plugin ${PROJECT_NAME}_my_slam6d scan
+target_link_libraries(${PROJECT_NAME}_plugin scan
   ${catkin_LIBRARIES} )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")

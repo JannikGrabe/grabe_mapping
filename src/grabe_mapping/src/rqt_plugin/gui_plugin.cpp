@@ -572,7 +572,7 @@ void GuiPlugin::on_pb_show_pressed() {
   //this->mapping->calculate_crispnesses(7, 8);
   //this->mapping->segmentPointCloud();
 
-  Parameter_widget* widget = new Parameter_widget("Test");
+  Parameter_widget* widget = new Parameter_widget(this->mapping, "Test");
   widget->show();
 
   Scan_to_file_widget* widget_stf = new Scan_to_file_widget("Test");

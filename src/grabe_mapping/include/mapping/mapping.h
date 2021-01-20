@@ -1,16 +1,16 @@
+#ifndef GRABE_MAPPING_MAPPING_H
+#define GRABE_MAPPING_MAPPING_H
 
 #include <QObject>
 #include <QWidget>
 #include <QtConcurrent/QtConcurrent>
 #include <map>
-#include <QProcess>
-#include "parameter_map.h"
 #include <vector>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <Eigen/Core>
-#include "my_slam6d/my_slam6d.h"
 
+#include "mapping/slam6d.h"
 
 namespace grabe_mapping {
 
@@ -25,7 +25,6 @@ private:
     void (Mapping::*next_process)();
     bool cancelled;
     std::vector<double> icp_results;
-    My_slam6d* slam6d;
 
     // Scan to file parameters
     bool use_rosbag;
@@ -192,3 +191,5 @@ public slots:
 };
 
 }
+
+#endif
