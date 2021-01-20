@@ -54,7 +54,6 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   // work
   QObject::connect(this->mapping, &Mapping::finished_mapping, this, &GuiPlugin::on_work_finished);
-  QObject::connect(this->mapping, &Mapping::finished_rosbag, this, &GuiPlugin::on_rosbag_finished);
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
   QObject::connect(ui_.pb_show, &QPushButton::pressed, this, &GuiPlugin::on_pb_show_pressed);
   QObject::connect(this->ui_.pb_cancel, &QPushButton::pressed, this, &GuiPlugin::on_pb_cancel_pressed);
@@ -279,10 +278,6 @@ void GuiPlugin::on_work_finished(int exit_code) {
     this->ui_.tw_results->setVisible(true);
     this->ui_.pb_back->setVisible(true);
   }
-}
-
-void GuiPlugin::on_rosbag_finished() {
-  //this->ui_.sb_total->setValue(100);
 }
 
 void GuiPlugin::on_pb_show_pressed() {

@@ -18,23 +18,6 @@ class Mapping : public QWidget {
     Q_OBJECT
 
 private:
-
-    // work 
-    std::string script_path;
-    QFutureWatcher<void> watcher;
-    void (Mapping::*next_process)();
-    bool cancelled;
-    std::vector<double> icp_results;
-
-    // Scan to file parameters
-    bool use_rosbag;
-    QString rosbag_filename;
-    bool input_is_meter;
-    bool input_is_lefthanded;
-    QString scan_topic;
-    QString odom_topic;
-    QString gps_topic;
-
     // SLAM Parameters
     IOType file_format = UOS;
     int start = 0;
@@ -71,8 +54,6 @@ private:
     bool extrapolate_pose = true;
     bool scanserver = false;
     int anim = -1;
-    bool export_points = false;
-    QString export_path;
     QString loopclose_path;
     QString dir_path;
 
@@ -81,16 +62,6 @@ private:
     icp6D *my_icp = nullptr;
     loopSlam6D *my_loopSlam6D = nullptr;
 
-    // control Mapping
-    void start_scan_to_file();
-    void finish_scan_to_file();
-    void start_slam6D();
-    void improve_slam6D();
-    void finish_slam6D();
-    void finish_mapping();
-    void read_results();
-    static int run_command(std::string command);
-
     // SLAM
     void updateAlgorithms(int start, int end);
 
@@ -98,11 +69,23 @@ private:
                             icp6D *my_icp6D, bool meta_icp, int nns_method,
                             loopSlam6D *my_loopSlam6D, graphSlam6D *my_graphSlam6D,
                             int nrIt, double epsilonSLAM, double mdml, double mdmll, double graphDist,
-                            bool &eP, IOType type, int start, int end);
+                            bool &eP, IOType type, int start, int end); 
 
-    // States
-    void init_states();
+
+    // work
+    QFutureWatcher<void> watcher;
+    void (Mapping::*next_process)();
+    bool cancelled = false;
+    std::vector<double> icp_results;
+
+    // control Mapping
     std::vector<std::string> check_states();
+    void start_slam6D();
+    void improve_slam6D();
+    void write_frames_slam6d();
+    void finish_mapping();
+    void read_results();
+    static int run_command(std::string command);
 
 public: 
 
@@ -112,10 +95,8 @@ public:
     void start_mapping();
     void cancel_mapping();
     void showResults();
-    std::string param_to_string();
 
     // SLAM
-
     void do_slam6d();
     void improve_slam6d();
     void write_frames();
@@ -126,23 +107,18 @@ public:
     double calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in);
     void segmentPointCloud();
 
-    // work
-    std::vector<double> get_icp_results() const;
+signals:
+    void finished_mapping(int exit_code);
 
 public slots:
+    void on_process_finished();
+
+public: 
+    // getter
+    std::string param_to_string();
+    std::vector<double> get_icp_results() const;
 
     // setter
-        // scan_to_file parameter
-    void set_use_rosbag(bool state);
-    void set_rosbag_filename(QString filename);
-    void set_input_is_meter(bool input_is_meter);
-    void toggle_input_is_meter();
-    void set_input_is_lefthanded(bool input_is_lefthanded);
-    void toggle_input_is_lefthanded();
-    void set_scan_topic(QString topic);
-    void set_odom_topic(QString topic);
-    void set_gps_topic(QString topic);
-
         // SLAM parameters
     void set_start(int start);
     void set_end(int end);
@@ -180,14 +156,6 @@ public slots:
     void set_export_pts(bool export_pts);
     void set_export_path(QString path);
     void set_dir_path(QString path);
-    
-signals:
-    void finished_mapping(int exit_code);
-    void finished_rosbag();
-    void scan_count(int count);
-
-public slots:
-    void on_process_finished();
 };
 
 }

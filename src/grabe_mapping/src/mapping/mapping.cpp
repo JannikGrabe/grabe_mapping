@@ -24,12 +24,13 @@ namespace grabe_mapping {
 
 Mapping::Mapping() {
 
-    this->init_states();  
+    this->next_process = &Mapping::finish_mapping;
 
     QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_process_finished);
 }
 
 // control Mapping
+
 void Mapping::start_mapping() {
     std::vector<std::string> errors = this->check_states();
     if(errors.size() > 0) {
@@ -42,62 +43,12 @@ void Mapping::start_mapping() {
         return;
     }
 
-    if(this->use_rosbag) 
-        this->start_scan_to_file();
-    else {
-        this->start_slam6D();
-    }
+    this->start_slam6D();
 }
 
-void Mapping::start_scan_to_file() {
-    // build command to run script to launch scan_to_file_node
-    std::string scan_to_file_launch_sh = this->script_path + "/scan_to_file_launch.sh ";
-    scan_to_file_launch_sh += this->rosbag_filename.toStdString();                                            // rosbag_filename
-    scan_to_file_launch_sh += " " + this->scan_topic.toStdString();                                           // scan_topic name
-    scan_to_file_launch_sh += " " + this->odom_topic.toStdString();                                           // odom_topic name
-    scan_to_file_launch_sh += " " + (this->input_is_meter ? std::string("true") : std::string("false"));      // input_is_meter flag
-    scan_to_file_launch_sh += " " + (this->input_is_lefthanded ? std::string("true") : std::string("false")); // input_is_lefthanded flags
-    scan_to_file_launch_sh += " " + this->dir_path.toStdString();                                      // path where to put any output files
-  
-    // open thread for scan_to_file_node
-    QFuture<int> scan_to_file_future = QtConcurrent::run(Mapping::run_command, scan_to_file_launch_sh);
-
-    // set watcher to currently last process
-    this->watcher.setFuture(scan_to_file_future);
-    this->watcher.setObjectName("scan_to_file");
-
-    this->next_process = &Mapping::finish_scan_to_file;
-}
-
-void Mapping::finish_scan_to_file() {
-    emit this->finished_rosbag();
-    this->next_process = &Mapping::start_slam6D;
-    this->on_process_finished();
-}
-
-void Mapping::start_slam6D() {
-    //QFuture<int> slam6D_future = QtConcurrent::run(Mapping::run_command, slam6D);
-    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::do_slam6d);
-
-    this->watcher.setFuture(slam6D_future);
-
-    this->next_process = &Mapping::finish_slam6D;
-}
-
-void Mapping::improve_slam6D() {
-    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::improve_slam6d);
-
-    this->watcher.setFuture(slam6D_future);
-
-    this->next_process = &Mapping::finish_slam6D;
-}
-
-void Mapping::finish_slam6D() {
-    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::write_frames);
-
-    this->watcher.setFuture(slam6D_future);
-
-    this->next_process = &Mapping::finish_mapping;
+void Mapping::cancel_mapping() {
+    // this->cancelled = true;
+    // this->next_process = &Mapping::finish_mapping;
 }
 
 void Mapping::showResults() {
@@ -115,19 +66,95 @@ void Mapping::showResults() {
     // this->next_process = &Mapping::finish_mapping;
 }
 
+std::vector<std::string> Mapping::check_states() {
+
+    std::vector<std::string> error_msgs;
+    
+    if(this->dir_path.isEmpty()) {
+        error_msgs.push_back("OUTPUT: no directory path set");
+    }
+    if(this->start < 0) {
+        error_msgs.push_back("GENERAL: start < 0");
+    }
+    if(this->end > -1 && this->start >= this->end) {
+        error_msgs.push_back("GENERAL: start >= end");
+    }
+    if(this->improve_start != -1 && (this->improve_start < this->start || this->improve_start >= this->end)) {
+        error_msgs.push_back("IMPROVE: start out of bounds");
+    } 
+    if(this->improve_end != -1 && (this->improve_end <= this->start || this->improve_end > this->end)) {
+        error_msgs.push_back("IMPROVE: end out of bounds");
+    }
+    if(this->improve_start != -1 && this->improve_end != -1 && this->improve_end <= this->improve_start) {
+        error_msgs.push_back("IMPROVE: start >= end");
+    }
+    if(this->max_it_ICP < 1) {
+        error_msgs.push_back("ICP: max iterations < 1");
+    }
+    if(this->max_p2p_dist_ICP <= 0.0) {
+        error_msgs.push_back("ICP: max p2p distance <= 0.0");
+    }
+    if(this->type_SLAM != 0 && this->max_it_SLAM < 1) {
+        error_msgs.push_back("GRAPHSLAM: max iterations SLAM < 1");
+    }
+    if(this->type_SLAM != 0 && this->max_p2p_dist_SLAM <= 0.0) {
+        error_msgs.push_back("GRAPHSLAM: max p2p distance SLAM <= 0.0");
+    }
+    if(this->type_Loop != 0 && this->max_it_Loop < 1) {
+        error_msgs.push_back("GRAPHSLAM: max iterations Loop < 1");
+    }
+    if(this->type_Loop != 0 && this->max_p2p_dist_Loop <= 0.0) {
+        error_msgs.push_back("GRAPHSLAM: max p2p distance Loop <= 0.0");
+    }
+    if(this->type_Loop != 0 && this->max_dist_Loop <= 0.0) {
+        error_msgs.push_back("GRAPHSLAM: max distance Loop <= 0.0");
+    }
+    if(this->type_Loop != 0 && this->loopsize <= 0) {
+        error_msgs.push_back("GRAPHSLAM: loopsize <= 0");
+    }
+    if(this->min_overlap_Loop == 0) {
+        error_msgs.push_back("GRAPHSLAM: min overlap Loop = 0");
+    }
+    if(this->bucket_size <= 0) {
+        error_msgs.push_back("ICP: bucket_size <= 0");
+    }
+    if(this->max_dist != -1 && this->min_dist != -1 && this->min_dist >= this->max_dist) {
+        error_msgs.push_back("GENERAL: Distance min >= max");
+    } 
+
+    return error_msgs;
+}
+
+void Mapping::start_slam6D() {
+    //QFuture<int> slam6D_future = QtConcurrent::run(Mapping::run_command, slam6D);
+    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::do_slam6d);
+
+    this->watcher.setFuture(slam6D_future);
+
+    this->next_process = &Mapping::write_frames;
+}
+
+void Mapping::improve_slam6D() {
+    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::improve_slam6d);
+
+    this->watcher.setFuture(slam6D_future);
+
+    this->next_process = &Mapping::write_frames;
+}
+
+void Mapping::write_frames() {
+    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::write_frames);
+
+    this->watcher.setFuture(slam6D_future);
+
+    this->next_process = &Mapping::finish_mapping;
+}
+
 void Mapping::finish_mapping() {
     if(this->cancelled) {
         emit this->finished_mapping(1);
         this->cancelled = false;
     } else {
-
-        if(export_points) {
-            std::string move_export = "mv " + QDir::current().absolutePath().toStdString() + "/points.pts "
-                                    + this->export_path.toStdString();
-            
-            this->run_command(move_export);
-        }
-
         this->read_results();
         emit this->finished_mapping(0);
     }
@@ -147,55 +174,9 @@ int Mapping::run_command(std::string command) {
     return system(command.c_str());
 }
 
-void Mapping::cancel_mapping() {
-    this->cancelled = true;
-    this->next_process = &Mapping::finish_mapping;
-    if(QString::compare(this->watcher.objectName(), "scan_to_file") == 0)
-        this->run_command("rosnode kill /player");
-}
-
-std::string Mapping::param_to_string() {
-    std::ostringstream ss("SLAM6D Paramters:\n");
-
-    ss << "GENERAL start:\t\t\t" << this->start << "\n"
-       << "GENERAL end:\t\t\t" << this->end << "\n"
-       << "GENERAL min distance:\t\t" << this->min_dist << "\n"
-       << "GENERAL max distance:\t\t" << this->max_dist << "\n"
-       << "REDUCTION voxel size:\t\t" << this->red_voxel_size << "\n"
-       << "REDUCTION pts p voxel:\t\t" << this->octree_red << "\n"
-       << "REDUCTION rand every nth pt:\t" << this->random_red << "\n"
-       << "GENERAL quiet:\t\t\t" << this->quiet << "\n"
-       << "GENERAL very quiet:\t\t" << this->very_quiet << "\n"
-       << "GENERAL match meta:\t\t" << this->match_meta << "\n"
-       << "GENERAL extrapolate pose:\t" << this->extrapolate_pose << "\n"
-       << "GENERAL scanserver:\t\t" << this->scanserver << "\n"
-       << "GENERAL animation:\t\t" << this->anim << "\n"
-       << "GENERAL export points:\t\t" << this->export_points << "\n"
-       << "GENERAL export path:\t\t" << this->export_path.toStdString() << "\n"
-       << "GENERAL loopclose path:\t\t" << this->loopclose_path.toStdString() << "\n"
-       << "GENERAL directory path:\t\t" << this->dir_path.toStdString() << "\n"
-       << "ICP type:\t\t\t" << this->type_ICP << "\n"
-       << "ICP epsilon:\t\t\t" << this->epsilon_ICP << "\n"
-       << "ICP iterations:\t\t\t" << this->max_it_ICP << "\n"
-       << "ICP max p2p distance:\t\t" << this->max_p2p_dist_ICP << "\n"
-       << "SLAM type:\t\t\t" << this->type_SLAM << "\n"
-       << "SLAM epsilon:\t\t\t" << this->epsilon_SLAM << "\n"
-       << "SLAM iterations:\t\t" << this->max_it_SLAM << "\n"
-       << "SLAM max p2p distance:\t\t" << this->max_p2p_dist_SLAM << "\n"
-       << "FINAL SLAM max p2p distance:\t" << this->max_p2p_dist_finalSLAM << "\n"
-       << "LOOP type:\t\t\t" << this->type_Loop << "\n"
-       << "LOOP iterations:\t\t" << this->max_it_Loop << "\n"
-       << "LOOP max p2p distance:\t\t" << this->max_p2p_dist_Loop << "\n"
-       << "LOOP max distance:\t\t" << this->max_dist_Loop << "\n"
-       << "FINAL LOOP max distance:\t" << this->max_dist_finalLoop << "\n"
-       << "LOOP min overlap:\t\t" << this->min_overlap_Loop << "\n"
-       << "LOOP loopsize:\t\t\t" << this->loopsize << "\n"
-       << "NNS method:\t\t\t" << this->nns_method << "\n"
-       << "NNS bucket size:\t\t" << this->bucket_size << "\n"
-       << "NNS pairing mode:\t\t" << this->pairing_mode << "\n";
-       
-       
-       return ss.str();
+// Slots
+void Mapping::on_process_finished() {
+    (this->*next_process)();
 }
 
 // SLAM
@@ -493,7 +474,7 @@ void Mapping::improve_slam6d() {
     }
 }
 
-void Mapping::write_frames() {
+void Mapping::write_frames_slam6d() {
     
     double id[16];
     M4identity(id);
@@ -955,142 +936,55 @@ void Mapping::segmentPointCloud() {
     }
 }
 
-// States
-void Mapping::init_states() {
-    this->use_rosbag = true;
-    this->input_is_meter = false;
-    this->input_is_lefthanded = false;
-    this->script_path = ros::package::getPath("grabe_mapping") + "/scripts";
-    this->cancelled = false;
-    this->next_process = &Mapping::finish_mapping;
-}
 
-std::vector<std::string> Mapping::check_states() {
-
-    std::vector<std::string> error_msgs;
-
-    if(this->use_rosbag && this->rosbag_filename.isEmpty()) {
-        error_msgs.push_back("ROSBAG: no rosbag filename set");
-    }
-    if(this->use_rosbag && this->scan_topic.isEmpty()) {
-        error_msgs.push_back("TOPICS: no scan topic set");
-    }
-    if(this->use_rosbag && this->odom_topic.isEmpty()) {
-        error_msgs.push_back("TOPICS: no odom topic set");
-    }
-    if(export_points && this->export_path.isEmpty()) {
-        error_msgs.push_back("GENERAL: no export path set");
-    }
-    if(this->dir_path.isEmpty()) {
-        error_msgs.push_back("OUTPUT: no directory path set");
-    }
-    if(this->start < 0) {
-        error_msgs.push_back("GENERAL: start < 0");
-    }
-    if(this->end > -1 && this->start >= this->end) {
-        error_msgs.push_back("GENERAL: start >= end");
-    }
-    if(this->improve_start != -1 && (this->improve_start < this->start || this->improve_start >= this->end)) {
-        error_msgs.push_back("IMPROVE: start out of bounds");
-    } 
-    if(this->improve_end != -1 && (this->improve_end <= this->start || this->improve_end > this->end)) {
-        error_msgs.push_back("IMPROVE: end out of bounds");
-    }
-    if(this->improve_start != -1 && this->improve_end != -1 && this->improve_end <= this->improve_start) {
-        error_msgs.push_back("IMPROVE: start >= end");
-    }
-    if(this->max_it_ICP < 1) {
-        error_msgs.push_back("ICP: max iterations < 1");
-    }
-    if(this->max_p2p_dist_ICP <= 0.0) {
-        error_msgs.push_back("ICP: max p2p distance <= 0.0");
-    }
-    if(this->type_SLAM != 0 && this->max_it_SLAM < 1) {
-        error_msgs.push_back("GRAPHSLAM: max iterations SLAM < 1");
-    }
-    if(this->type_SLAM != 0 && this->max_p2p_dist_SLAM <= 0.0) {
-        error_msgs.push_back("GRAPHSLAM: max p2p distance SLAM <= 0.0");
-    }
-    if(this->type_Loop != 0 && this->max_it_Loop < 1) {
-        error_msgs.push_back("GRAPHSLAM: max iterations Loop < 1");
-    }
-    if(this->type_Loop != 0 && this->max_p2p_dist_Loop <= 0.0) {
-        error_msgs.push_back("GRAPHSLAM: max p2p distance Loop <= 0.0");
-    }
-    if(this->type_Loop != 0 && this->max_dist_Loop <= 0.0) {
-        error_msgs.push_back("GRAPHSLAM: max distance Loop <= 0.0");
-    }
-    if(this->type_Loop != 0 && this->loopsize <= 0) {
-        error_msgs.push_back("GRAPHSLAM: loopsize <= 0");
-    }
-    if(this->min_overlap_Loop == 0) {
-        error_msgs.push_back("GRAPHSLAM: min overlap Loop = 0");
-    }
-    if(this->bucket_size <= 0) {
-        error_msgs.push_back("ICP: bucket_size <= 0");
-    }
-    if(this->max_dist != -1 && this->min_dist != -1 && this->min_dist >= this->max_dist) {
-        error_msgs.push_back("GENERAL: Distance min >= max");
-    } 
-
-    return error_msgs;
-}
-
-// Slots
-void Mapping::on_process_finished() {
-    (this->*next_process)();
-}
-
-// work
+// getter
 std::vector<double> Mapping::get_icp_results() const {
     return this->icp_results;
 }
 
+std::string Mapping::param_to_string() {
+    std::ostringstream ss("SLAM6D Paramters:\n");
+
+    ss << "GENERAL start:\t\t\t" << this->start << "\n"
+       << "GENERAL end:\t\t\t" << this->end << "\n"
+       << "GENERAL min distance:\t\t" << this->min_dist << "\n"
+       << "GENERAL max distance:\t\t" << this->max_dist << "\n"
+       << "REDUCTION voxel size:\t\t" << this->red_voxel_size << "\n"
+       << "REDUCTION pts p voxel:\t\t" << this->octree_red << "\n"
+       << "REDUCTION rand every nth pt:\t" << this->random_red << "\n"
+       << "GENERAL quiet:\t\t\t" << this->quiet << "\n"
+       << "GENERAL very quiet:\t\t" << this->very_quiet << "\n"
+       << "GENERAL match meta:\t\t" << this->match_meta << "\n"
+       << "GENERAL extrapolate pose:\t" << this->extrapolate_pose << "\n"
+       << "GENERAL scanserver:\t\t" << this->scanserver << "\n"
+       << "GENERAL animation:\t\t" << this->anim << "\n"
+       << "GENERAL loopclose path:\t\t" << this->loopclose_path.toStdString() << "\n"
+       << "GENERAL directory path:\t\t" << this->dir_path.toStdString() << "\n"
+       << "ICP type:\t\t\t" << this->type_ICP << "\n"
+       << "ICP epsilon:\t\t\t" << this->epsilon_ICP << "\n"
+       << "ICP iterations:\t\t\t" << this->max_it_ICP << "\n"
+       << "ICP max p2p distance:\t\t" << this->max_p2p_dist_ICP << "\n"
+       << "SLAM type:\t\t\t" << this->type_SLAM << "\n"
+       << "SLAM epsilon:\t\t\t" << this->epsilon_SLAM << "\n"
+       << "SLAM iterations:\t\t" << this->max_it_SLAM << "\n"
+       << "SLAM max p2p distance:\t\t" << this->max_p2p_dist_SLAM << "\n"
+       << "FINAL SLAM max p2p distance:\t" << this->max_p2p_dist_finalSLAM << "\n"
+       << "LOOP type:\t\t\t" << this->type_Loop << "\n"
+       << "LOOP iterations:\t\t" << this->max_it_Loop << "\n"
+       << "LOOP max p2p distance:\t\t" << this->max_p2p_dist_Loop << "\n"
+       << "LOOP max distance:\t\t" << this->max_dist_Loop << "\n"
+       << "FINAL LOOP max distance:\t" << this->max_dist_finalLoop << "\n"
+       << "LOOP min overlap:\t\t" << this->min_overlap_Loop << "\n"
+       << "LOOP loopsize:\t\t\t" << this->loopsize << "\n"
+       << "NNS method:\t\t\t" << this->nns_method << "\n"
+       << "NNS bucket size:\t\t" << this->bucket_size << "\n"
+       << "NNS pairing mode:\t\t" << this->pairing_mode << "\n";
+       
+       return ss.str();
+}
+
 // setter
-    // rosbag
-void Mapping::set_use_rosbag(bool state) {
-    this->use_rosbag = state;
-}
-
-void Mapping::set_rosbag_filename(QString filename) {
-    this->rosbag_filename = filename;
-}
-
-void Mapping::set_input_is_meter(bool input_is_meter) {
-    this->input_is_meter = input_is_meter;
-}
-
-void Mapping::toggle_input_is_meter() {
-    this->input_is_meter = !this->input_is_meter;
-}
-
-void Mapping::set_input_is_lefthanded(bool input_is_lefthanded) {
-    this->input_is_lefthanded = input_is_lefthanded;
-    
-}
-
-void Mapping::toggle_input_is_lefthanded() {
-    this->input_is_lefthanded = !this->input_is_lefthanded;
-}
-
-    // topics
-void Mapping::set_scan_topic(QString topic) {
-    this->scan_topic = topic;
-}
-
-void Mapping::set_odom_topic(QString topic) {
-    this->odom_topic = topic;
-}
-
-void Mapping::set_gps_topic(QString topic) {
-    this->gps_topic = topic;
-}
-
     // Parameters
-void Mapping::set_export_path(QString text) {
-    this->export_path = text;
-}
-
 void Mapping::set_dir_path(QString path) {
    this->dir_path = path;
    this->loopclose_path = path + "loopclose.pts"; 
@@ -1253,10 +1147,6 @@ void Mapping::set_scanserver(bool scanserver) {
 
 void Mapping::set_anim(int use_every_nth) {
     this->anim = use_every_nth;
-}
-
-void Mapping::set_export_pts(bool export_pts) {
-    this->export_points = export_pts;
 }
 
 }
