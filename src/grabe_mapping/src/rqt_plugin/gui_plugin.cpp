@@ -1,7 +1,5 @@
 
 #include "rqt_plugin/gui_plugin.h"
-#include "rqt_plugin/parameter_widget.h"
-#include "rqt_plugin/scan_to_file_widget.h"
 #include <pluginlib/class_list_macros.h>
 #include <QtConcurrent/QtConcurrent>
 #include <QStringList>
@@ -44,6 +42,14 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   this->mapping = new Mapping();
 
   this->initWidgets();
+
+  this->ui_.tb_settings->setVisible(false);
+
+  this->pw = new Parameter_widget(this->mapping);
+  this->ui_.vl_settings->insertWidget(0, pw);
+
+  this->stfw = new Scan_to_file_widget(this->mapping);
+  this->ui_.vl_settings->insertWidget(0, stfw);
   
   context.addWidget(widget_);
 
@@ -70,7 +76,6 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(ui_.pb_show, &QPushButton::pressed, this, &GuiPlugin::on_pb_show_pressed);
   QObject::connect(this->ui_.pb_cancel, &QPushButton::pressed, this, &GuiPlugin::on_pb_cancel_pressed);
   QObject::connect(this->ui_.pb_back, &QPushButton::pressed, this, &GuiPlugin::on_pb_back_pressed);
-
 
   // general
   QObject::connect(this->ui_.sb_total, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GuiPlugin::on_sb_total_value_changed);
@@ -569,15 +574,9 @@ void GuiPlugin::on_rosbag_finished() {
 }
 
 void GuiPlugin::on_pb_show_pressed() {
-  //this->mapping->showResults();
+  this->mapping->showResults();
   //this->mapping->calculate_crispnesses(7, 8);
   //this->mapping->segmentPointCloud();
-
-  Parameter_widget* widget = new Parameter_widget(this->mapping, "Test");
-  widget->show();
-
-  Scan_to_file_widget* widget_stf = new Scan_to_file_widget("Test");
-  widget_stf->show();
 }
 
 void GuiPlugin::on_pb_cancel_pressed() {
@@ -668,6 +667,9 @@ void GuiPlugin::shutdownPlugin()
 void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
     qt_gui_cpp::Settings& instance_settings) const
 {
+  this->pw->save_settings(instance_settings);
+  this->stfw->save_settings(instance_settings);
+/*
    // rosbag
   instance_settings.setValue("rosbag_filename", this->ui_.le_filePath->text());
   instance_settings.setValue("input_is_meter", this->ui_.rb_meter->isChecked());
@@ -707,11 +709,16 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
   // work
   instance_settings.setValue("update_scans_state", this->ui_.cb_update_scans->isChecked());
   instance_settings.setValue("active_tab", this->ui_.tb_settings->currentIndex());
+  */
 }
 
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
     const qt_gui_cpp::Settings& instance_settings)
  {
+   this->pw->restore_settings(instance_settings);
+   this->stfw->restore_settings(instance_settings);
+
+  /*
   // rosbag
   if(instance_settings.contains("rosbag_filename"))
     this->ui_.le_filePath->setText(instance_settings.value("rosbag_filename").toString());
@@ -782,7 +789,7 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
   if(instance_settings.contains("update_scans_state"))
     this->ui_.cb_update_scans->setChecked(instance_settings.value("update_scans_state").toBool());
   if(instance_settings.contains("active_tab"))
-    this->ui_.tb_settings->setCurrentIndex(instance_settings.value("active_tab").toInt());
+    this->ui_.tb_settings->setCurrentIndex(instance_settings.value("active_tab").toInt());*/
 }
 
 } 

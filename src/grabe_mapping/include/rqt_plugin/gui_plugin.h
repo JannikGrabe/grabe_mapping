@@ -10,6 +10,9 @@
 #include "ros/subscriber.h"
 #include "std_msgs/Int32.h"
 
+#include "rqt_plugin/parameter_widget.h"
+#include "rqt_plugin/scan_to_file_widget.h"
+
 namespace grabe_mapping // the namespace determines the name by which the plugin can be discovered
 {
 
@@ -100,7 +103,9 @@ public slots:
 private:
   Ui::Mapping ui_;
   QMainWindow* widget_;
-  
+  Parameter_widget* pw;
+  Scan_to_file_widget* stfw;
+
   void initWidgets();
   void initComboBoxes();
   static int runCommand(std::string command);

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>547</width>
-    <height>707</height>
+    <height>460</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -244,9 +244,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <layout class="QGridLayout" name="gl_export"/>
        </item>
       </layout>
      </widget>
