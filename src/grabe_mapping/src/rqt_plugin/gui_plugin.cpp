@@ -40,13 +40,12 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   this->count_sub = this->n.subscribe("mapping/scan_to_file_count", 10, &GuiPlugin::scan_to_file_count_callback, this);
 
   this->mapping = new Mapping();
+  this->rosbag_reader = new Rosbag_reader();
 
   this->initWidgets();
 
-  this->stfw = new Scan_to_file_widget(this->mapping, "Read Scans from Rosbag");
+  this->stfw = new Scan_to_file_widget(this->rosbag_reader, "Read Scans from Rosbag");
   this->ui_.vl_settings->insertWidget(0, stfw); 
-
-  stfw->setContentsMargins(0,0,0,0);
 
   this->pw = new Parameter_widget(this->mapping, "SLAM Parameters");
   this->ui_.vl_settings->addWidget(pw);

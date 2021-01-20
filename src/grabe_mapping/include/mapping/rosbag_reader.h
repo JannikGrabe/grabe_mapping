@@ -1,3 +1,6 @@
+#ifndef GRABE_MAPPING_ROSBAG_READER_H
+#define GRABE_MAPPING_ROSBAG_READER_H
+
 #include <QWidget>
 #include <QtConcurrent/QtConcurrent>
 
@@ -49,3 +52,5 @@ public: // setter
 };
 
 }
+
+#endif

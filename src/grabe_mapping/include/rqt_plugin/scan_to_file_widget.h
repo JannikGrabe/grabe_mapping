@@ -6,6 +6,7 @@
 #include <rqt_gui_cpp/plugin.h>
 #include <grabe_mapping/ui_scan_to_file_widget.h>
 #include "mapping/mapping.h"
+#include "mapping/rosbag_reader.h"
 
 namespace grabe_mapping {
 
@@ -14,11 +15,11 @@ class Scan_to_file_widget : public QWidget {
 
 private:
     Ui::Scan_to_file_widget ui;
-    Mapping* mapping;
+    Rosbag_reader* rosbag_reader;
 
 public:
 
-    Scan_to_file_widget(Mapping* mapping, QString title = "Scan_to_file_widget", QWidget *parent = nullptr);
+    Scan_to_file_widget(Rosbag_reader* rosbag_reader, QString title = "Scan_to_file_widget", QWidget *parent = nullptr);
         
     void save_settings(qt_gui_cpp::Settings& instance_settings) const;
     void restore_settings(const qt_gui_cpp::Settings& instance_settings);
@@ -45,6 +46,9 @@ public slots:
     // start/cancel
     void pb_start_pressed();
     void pb_cancel_pressed();
+
+    // rosbag reader
+    void rosbag_reader_finished();
 };
 
 }

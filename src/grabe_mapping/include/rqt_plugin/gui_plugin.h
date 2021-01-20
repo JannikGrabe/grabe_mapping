@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QMainWindow>
 #include "mapping/mapping.h"
+#include "mapping/rosbag_reader.h"
 #include "ros/ros.h"
 #include "ros/subscriber.h"
 #include "std_msgs/Int32.h"
@@ -66,6 +67,7 @@ private:
   void initWidgets();
 
   Mapping* mapping;
+  Rosbag_reader* rosbag_reader;
 
   ros::NodeHandle n;
   ros::Subscriber count_sub;
