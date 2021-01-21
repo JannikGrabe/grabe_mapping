@@ -45,10 +45,12 @@ public slots:
   void on_pb_back_pressed();
 
   // parameters
-      // general
   void on_cb_export_state_changed(int state);
   void on_pb_export_pressed();
   void on_le_export_text_changed(QString text);
+  void on_pb_export_save_pressed();
+  void on_pb_source_dir_pressed();
+  void on_le_source_dir_text_changed(QString text);
 
   // config
   void on_pb_save_config_pressed();

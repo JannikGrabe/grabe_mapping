@@ -153,8 +153,6 @@ public:
     void set_extrapolate_pose(bool eP);
     void set_scanserver(bool scanserver);
     void set_anim(int use_every_nth);
-    void set_export_pts(bool export_pts);
-    void set_export_path(QString path);
     void set_dir_path(QString path);
 };
 

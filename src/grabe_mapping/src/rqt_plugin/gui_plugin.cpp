@@ -59,10 +59,16 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   QObject::connect(this->ui_.pb_cancel, &QPushButton::pressed, this, &GuiPlugin::on_pb_cancel_pressed);
   QObject::connect(this->ui_.pb_back, &QPushButton::pressed, this, &GuiPlugin::on_pb_back_pressed);
 
-  // general
+  // export
   QObject::connect(this->ui_.cb_export, &QCheckBox::stateChanged, this, &GuiPlugin::on_cb_export_state_changed);
   QObject::connect(this->ui_.le_export, &QLineEdit::textChanged, this, &GuiPlugin::on_le_export_text_changed);
   QObject::connect(this->ui_.pb_export, &QPushButton::pressed, this, &GuiPlugin::on_pb_export_pressed);
+  QObject::connect(this->ui_.pb_export_save, &QPushButton::pressed, this, &GuiPlugin::on_pb_export_save_pressed);
+  
+  // source dir
+  QObject::connect(this->ui_.pb_source_dir, &QPushButton::pressed, this, &GuiPlugin::on_pb_source_dir_pressed);
+  QObject::connect(this->ui_.le_source_dir, &QLineEdit::textChanged, this, &GuiPlugin::on_le_source_dir_text_changed);
+  QObject::connect(this->rosbag_reader, &Rosbag_reader::output_path_changed, this->ui_.le_source_dir, &QLineEdit::setText);
 
   // config
   //QObject::connect(this->ui_.pb_save_config, &QPushButton::pressed, this, &GuiPlugin::on_pb_save_config_pressed);
@@ -82,9 +88,10 @@ void triggerConfiguration()
 // slots
 // general
 void GuiPlugin::on_cb_export_state_changed(int state) {
-  this->mapping->set_export_pts(state);
+  //this->mapping->set_export_pts(state);
   this->ui_.le_export->setEnabled(state);
   this->ui_.pb_export->setEnabled(state);
+  this->ui_.pb_export_save->setEnabled(state);
 }
 
 void GuiPlugin::on_pb_export_pressed() {
@@ -98,7 +105,26 @@ void GuiPlugin::on_pb_export_pressed() {
 }
 
 void GuiPlugin::on_le_export_text_changed(QString text) {
-  this->mapping->set_export_path(text);
+  //this->mapping->set_export_path(text);
+}
+
+void GuiPlugin::on_pb_export_save_pressed() {
+  std::cout << "not yet implemented" << std::endl;
+}
+
+void GuiPlugin::on_pb_source_dir_pressed() {
+  QString path = QFileDialog::getExistingDirectory(
+        this->widget_,
+        tr("Select Directory for output files"),
+        "/home/jannik/Bachelorarbeit",
+        QFileDialog::ShowDirsOnly
+    );
+
+    this->ui_.le_source_dir->setText(path);
+}
+
+void GuiPlugin::on_le_source_dir_text_changed(QString text) {
+  this->mapping->set_dir_path(text);
 }
 
 // config
