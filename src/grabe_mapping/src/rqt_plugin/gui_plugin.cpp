@@ -353,6 +353,7 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
 
   instance_settings.setValue("export", this->ui_.cb_export->isChecked());
   instance_settings.setValue("export_path", this->ui_.le_export->text());
+  instance_settings.setValue("source_dir", this->ui_.le_source_dir->text());
 }
 
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
@@ -365,6 +366,8 @@ void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
     this->ui_.cb_export->setChecked(instance_settings.value("export").toBool());
   if(instance_settings.contains("export_path"))
     this->ui_.le_export->setText(instance_settings.value("export_path").toString());
+  if(instance_settings.contains("source_dir"))
+    this->ui_.le_source_dir->setText(instance_settings.value("source_dir").toString());
 }
 
 } 
