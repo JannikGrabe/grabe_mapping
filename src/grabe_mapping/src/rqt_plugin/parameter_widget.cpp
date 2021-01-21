@@ -72,7 +72,6 @@ Parameter_widget::Parameter_widget(Mapping* mapping, QString title, QWidget *par
 
 void Parameter_widget::save_settings(qt_gui_cpp::Settings& instance_settings) const {
     // general
-    instance_settings.setValue("total", this->ui.sb_total->value());
     instance_settings.setValue("first_scan", this->ui.sb_first->value());
     instance_settings.setValue("last_scan", this->ui.sb_last->value());
     instance_settings.setValue("min_distance", this->ui.dsb_min->value());
@@ -99,8 +98,6 @@ void Parameter_widget::save_settings(qt_gui_cpp::Settings& instance_settings) co
 
 void Parameter_widget::restore_settings(const qt_gui_cpp::Settings& instance_settings) {
     // general
-    if(instance_settings.contains("total"))
-        this->ui.sb_total->setValue(instance_settings.value("total").toInt());
     if(instance_settings.contains("first_scan"))
         this->ui.sb_first->setValue(instance_settings.value("first_scan").toInt());
     if(instance_settings.contains("last_scan"))
@@ -149,50 +146,18 @@ void Parameter_widget::restore_settings(const qt_gui_cpp::Settings& instance_set
 
 // general
 void Parameter_widget::sb_total_value_changed(int val) {
-    if(val <= 1 ) {
-        this->ui.sb_first->setValue(0);
-        this->ui.sb_last->setValue(1);
-        this->ui.sb_first->setEnabled(false);
-        this->ui.sb_last->setEnabled(false);
-    } else {
-        this->ui.sb_first->setEnabled(true);
-        this->ui.sb_last->setEnabled(true);
-        this->ui.sb_last->setValue(val - 1);
-    }
+    this->ui.sb_total->setValue(val); 
+    this->ui.sb_first->setMaximum(val - 2);
+    this->ui.sb_last->setMaximum(val - 1);
+    this->ui.sb_last->setValue(val-1);
 }
 
 void Parameter_widget::sb_first_value_changed(int val) {
-    int total = this->ui.sb_total->value();
-    int last = this->ui.sb_last->value(); 
-
-    if(val > total - 2) {
-        this->ui.sb_first->setValue(0);
-    } else if(val < 0) {
-        this->ui.sb_first->setValue(last - 1);
-    } else {
-        this->mapping->set_start(val);
-
-        if(val >= last) { // first is larger than last
-        this->ui.sb_last->setValue(val + 1);
-        }
-    }
+    this->mapping->set_start(val);
 }
 
 void Parameter_widget::sb_last_value_changed(int val) {
-    int total = this->ui.sb_total->value();
-    int first = this->ui.sb_first->value();
-
-    if(val < 1) {
-        this->ui.sb_last->setValue(total - 1);
-    } else if (val > total - 1) {
-        this->ui.sb_last->setValue(first + 1);
-    } else{
-        this->mapping->set_end(val);
-
-        if(val < first) { // last is smaller than first
-        this->ui.sb_first->setValue(val - 1);// set first one lower than this
-        }
-    }
+    this->mapping->set_end(val);
 }
 
 void Parameter_widget::dsb_min_value_changed(double val) {

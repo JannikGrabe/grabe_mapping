@@ -43,7 +43,7 @@ void Mapping::start_mapping() {
         return;
     }
 
-    this->start_slam6D();
+    this->improve_slam6D();
 }
 
 void Mapping::cancel_mapping() {
@@ -143,7 +143,7 @@ void Mapping::improve_slam6D() {
 }
 
 void Mapping::write_frames() {
-    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::write_frames);
+    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::write_frames_slam6d);
 
     this->watcher.setFuture(slam6D_future);
 
@@ -155,7 +155,7 @@ void Mapping::finish_mapping() {
         emit this->finished_mapping(1);
         this->cancelled = false;
     } else {
-        this->read_results();
+        //this->read_results();
         emit this->finished_mapping(0);
     }
 }
@@ -183,7 +183,7 @@ void Mapping::on_process_finished() {
 void Mapping::updateAlgorithms(int start, int end) {
 
     // set searchtree and reduction parameter for all scans
-    for(int i = start; i <= end; i++) {
+    for(int i = 0; i < Scan::allScans.size(); i++) {
         Scan* scan = Scan::allScans[i];
 
         scan->setRangeFilter(this->max_dist, this->min_dist);
@@ -213,7 +213,7 @@ void Mapping::updateAlgorithms(int start, int end) {
     case 6:
         this->my_icp6Dminimizer = new icp6D_APX(quiet);
         break;
-   }
+    }
     
     /* set slam method
     * param1: icp minimizer 
@@ -350,6 +350,7 @@ void Mapping::updateAlgorithms(int start, int end) {
 void Mapping::do_slam6d()
 {
     Scan::closeDirectory();
+
     /* read scans from directory
     * param1: scanserver active?
     * param2: path
@@ -406,11 +407,13 @@ void Mapping::do_slam6d()
 }
 
 void Mapping::improve_slam6d() {
-    
-    this->max_it_ICP = 50;
 
-    this->improve_start = 20;
-    this->improve_end = 40;
+    this->improve_start = this->start;
+    this->improve_end = this->end;
+
+    if(Scan::allScans.size() == 0) {
+        Scan::openDirectory(scanserver, dir_path.toStdString(), file_format, this->improve_start , improve_end);
+    }
 
     this->updateAlgorithms(this->improve_start, this->improve_end);
 

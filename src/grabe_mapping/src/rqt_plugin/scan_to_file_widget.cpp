@@ -31,6 +31,9 @@ Scan_to_file_widget::Scan_to_file_widget(Rosbag_reader* rosbag_reader, QString t
     QObject::connect(ui.pb_start, &QPushButton::pressed, this, &Scan_to_file_widget::pb_start_pressed);
     QObject::connect(ui.pb_cancel, &QPushButton::pressed, this, &Scan_to_file_widget::pb_cancel_pressed);
 
+        // groupbox
+    QObject::connect(ui.gb_scan_to_file, &QGroupBox::toggled, this, &Scan_to_file_widget::gb_scan_to_file_checked);
+
         // rosbag reader
     QObject::connect(this->rosbag_reader, &Rosbag_reader::finished, this, &Scan_to_file_widget::rosbag_reader_finished);
 }
@@ -106,18 +109,6 @@ void Scan_to_file_widget::le_gps_text_changed(QString text) {
     this->rosbag_reader->set_gps_topic(text);
 }
 
-void Scan_to_file_widget::le_scan_type_text_changed(QString text) {
-
-}
-
-void Scan_to_file_widget::le_odom_type_text_changed(QString text) {
-
-}
-
-void Scan_to_file_widget::le_gps_type_text_changed(QString text) {
-
-}
-
 // output
 void Scan_to_file_widget::pb_output_pressed() {
     QString output_filepath = QFileDialog::getExistingDirectory(
@@ -127,7 +118,7 @@ void Scan_to_file_widget::pb_output_pressed() {
         QFileDialog::ShowDirsOnly
     );
 
-    this->ui.le_output->setText(output_filepath);
+    this->ui.le_output->setText(output_filepath + "/");
 }
 
 void Scan_to_file_widget::le_output_text_changed(QString text) {
@@ -145,6 +136,11 @@ void Scan_to_file_widget::pb_start_pressed() {
 
 void Scan_to_file_widget::pb_cancel_pressed() {
     this->rosbag_reader->cancel();
+}
+
+// groupbox
+void Scan_to_file_widget::gb_scan_to_file_checked(bool checked) {
+    this->ui.w_content->setVisible(checked);
 }
 
 //rosbag reader

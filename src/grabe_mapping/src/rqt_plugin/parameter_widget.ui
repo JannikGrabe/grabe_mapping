@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>547</width>
-    <height>460</height>
+    <width>502</width>
+    <height>494</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Parameters</string>
@@ -55,13 +61,33 @@
              <string>Scans</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_2">
+             <item row="1" column="3">
+              <widget class="QLabel" name="l_last">
+               <property name="text">
+                <string>Last</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="sb_total">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="maximum">
+                <number>1000000000</number>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="4">
               <widget class="QSpinBox" name="sb_last">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="minimum">
-                <number>-1</number>
+                <number>1</number>
                </property>
                <property name="maximum">
                 <number>1000000</number>
@@ -78,27 +104,13 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="l_total">
-               <property name="text">
-                <string>Total</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="3">
-              <widget class="QLabel" name="l_last">
-               <property name="text">
-                <string>Last</string>
-               </property>
-              </widget>
-             </item>
              <item row="1" column="1">
               <widget class="QSpinBox" name="sb_first">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="minimum">
-                <number>-1</number>
+                <number>0</number>
                </property>
                <property name="maximum">
                 <number>1000000</number>
@@ -108,35 +120,10 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="6">
-              <spacer name="hs">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="5">
-              <widget class="QLabel" name="l_scans_info">
-               <property name="font">
-                <font>
-                 <pointsize>8</pointsize>
-                </font>
-               </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="l_total">
                <property name="text">
-                <string>if not specified all scans will be used</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="sb_total">
-               <property name="maximum">
-                <number>1000000000</number>
+                <string>Total</string>
                </property>
               </widget>
              </item>

@@ -44,11 +44,11 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   this->initWidgets();
 
-  this->stfw = new Scan_to_file_widget(this->rosbag_reader, "Read Scans from Rosbag");
-  this->ui_.vl_settings->insertWidget(0, stfw); 
+  this->stfw = new Scan_to_file_widget(this->rosbag_reader, "Read Scans from Rosbag", this->widget_);
+  this->ui_.vl_main->insertWidget(0, stfw); 
 
   this->pw = new Parameter_widget(this->mapping, "SLAM Parameters");
-  this->ui_.vl_settings->addWidget(pw);
+  this->ui_.hl_main->insertWidget(2, pw);
 
   context.addWidget(widget_);
 
@@ -120,11 +120,16 @@ void GuiPlugin::on_pb_source_dir_pressed() {
         QFileDialog::ShowDirsOnly
     );
 
-    this->ui_.le_source_dir->setText(path);
+    this->ui_.le_source_dir->setText(path + "/");
 }
 
 void GuiPlugin::on_le_source_dir_text_changed(QString text) {
   this->mapping->set_dir_path(text);
+
+  QDir dir(text);
+  QStringList files = dir.entryList(QStringList() << "*.3d", QDir::Files);
+
+  this->pw->sb_total_value_changed(files.size()); 
 }
 
 // config
@@ -310,7 +315,7 @@ void GuiPlugin::on_pb_show_pressed() {
   this->mapping->showResults();
   //this->mapping->calculate_crispnesses(7, 8);
   //this->mapping->segmentPointCloud();
-}
+  }
 
 void GuiPlugin::on_pb_cancel_pressed() {
   int ret = QMessageBox::warning(this->widget_, "Cancel", "Are you sure you want to caancel?", QMessageBox::Ok, QMessageBox::No);

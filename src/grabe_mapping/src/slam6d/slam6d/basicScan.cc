@@ -897,6 +897,7 @@ void BasicScan::saveFrames(bool append)
   std::string filename = m_path + "scan" + m_identifier + ".frames";
   std::ios_base::openmode open_mode;
 
+
   if(append) open_mode = std::ios_base::app;
   else open_mode = std::ios_base::out;
   std::ofstream file(filename.c_str(), open_mode);

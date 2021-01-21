@@ -35,9 +35,6 @@ public slots:
     void le_scan_text_changed(QString text);
     void le_odom_text_changed(QString text);
     void le_gps_text_changed(QString text);
-    void le_scan_type_text_changed(QString text);
-    void le_odom_type_text_changed(QString text);
-    void le_gps_type_text_changed(QString text);
 
     // output
     void pb_output_pressed();
@@ -46,6 +43,9 @@ public slots:
     // start/cancel
     void pb_start_pressed();
     void pb_cancel_pressed();
+
+    // groupbox
+    void gb_scan_to_file_checked(bool checked);
 
     // rosbag reader
     void rosbag_reader_finished();
