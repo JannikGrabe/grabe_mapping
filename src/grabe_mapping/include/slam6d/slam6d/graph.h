@@ -15,6 +15,7 @@
 #include <fstream>
 
 #include <boost/graph/adjacency_list.hpp>
+#include "slam6d/scan.h"
 
 /* Boost graph declaration */
 using boost::edge_weight_t;
@@ -37,6 +38,7 @@ public:
   Graph(int nrScans, bool loop);
   Graph(double cldist, int loopsize);
   Graph(int nodes, double cldist2, int loopsize);
+  Graph(std::vector<Scan*> scans, int nodes, double cldist2, int loopsize);
 
   int getLink(int i, int fromTo);
   void addLink(int i, int j);

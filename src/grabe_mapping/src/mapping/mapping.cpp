@@ -58,7 +58,7 @@ void Mapping::showResults() {
 
     // build command to run show
     std::ostringstream oss(ros::package::getPath("grabe_mapping") + "/bin/show ", std::ios_base::app);
-    oss << "-s " << this->start << " -e " << this->end << " " << this->dir_path.toStdString();
+    oss << "-s " << this->free.start << " -e " << this->free.end << " " << this->free.dir_path.toStdString();
 
     std::cout << oss.str() << std::endl;
 
@@ -475,10 +475,9 @@ void Mapping::improve_slam6d() {
         }
         scans_for_improving.push_back(scan);
     }
-    
    
     // merge first scan position with position of scan before
-    if(start > this->improve_start) {
+    if(this->do_icp && start > this->improve_start) {
         Scan::allScans[start_index]->mergeCoordinatesWithRoboterPosition(Scan::allScans[start_index-1]);
     }
  

@@ -130,6 +130,31 @@ Graph::Graph(int nodes, double cldist2, int loopsize)
 }
 
 
+Graph::Graph(std::vector<Scan*> scans, int nodes, double cldist2, int loopsize)
+{
+  // nodes + 1
+  start = 0;
+  nrScans = nodes;
+  int nrLinks = nodes - 1;
+
+  for(int i = 0; i < nrLinks; i++){
+    from.push_back(i);
+    to.push_back(i + 1);
+  }
+
+  // nodes
+  for (int j = 0; j < nodes; j++) {
+    for (int k = j + 1; k < nodes; k++) {
+      if ((abs(k-j) > loopsize) &&
+          (Dist2(scans[j]->get_rPos(),
+                 scans[k]->get_rPos()) < cldist2)) {
+        addLink(j, k);
+      }
+    }
+  }
+}
+
+
 
 /**
  * Returns the specified link
