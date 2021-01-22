@@ -32,6 +32,9 @@ Mapping::Mapping() {
 // control Mapping
 
 void Mapping::start_mapping() {
+
+    this->lock_parameters();
+
     std::vector<std::string> errors = this->check_states();
     if(errors.size() > 0) {
 
@@ -64,6 +67,47 @@ void Mapping::showResults() {
     this->watcher.setFuture(show_future);
 
     // this->next_process = &Mapping::finish_mapping;
+}
+
+void Mapping::lock_parameters() {
+    file_format = free.file_format;
+    start = free.start;
+    end = free.end;
+    improve_start = free.improve_start;
+    improve_end = free.improve_end;
+    type_ICP = free.type_ICP;
+    epsilon_ICP = free.epsilon_ICP;
+    max_it_ICP = free.max_it_ICP;
+    max_p2p_dist_ICP = free.max_p2p_dist_ICP;
+    type_SLAM = free.type_SLAM;
+    epsilon_SLAM = free.epsilon_SLAM;
+    max_it_SLAM = free.max_it_SLAM;
+    max_p2p_dist_SLAM = free.max_p2p_dist_SLAM;
+    max_p2p_dist_finalSLAM = free.max_p2p_dist_finalSLAM;
+    type_Loop = free.type_Loop;
+    max_it_Loop = free.max_it_Loop;
+    max_p2p_dist_Loop = free.max_p2p_dist_Loop;
+    max_dist_Loop = free.max_dist_Loop;
+    max_dist_finalLoop = free.max_dist_finalLoop;
+    min_overlap_Loop = free.min_overlap_Loop;
+    loopsize = free.loopsize;
+    nns_method = free.nns_method;
+    bucket_size = free.bucket_size;
+    pairing_mode = free.pairing_mode;
+    min_dist = free.min_dist;
+    max_dist = free.max_dist;
+    red_voxel_size = free.red_voxel_size;
+    octree_red = free.octree_red;
+    random_red = free.random_red;
+    quiet = free.quiet;
+    very_quiet = free.very_quiet;
+    match_meta = free.match_meta;
+    extrapolate_pose = free.extrapolate_pose;
+    scanserver = free.scanserver;
+    anim = free.anim;
+    loopclose_path = free.loopclose_path;
+    dir_path = free.dir_path;
+    do_icp = free.do_icp;
 }
 
 std::vector<std::string> Mapping::check_states() {
@@ -408,9 +452,6 @@ void Mapping::do_slam6d()
 
 void Mapping::improve_slam6d() {
 
-    this->improve_start = this->start;
-    this->improve_end = this->end;
-
     if(Scan::allScans.size() == 0) {
         Scan::openDirectory(scanserver, dir_path.toStdString(), file_format, this->improve_start , improve_end);
     }
@@ -425,16 +466,16 @@ void Mapping::improve_slam6d() {
     double old_end[16]; 
     memcpy(old_end, Scan::allScans[end_index]->get_transMat(), sizeof(old_end)); 
 
-    if(this->my_icp != nullptr) {
-            // move scans back to origin 
-        for(int i = start_index; i <= end_index; i++) {
-            Scan* scan = Scan::allScans[i];
+    for(int i = start_index; i <= end_index; i++) {
+        Scan* scan = Scan::allScans[i];
+        if(this->do_icp) { // move scans back to origin if icp will be done again
             double trans[16];
             M4inv(scan->getDAlign(), trans);
             scan->transform(trans, Scan::ICP);
-            scans_for_improving.push_back(scan);
         }
+        scans_for_improving.push_back(scan);
     }
+    
    
     // merge first scan position with position of scan before
     if(start > this->improve_start) {
@@ -530,7 +571,6 @@ void Mapping::matchGraph6Dautomatic(double cldist, int loopsize, vector <Scan *>
                             int nrIt, double epsilonSLAM, double mdml, double mdmll, double graphDist,
                             bool &eP, IOType type, int start, int end)
 {
-
     double cldist2 = sqr(cldist);
 
     // list of scan for metascan
@@ -644,8 +684,6 @@ void Mapping::matchGraph6Dautomatic(double cldist, int loopsize, vector <Scan *>
         add_edge(first, last, g);
     }
 
-    
-
     if(my_graphSlam6D != NULL && mdml > 0.0) {
         int j = 0;
         double ret;
@@ -687,10 +725,10 @@ void Mapping::transform_cloud(pcl::PointCloud<pcl::PointXYZI> *in, pcl::PointClo
 }
 
 void Mapping::calculate_crispnesses(int scan1, int scan2) {
-    std::ostringstream scan1_base(this->dir_path.toStdString() + "/scan", std::ios_base::app);
+    std::ostringstream scan1_base(this->free.dir_path.toStdString() + "/scan", std::ios_base::app);
     scan1_base << std::setfill('0') << std::setw(3) << scan1;
 
-    std::ostringstream scan2_base(this->dir_path.toStdString() + "/scan", std::ios_base::app);
+    std::ostringstream scan2_base(this->free.dir_path.toStdString() + "/scan", std::ios_base::app);
     scan2_base << std::setfill('0') << std::setw(3) << scan2;
 
     pcl::PointCloud<pcl::PointXYZI>* cloud_pose_transformed = new pcl::PointCloud<pcl::PointXYZI>;
@@ -846,7 +884,7 @@ double Mapping::calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in) {
 }
 
 void Mapping::segmentPointCloud() {
-    std::ostringstream scan1_base(this->dir_path.toStdString() + "/scan", std::ios_base::app);
+    std::ostringstream scan1_base(this->free.dir_path.toStdString() + "/scan", std::ios_base::app);
     scan1_base << std::setfill('0') << std::setw(3) << 4;
 
     //IO::scale_factor = 0.01;
@@ -948,40 +986,40 @@ std::vector<double> Mapping::get_icp_results() const {
 std::string Mapping::param_to_string() {
     std::ostringstream ss("SLAM6D Paramters:\n");
 
-    ss << "GENERAL start:\t\t\t" << this->start << "\n"
-       << "GENERAL end:\t\t\t" << this->end << "\n"
-       << "GENERAL min distance:\t\t" << this->min_dist << "\n"
-       << "GENERAL max distance:\t\t" << this->max_dist << "\n"
-       << "REDUCTION voxel size:\t\t" << this->red_voxel_size << "\n"
-       << "REDUCTION pts p voxel:\t\t" << this->octree_red << "\n"
-       << "REDUCTION rand every nth pt:\t" << this->random_red << "\n"
-       << "GENERAL quiet:\t\t\t" << this->quiet << "\n"
-       << "GENERAL very quiet:\t\t" << this->very_quiet << "\n"
-       << "GENERAL match meta:\t\t" << this->match_meta << "\n"
-       << "GENERAL extrapolate pose:\t" << this->extrapolate_pose << "\n"
-       << "GENERAL scanserver:\t\t" << this->scanserver << "\n"
-       << "GENERAL animation:\t\t" << this->anim << "\n"
-       << "GENERAL loopclose path:\t\t" << this->loopclose_path.toStdString() << "\n"
-       << "GENERAL directory path:\t\t" << this->dir_path.toStdString() << "\n"
-       << "ICP type:\t\t\t" << this->type_ICP << "\n"
-       << "ICP epsilon:\t\t\t" << this->epsilon_ICP << "\n"
-       << "ICP iterations:\t\t\t" << this->max_it_ICP << "\n"
-       << "ICP max p2p distance:\t\t" << this->max_p2p_dist_ICP << "\n"
-       << "SLAM type:\t\t\t" << this->type_SLAM << "\n"
-       << "SLAM epsilon:\t\t\t" << this->epsilon_SLAM << "\n"
-       << "SLAM iterations:\t\t" << this->max_it_SLAM << "\n"
-       << "SLAM max p2p distance:\t\t" << this->max_p2p_dist_SLAM << "\n"
-       << "FINAL SLAM max p2p distance:\t" << this->max_p2p_dist_finalSLAM << "\n"
-       << "LOOP type:\t\t\t" << this->type_Loop << "\n"
-       << "LOOP iterations:\t\t" << this->max_it_Loop << "\n"
-       << "LOOP max p2p distance:\t\t" << this->max_p2p_dist_Loop << "\n"
-       << "LOOP max distance:\t\t" << this->max_dist_Loop << "\n"
-       << "FINAL LOOP max distance:\t" << this->max_dist_finalLoop << "\n"
-       << "LOOP min overlap:\t\t" << this->min_overlap_Loop << "\n"
-       << "LOOP loopsize:\t\t\t" << this->loopsize << "\n"
-       << "NNS method:\t\t\t" << this->nns_method << "\n"
-       << "NNS bucket size:\t\t" << this->bucket_size << "\n"
-       << "NNS pairing mode:\t\t" << this->pairing_mode << "\n";
+    ss << "GENERAL start:\t\t\t" << this->free.start << "\n"
+       << "GENERAL end:\t\t\t" << this->free.end << "\n"
+       << "GENERAL min distance:\t\t" << this->free.min_dist << "\n"
+       << "GENERAL max distance:\t\t" << this->free.max_dist << "\n"
+       << "REDUCTION voxel size:\t\t" << this->free.red_voxel_size << "\n"
+       << "REDUCTION pts p voxel:\t\t" << this->free.octree_red << "\n"
+       << "REDUCTION rand every nth pt:\t" << this->free.random_red << "\n"
+       << "GENERAL quiet:\t\t\t" << this->free.quiet << "\n"
+       << "GENERAL very quiet:\t\t" << this->free.very_quiet << "\n"
+       << "GENERAL match meta:\t\t" << this->free.match_meta << "\n"
+       << "GENERAL extrapolate pose:\t" << this->free.extrapolate_pose << "\n"
+       << "GENERAL scanserver:\t\t" << this->free.scanserver << "\n"
+       << "GENERAL animation:\t\t" << this->free.anim << "\n"
+       << "GENERAL loopclose path:\t\t" << this->free.loopclose_path.toStdString() << "\n"
+       << "GENERAL directory path:\t\t" << this->free.dir_path.toStdString() << "\n"
+       << "ICP type:\t\t\t" << this->free.type_ICP << "\n"
+       << "ICP epsilon:\t\t\t" << this->free.epsilon_ICP << "\n"
+       << "ICP iterations:\t\t\t" << this->free.max_it_ICP << "\n"
+       << "ICP max p2p distance:\t\t" << this->free.max_p2p_dist_ICP << "\n"
+       << "SLAM type:\t\t\t" << this->free.type_SLAM << "\n"
+       << "SLAM epsilon:\t\t\t" << this->free.epsilon_SLAM << "\n"
+       << "SLAM iterations:\t\t" << this->free.max_it_SLAM << "\n"
+       << "SLAM max p2p distance:\t\t" << this->free.max_p2p_dist_SLAM << "\n"
+       << "FINAL SLAM max p2p distance:\t" << this->free.max_p2p_dist_finalSLAM << "\n"
+       << "LOOP type:\t\t\t" << this->free.type_Loop << "\n"
+       << "LOOP iterations:\t\t" << this->free.max_it_Loop << "\n"
+       << "LOOP max p2p distance:\t\t" << this->free.max_p2p_dist_Loop << "\n"
+       << "LOOP max distance:\t\t" << this->free.max_dist_Loop << "\n"
+       << "FINAL LOOP max distance:\t" << this->free.max_dist_finalLoop << "\n"
+       << "LOOP min overlap:\t\t" << this->free.min_overlap_Loop << "\n"
+       << "LOOP loopsize:\t\t\t" << this->free.loopsize << "\n"
+       << "NNS method:\t\t\t" << this->free.nns_method << "\n"
+       << "NNS bucket size:\t\t" << this->free.bucket_size << "\n"
+       << "NNS pairing mode:\t\t" << this->free.pairing_mode << "\n";
        
        return ss.str();
 }
@@ -989,116 +1027,118 @@ std::string Mapping::param_to_string() {
 // setter
     // Parameters
 void Mapping::set_dir_path(QString path) {
-   this->dir_path = path;
-   this->loopclose_path = path + "loopclose.pts"; 
+   this->free.dir_path = path;
+   this->free.loopclose_path = path + "loopclose.pts"; 
 }
 
 void Mapping::set_start(int start) {
-    this->start = start;
+    this->free.start = start;
+    this->free.improve_start = start;
 }
 
 void Mapping::set_end(int end) {
-    this->end = end;
+    this->free.end = end;
+    this->free.improve_end = end;
 }
 
 void Mapping::set_improve_start(int start) {
-    this->improve_start = start;
+    this->free.improve_start = start;
 }
 
 void Mapping::set_improve_end(int end) {
-    this->improve_end = end;
+    this->free.improve_end = end;
 }
 
 void Mapping::set_do_icp(bool state) {
-    this->do_icp = state;
+    this->free.do_icp = state;
 }
 
 bool Mapping::set_ICP_type(int type) {
     if(type != 1 && type != 2 && type != 6)
         return false;
 
-    this->type_ICP = type;
+    this->free.type_ICP = type;
     return true;
 }
 
 void Mapping::set_epsilon_ICP(double eps) {
-    this->epsilon_ICP = eps;
+    this->free.epsilon_ICP = eps;
 }
 
 void Mapping::set_max_it_ICP(int it) {
-    this->max_it_ICP = it;
+    this->free.max_it_ICP = it;
 }
 
 void Mapping::set_max_p2p_dist_ICP(double dist) {
-    this->max_p2p_dist_ICP = dist;
+    this->free.max_p2p_dist_ICP = dist;
 }
 
 bool Mapping::set_SLAM_type(int type) {
     if(type < 0 || type > 4)
         return false;
 
-    this->type_SLAM = type;
+    this->free.type_SLAM = type;
     return true;
 }
 
 void Mapping::set_epsilon_SLAM(double eps) {
-    this->epsilon_SLAM = eps;
+    this->free.epsilon_SLAM = eps;
 }
 
 void Mapping::set_max_it_SLAM(int it) {
-    this->max_it_SLAM = it;
+    this->free.max_it_SLAM = it;
 }
 
 void Mapping::set_max_p2p_dist_SLAM(double dist) {
-    this->max_p2p_dist_SLAM = dist;
+    this->free.max_p2p_dist_SLAM = dist;
 }
 
 void Mapping::set_max_p2p_dist_finalSLAM(double dist) {
-    this->max_p2p_dist_finalSLAM = dist;
+    this->free.max_p2p_dist_finalSLAM = dist;
 }
 
 bool Mapping::set_Loop_type(int type) {
     if(type < 0 || type > 4 || type == 1)
         return false;
 
-    this->type_Loop = type;
+    this->free.type_Loop = type;
     return true;
 }
 
 void Mapping::set_max_it_Loop(int it) {
-    this->max_it_Loop = it;
+    this->free.max_it_Loop = it;
 }
 
 void Mapping::set_max_p2p_dist_Loop(double dist) {
-    this->max_p2p_dist_Loop = dist;
+    this->free.max_p2p_dist_Loop = dist;
 }
 
 void Mapping::set_max_dist_Loop(double dist) {
-    this->max_dist_Loop = dist;
+    this->free.max_dist_Loop = dist;
 }
 
 void Mapping::set_max_dist_finalLoop(double dist) {
-    this->max_dist_finalLoop = dist;
+    this->free.max_dist_finalLoop = dist;
 }
 
 void Mapping::set_Loopsize(int size) {
-    this->loopsize = size;
+    this->free.loopsize = size;
 }
 
 void Mapping::set_min_overlap_Loop(int size) {
-    this->min_overlap_Loop = size;
+    this->free.min_overlap_Loop = size;
 }
 
 bool Mapping::set_nns_method(int method) {
     if(method != 0 && method != 1) 
         return false;
 
-    this->nns_method = method;
+    this->free.nns_method = method;
     return true;
 }
 
 void Mapping::set_bucket_size(int size) {
-    this->bucket_size = size;
+    this->free.bucket_size = size;
 }
 
 bool Mapping::set_pairing_mode(int mode) {
@@ -1106,54 +1146,54 @@ bool Mapping::set_pairing_mode(int mode) {
         return false;
 
     if(mode == 0) {
-        this->pairing_mode = CLOSEST_POINT;
+        this->free.pairing_mode = CLOSEST_POINT;
     } else if(mode == 1) {
-        this->pairing_mode = CLOSEST_POINT_ALONG_NORMAL_SIMPLE;
+        this->free.pairing_mode = CLOSEST_POINT_ALONG_NORMAL_SIMPLE;
     } else if(mode == 2) {
-        this->pairing_mode = CLOSEST_PLANE_SIMPLE;
+        this->free.pairing_mode = CLOSEST_PLANE_SIMPLE;
     }
 
     return true;
 }
 
 void Mapping::set_min_dist(double dist) {
-    this->min_dist = dist;
+    this->free.min_dist = dist;
 }
 
 void Mapping::set_max_dist(double dist) {
-    this->max_dist = dist;
+    this->free.max_dist = dist;
 }
 
 void Mapping::set_red_voxel_size(double size) {
-    this->red_voxel_size = size;
+    this->free.red_voxel_size = size;
 }
 
 void Mapping::set_octree_red(int pts_per_voxel) {
-    this->octree_red = pts_per_voxel;
+    this->free.octree_red = pts_per_voxel;
 }
 
 void Mapping::set_random_red(int every_nth_pt) {
-    this->random_red = every_nth_pt;
+    this->free.random_red = every_nth_pt;
 }
 
 void Mapping::set_quiet(bool quiet) {
-    this->quiet = quiet;
+    this->free.quiet = quiet;
 }
 
 void Mapping::set_match_meta(bool match) {
-    this->match_meta = match;
+    this->free.match_meta = match;
 }
 
 void Mapping::set_extrapolate_pose(bool eP) {
-    this->extrapolate_pose = eP;
+    this->free.extrapolate_pose = eP;
 }
 
 void Mapping::set_scanserver(bool scanserver) {
-    this->scanserver = scanserver;
+    this->free.scanserver = scanserver;
 }
 
 void Mapping::set_anim(int use_every_nth) {
-    this->anim = use_every_nth;
+    this->free.anim = use_every_nth;
 }
 
 }
