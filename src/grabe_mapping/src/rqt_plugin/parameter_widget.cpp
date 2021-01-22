@@ -14,6 +14,7 @@ Parameter_widget::Parameter_widget(Mapping* mapping, QString title, QWidget *par
     this->ui.cb_correspondances->addItem("closest along normal", QVariant(1));
     this->ui.cb_correspondances->addItem("closest point-to-plane distance", QVariant(2));
 
+    //this->ui.cb_icp_minimization->addItem("no icp", QVariant(0));
     this->ui.cb_icp_minimization->addItem("Unit Quaternion", QVariant(1)); 
     this->ui.cb_icp_minimization->addItem("Singular Value Decomposition", QVariant(2));
     //this->ui_.cb_minimization->addItem("Orthonormal Matrices");
@@ -52,6 +53,7 @@ Parameter_widget::Parameter_widget(Mapping* mapping, QString title, QWidget *par
     QObject::connect(this->ui.cb_metascan, &QCheckBox::stateChanged, this, &Parameter_widget::cb_metascan_state_changed);
 
         // ICP
+    QObject::connect(this->ui.cb_do_icp, &QCheckBox::stateChanged, this, &Parameter_widget::cb_do_icp_state_changed);
     QObject::connect(this->ui.cb_icp_minimization, &QComboBox::currentTextChanged, this, &Parameter_widget::cb_icp_minimization_current_text_changed);
     QObject::connect(this->ui.cb_nn, &QComboBox::currentTextChanged, this, &Parameter_widget::cb_nn_current_text_changed);
     QObject::connect(this->ui.sb_icp_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Parameter_widget::sb_icp_iterations_value_changed);
@@ -79,6 +81,7 @@ void Parameter_widget::save_settings(qt_gui_cpp::Settings& instance_settings) co
     instance_settings.setValue("correspondances", this->ui.cb_correspondances->currentIndex());
     instance_settings.setValue("metascan", this->ui.cb_metascan->isChecked());
     // ICP
+    instance_settings.setValue("do_icp", this->ui.cb_do_icp->isChecked());
     instance_settings.setValue("icp_minimization", this->ui.cb_icp_minimization->currentIndex());
     instance_settings.setValue("nearest_neighbor", this->ui.cb_nn->currentIndex());
     instance_settings.setValue("icp_iterations", this->ui.sb_icp_iterations->value());
@@ -111,6 +114,8 @@ void Parameter_widget::restore_settings(const qt_gui_cpp::Settings& instance_set
     if(instance_settings.contains("metascan"))
         this->ui.cb_metascan->setChecked(instance_settings.value("metascan").toBool());
     // ICP
+    if(instance_settings.contains("do_icp"))
+        this->ui.cb_do_icp->setChecked(instance_settings.value("do_icp").toBool());
     if(instance_settings.contains("icp_minimization"))
         this->ui.cb_icp_minimization->setCurrentIndex(instance_settings.value("icp_minimization").toInt());
     if(instance_settings.contains("nearest_neighbor"))
@@ -209,6 +214,10 @@ void Parameter_widget::cb_metascan_state_changed(int state) {
 }
 
 // ICP
+void Parameter_widget::cb_do_icp_state_changed(int state) {
+    this->mapping->set_do_icp(state);
+}
+
 void Parameter_widget::cb_icp_minimization_current_text_changed(QString text) {
     int index = this->ui.cb_icp_minimization->findText(text);
     int param_value = this->ui.cb_icp_minimization->itemData(index).toInt();

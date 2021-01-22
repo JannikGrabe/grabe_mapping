@@ -56,6 +56,7 @@ private:
     int anim = -1;
     QString loopclose_path;
     QString dir_path;
+    bool do_icp = true;
 
     icp6Dminimizer* my_icp6Dminimizer = nullptr;
     graphSlam6D *my_graphSlam6D = nullptr;
@@ -124,6 +125,7 @@ public:
     void set_end(int end);
     void set_improve_start(int start);
     void set_improve_end(int end);
+    void set_do_icp(bool state);
     bool set_ICP_type(int type);
     void set_epsilon_ICP(double eps);
     void set_max_it_ICP(int it);

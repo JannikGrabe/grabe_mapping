@@ -2,6 +2,7 @@
 #define GRABE_MAPPING_PARAMETER_WIDGET_H
 
 #include <QtGui>
+#include <QObject>
 #include <QWidget>
 #include <QMessageBox>
 #include <rqt_gui_cpp/plugin.h>
@@ -34,6 +35,7 @@ public slots:
     void cb_correspondances_current_text_changed(QString text);
     void cb_metascan_state_changed(int state);
     // ICP
+    void cb_do_icp_state_changed(int state);
     void cb_icp_minimization_current_text_changed(QString text);
     void cb_nn_current_text_changed(QString text);
     void sb_icp_iterations_value_changed(int val);

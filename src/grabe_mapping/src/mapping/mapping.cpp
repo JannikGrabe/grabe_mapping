@@ -550,7 +550,7 @@ void Mapping::matchGraph6Dautomatic(double cldist, int loopsize, vector <Scan *>
 
         add_edge(i-1, i, g);
 
-        if(eP && my_icp6D != NULL) {
+        if(eP && do_icp) {
             allScans[i]->mergeCoordinatesWithRoboterPosition(allScans[i-1]);
         }
 
@@ -563,30 +563,30 @@ void Mapping::matchGraph6Dautomatic(double cldist, int loopsize, vector <Scan *>
         my_icp6D->set_anim(1);
         }*/
 
-        if(my_icp6D != NULL){
-        cout << "ICP" << endl;
-        // Matching strongly linked scans with ICPs
-        if(meta_icp) {
-            metas.push_back(allScans[i - 1]);
-            MetaScan* meta_scan = new MetaScan(metas);
-            my_icp6D->match(meta_scan, allScans[i]);
-            delete meta_scan;
-        } else {
-            switch(type) {
-            case UOS_MAP:
-            case UOS_MAP_FRAMES:
-            my_icp6D->match(allScans[0], allScans[i]);
-            break;
-            case RTS_MAP:
-            //untested (and could not work)
-            //if(i < 220-22 && i > 250-22) match(allScans[0], CurrentScan);
-            my_icp6D->match(allScans[0], allScans[i]);
-            break;
-            default:
-            my_icp6D->match(allScans[i - 1], allScans[i]);
-            break;
+        if(do_icp && my_icp6D != NULL) {
+            cout << "ICP" << endl;
+            // Matching strongly linked scans with ICPs
+            if(meta_icp) {
+                metas.push_back(allScans[i - 1]);
+                MetaScan* meta_scan = new MetaScan(metas);
+                my_icp6D->match(meta_scan, allScans[i]);
+                delete meta_scan;
+            } else {
+                switch(type) {
+                case UOS_MAP:
+                case UOS_MAP_FRAMES:
+                my_icp6D->match(allScans[0], allScans[i]);
+                break;
+                case RTS_MAP:
+                //untested (and could not work)
+                //if(i < 220-22 && i > 250-22) match(allScans[0], CurrentScan);
+                my_icp6D->match(allScans[0], allScans[i]);
+                break;
+                default:
+                my_icp6D->match(allScans[i - 1], allScans[i]);
+                break;
+                }
             }
-        }
         } else {
             double id[16];
             M4identity(id);
@@ -1007,6 +1007,10 @@ void Mapping::set_improve_start(int start) {
 
 void Mapping::set_improve_end(int end) {
     this->improve_end = end;
+}
+
+void Mapping::set_do_icp(bool state) {
+    this->do_icp = state;
 }
 
 bool Mapping::set_ICP_type(int type) {
