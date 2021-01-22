@@ -151,6 +151,11 @@ public:
     double calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in);
     void segmentPointCloud();
 
+    void loadScans(int start, int end);
+    static std::vector<Scan*> allScans;
+    static int first_scan;
+    static int last_scan;
+
 signals:
     void finished_mapping(int exit_code);
 
