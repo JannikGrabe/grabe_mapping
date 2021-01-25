@@ -126,13 +126,14 @@ void GuiPlugin::on_pb_source_dir_pressed() {
     this->ui_.le_source_dir->setText(path + "/");
 }
 
-void GuiPlugin::on_le_source_dir_text_changed(QString text) {
+void GuiPlugin::on_le_source_dir_text_changed(QString text) {  
   this->mapping_manager->set_dir_path(text);
 
   QDir dir(text);
   QStringList files = dir.entryList(QStringList() << "*.3d", QDir::Files);
 
-  this->pw->sb_total_value_changed(files.size()); 
+  if(files.size() < 0)
+    this->pw->sb_total_value_changed(files.size()); 
 }
 
 // config
@@ -278,7 +279,7 @@ void GuiPlugin::on_mapping_finished(int exit_code) {
     ROS_ERROR("Something went wrong");
   } else {
     this->mapping_manager->write_frames();
-    
+
     std::vector<double> icp_results; // = this->mapping->get_icp_results();
     
     if(icp_results.size() == 0) {

@@ -20,7 +20,7 @@ void Mapping_manager::start_mapping() {
     if(current == nullptr) {
         std::cout << "GENERAL no mapping set" << std::endl;
         return;
-    } else if(this->dir_path.isEmpty()) {
+    } else if(this->dir_path.isEmpty() || !QDir(this->dir_path).exists()) {
         std::cout << "GENERAL no directory set" << std::endl;
     }
 
