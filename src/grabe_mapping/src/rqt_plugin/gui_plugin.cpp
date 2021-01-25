@@ -132,7 +132,7 @@ void GuiPlugin::on_le_source_dir_text_changed(QString text) {
   QDir dir(text);
   QStringList files = dir.entryList(QStringList() << "*.3d", QDir::Files);
 
-  if(files.size() < 0)
+  if(files.size() > 0)
     this->pw->sb_total_value_changed(files.size()); 
 }
 
