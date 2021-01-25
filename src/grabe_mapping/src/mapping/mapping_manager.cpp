@@ -19,9 +19,12 @@ void Mapping_manager::start_mapping() {
     
     if(current == nullptr) {
         std::cout << "GENERAL no mapping set" << std::endl;
+        emit finished_mapping(-1);
         return;
-    } else if(this->dir_path.isEmpty() || !QDir(this->dir_path).exists()) {
+    } else if(this->dir_path.isEmpty()) {
         std::cout << "GENERAL no directory set" << std::endl;
+        emit finished_mapping(-1);
+        return;
     }
 
     this->current->lock_parameters();
@@ -34,13 +37,21 @@ void Mapping_manager::start_mapping() {
         last_scan = end;
 
         Scan::openDirectory(this->scan_server, this->dir_path.toStdString(), this->file_format, first_scan, last_scan);
+    
+        if(Scan::allScans.size() == 0) {
+            std::cout << "GENERAL no scans found" << std::endl;
+            emit finished_mapping(-1);
+            return;
+        }
     }
 
     if(start < first_scan || start >= last_scan) {
         std::cout << "IMPROV invalid start" << std::endl;
+        emit finished_mapping(-1);
         return;
     } else if(end <= first_scan || end > last_scan) {
         std::cout << "IMPROV invalid end" << std::endl;
+        emit finished_mapping(-1);
         return;
     }
     
