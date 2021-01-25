@@ -32,6 +32,12 @@ void Mapping_manager::start_mapping() {
     int start = this->current->get_start();
     int end = this->current->get_end();
 
+    if(start >= end) {
+        std::cout << "GENERAL start >= end" << std::endl;
+        emit finished_mapping(-1);
+        return;
+    }
+    
     if(this->mappings.size() == 1) {
         first_scan = start;
         last_scan = end;
