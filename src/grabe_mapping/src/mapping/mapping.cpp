@@ -38,15 +38,44 @@ Mapping::Mapping() {
 void Mapping::loadScans(int start, int end) {
     if(Mapping::first_scan == -1) {
         Scan::openDirectory(this->scanserver, this->dir_path.toStdString(), this->file_format, start, end);
+    } else if (start < Mapping::first_scan) {
+        Scan::openDirectory(this->scanserver, this->dir_path.toStdString(), this->file_format, start, Mapping::first_scan - 1);
+    } else if( end > Mapping::last_scan) {
+        Scan::openDirectory(this->scanserver, this->dir_path.toStdString(), this->file_format, Mapping::last_scan, end);
+    } else {
+        return;
+    }
 
+    if(Mapping::first_scan == -1 ) {
         Mapping::first_scan = start;
         Mapping::last_scan = end;
 
-        for(int i = 0; i < Scan::allScans.size(); i++) {
+        for(int i = 0; i < Scan::allScans.size()) {
             Mapping::allScans.push_back(Scan::allScans[i]);
         }
-    } else {
-        return;
+    } else  {
+        std::vector<Scan*> allScans = Mapping::allScans;
+        Mapping::allScans.clear();
+
+        if(start < Mapping::first_scan) {
+            for(int i = 0; i < Scan::allScans.size(); i++) {
+                Mapping::allScans.push_back(Scan::allScans[i]);
+            }
+
+            Mapping::first_scan = start;
+        }
+
+        for(int i = 0; i < allScans; i++) {
+            Mapping::allScans.push_back(allScans[i]);
+        }
+
+        if(end > Mapping::last_scan) {
+            for(int i = 0; i < Scan::allScans.size(); i++) {
+                Mapping::allScans.push_back(Scan::allScans[i]);
+            }
+
+            Mapping::last_scan = end;
+        }
     }
 }
 
@@ -472,14 +501,6 @@ void Mapping::do_slam6d()
 void Mapping::improve_slam6d() {
 
     Mapping::loadScans(this->start, this->end);
-
-    std::cout << Mapping::first_scan << " " << Mapping::last_scan << std::endl;
-
-    for(int i = 0; i < Mapping::allScans.size(); i++) {
-        std::cout << Mapping::allScans[i]->scanNr << std::endl;
-    }
-
-    return;
 
     std::vector<Scan*> scans_for_improving;
     int start_index = this->start - Mapping::first_scan;

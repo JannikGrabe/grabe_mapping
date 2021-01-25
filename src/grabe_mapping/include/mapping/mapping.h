@@ -50,7 +50,7 @@ private:
         double red_voxel_size = -1.0;
         int octree_red = 0;
         int random_red = -1;
-        bool quiet = true;
+        bool quiet = false;
         bool very_quiet = true;
         bool match_meta = false;
         bool extrapolate_pose = true;
@@ -90,7 +90,7 @@ private:
     double red_voxel_size = -1.0;
     int octree_red = 0;
     int random_red = -1;
-    bool quiet = true;
+    bool quiet = false;
     bool very_quiet = true;
     bool match_meta = false;
     bool extrapolate_pose = true;
