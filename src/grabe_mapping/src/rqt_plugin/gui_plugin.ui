@@ -239,13 +239,6 @@ QGroupBox::title {
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pb_cancel">
-        <property name="text">
-         <string>Cancel</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="pb_start">
         <property name="text">
          <string>start mapping</string>

@@ -39,7 +39,11 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   this->count_sub = this->n.subscribe("mapping/scan_to_file_count", 10, &GuiPlugin::scan_to_file_count_callback, this);
 
-  this->mapping = new Mapping();
+  this->mapping_manager = new Mapping_manager();
+  
+  Mapping* mapping = new Mapping();
+  this->mapping_manager->addMapping(mapping);
+
   this->rosbag_reader = new Rosbag_reader();
 
   this->initWidgets();
@@ -47,16 +51,15 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   this->stfw = new Scan_to_file_widget(this->rosbag_reader, "Read Scans from Rosbag", this->widget_);
   this->ui_.vl_main->insertWidget(0, stfw); 
 
-  this->pw = new Parameter_widget(this->mapping, "SLAM Parameters");
+  this->pw = new Parameter_widget(mapping, "SLAM Parameters");
   this->ui_.hl_main->insertWidget(2, pw);
 
   context.addWidget(widget_);
 
   // work
-  QObject::connect(this->mapping, &Mapping::finished_mapping, this, &GuiPlugin::on_work_finished);
+  QObject::connect(this->mapping_manager, &Mapping_manager::finished_mapping, this, &GuiPlugin::on_mapping_finished);
   QObject::connect(ui_.pb_start, &QPushButton::pressed, this, &GuiPlugin::on_pb_start_pressed);
   QObject::connect(ui_.pb_show, &QPushButton::pressed, this, &GuiPlugin::on_pb_show_pressed);
-  QObject::connect(this->ui_.pb_cancel, &QPushButton::pressed, this, &GuiPlugin::on_pb_cancel_pressed);
   QObject::connect(this->ui_.pb_back, &QPushButton::pressed, this, &GuiPlugin::on_pb_back_pressed);
 
   // export
@@ -124,7 +127,7 @@ void GuiPlugin::on_pb_source_dir_pressed() {
 }
 
 void GuiPlugin::on_le_source_dir_text_changed(QString text) {
-  this->mapping->set_dir_path(text);
+  this->mapping_manager->set_dir_path(text);
 
   QDir dir(text);
   QStringList files = dir.entryList(QStringList() << "*.3d", QDir::Files);
@@ -261,23 +264,22 @@ void GuiPlugin::on_pb_load_config_pressed() {
 void GuiPlugin::on_pb_start_pressed() {
 
   this->ui_.pb_start->setEnabled(false);
-  this->ui_.pb_cancel->setVisible(true);
   this->ui_.pb_progress->setVisible(true);
   this->ui_.pb_progress->setRange(0, 0);
 
-  std::cout << this->mapping->param_to_string() << std::endl;
-  this->mapping->start_mapping();
+  this->mapping_manager->start_mapping();
 }
 
-void GuiPlugin::on_work_finished(int exit_code) {
+void GuiPlugin::on_mapping_finished(int exit_code) {
   this->ui_.pb_start->setEnabled(true);
   this->ui_.pb_progress->setVisible(false);
-  this->ui_.pb_cancel->setVisible(false);
 
-  if(exit_code == 1) {
+  if(exit_code != 0) {
     ROS_ERROR("Something went wrong");
   } else {
-    std::vector<double> icp_results = this->mapping->get_icp_results();
+    this->mapping_manager->write_frames();
+    
+    std::vector<double> icp_results; // = this->mapping->get_icp_results();
     
     if(icp_results.size() == 0) {
       return;
@@ -312,17 +314,7 @@ void GuiPlugin::on_work_finished(int exit_code) {
 }
 
 void GuiPlugin::on_pb_show_pressed() {
-  this->mapping->showResults();
-  //this->mapping->calculate_crispnesses(7, 8);
-  //this->mapping->segmentPointCloud();
-  }
-
-void GuiPlugin::on_pb_cancel_pressed() {
-  int ret = QMessageBox::warning(this->widget_, "Cancel", "Are you sure you want to caancel?", QMessageBox::Ok, QMessageBox::No);
-
-  if( ret == QMessageBox::Ok) {
-    this->mapping->cancel_mapping();
-  }
+  this->mapping_manager->showResults();
 }
 
 void GuiPlugin::on_pb_back_pressed() {
@@ -333,7 +325,6 @@ void GuiPlugin::on_pb_back_pressed() {
 // init
 void GuiPlugin::initWidgets() {
   this->ui_.pb_progress->setVisible(false);
-  this->ui_.pb_cancel->setVisible(false);
   this->ui_.tw_results->setVisible(false);
   this->ui_.pb_back->setVisible(false);
 }
@@ -347,7 +338,7 @@ void GuiPlugin::shutdownPlugin()
 {
   this->n.shutdown();
   // unregister all publishers here
-  this->mapping->cancel_mapping();
+  //this->mapping->cancel_mapping();
 }
 
 void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,

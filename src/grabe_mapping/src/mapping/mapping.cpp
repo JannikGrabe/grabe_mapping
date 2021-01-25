@@ -1,16 +1,12 @@
-#include "mapping/mapping.h"
-#include "ros/ros.h"
-#include "ros/package.h"
-#include <QProcess>
 #include <fstream>
-#include <pcl/common/transforms.h>
-#include "io/io.h"
 #include <string>
-#include <cmath>
-#include <pcl/kdtree/kdtree_flann.h>
-#include <Eigen/Eigenvalues>
-#include <pcl/filters/voxel_grid.h>
 
+#include <Eigen/Core>
+#include <Eigen/Eigenvalues>
+
+#include <pcl/common/transforms.h>
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl/ModelCoefficients.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/filters/extract_indices.h>
@@ -20,61 +16,21 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
 
+#include "mapping/mapping.h"
+#include "mapping/mapping_manager.h"
+#include "io/io.h"
+
 namespace grabe_mapping {
 
 Mapping::Mapping() {
 
-    this->next_process = &Mapping::finish_mapping;
-
-    QObject::connect(&this->watcher, &QFutureWatcher<void>::finished, this, &Mapping::on_process_finished);
 }
 
 // control Mapping
-
-void Mapping::start_mapping() {
-
-    this->lock_parameters();
-
-    std::vector<std::string> errors = this->check_states();
-    if(errors.size() > 0) {
-
-        for(int i = 0; i < errors.size(); i++) {
-            std::cout << errors[i] << std::endl;
-        }
-
-        emit this->finished_mapping(1);
-        return;
-    }
-
-    this->improve_slam6D();
-}
-
-void Mapping::cancel_mapping() {
-    // this->cancelled = true;
-    // this->next_process = &Mapping::finish_mapping;
-}
-
-void Mapping::showResults() {
-
-    // build command to run show
-    std::ostringstream oss(ros::package::getPath("grabe_mapping") + "/bin/show ", std::ios_base::app);
-    oss << "-s " << this->free.start << " -e " << this->free.end << " " << this->free.dir_path.toStdString();
-
-    std::cout << oss.str() << std::endl;
-
-    QFuture<int> show_future = QtConcurrent::run(Mapping::run_command, oss.str());
-
-    this->watcher.setFuture(show_future);
-
-    // this->next_process = &Mapping::finish_mapping;
-}
-
 void Mapping::lock_parameters() {
     file_format = free.file_format;
     start = free.start;
     end = free.end;
-    improve_start = free.improve_start;
-    improve_end = free.improve_end;
     type_ICP = free.type_ICP;
     epsilon_ICP = free.epsilon_ICP;
     max_it_ICP = free.max_it_ICP;
@@ -103,34 +59,19 @@ void Mapping::lock_parameters() {
     very_quiet = free.very_quiet;
     match_meta = free.match_meta;
     extrapolate_pose = free.extrapolate_pose;
-    scanserver = free.scanserver;
     anim = free.anim;
-    loopclose_path = free.loopclose_path;
-    dir_path = free.dir_path;
     do_icp = free.do_icp;
 }
 
 std::vector<std::string> Mapping::check_states() {
 
     std::vector<std::string> error_msgs;
-    
-    if(this->dir_path.isEmpty()) {
-        error_msgs.push_back("OUTPUT: no directory path set");
-    }
+
     if(this->start < 0) {
         error_msgs.push_back("GENERAL: start < 0");
     }
     if(this->end > -1 && this->start >= this->end) {
         error_msgs.push_back("GENERAL: start >= end");
-    }
-    if(this->improve_start != -1 && (this->improve_start < this->start || this->improve_start >= this->end)) {
-        error_msgs.push_back("IMPROVE: start out of bounds");
-    } 
-    if(this->improve_end != -1 && (this->improve_end <= this->start || this->improve_end > this->end)) {
-        error_msgs.push_back("IMPROVE: end out of bounds");
-    }
-    if(this->improve_start != -1 && this->improve_end != -1 && this->improve_end <= this->improve_start) {
-        error_msgs.push_back("IMPROVE: start >= end");
     }
     if(this->max_it_ICP < 1) {
         error_msgs.push_back("ICP: max iterations < 1");
@@ -169,65 +110,11 @@ std::vector<std::string> Mapping::check_states() {
     return error_msgs;
 }
 
-void Mapping::start_slam6D() {
-    //QFuture<int> slam6D_future = QtConcurrent::run(Mapping::run_command, slam6D);
-    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::do_slam6d);
-
-    this->watcher.setFuture(slam6D_future);
-
-    this->next_process = &Mapping::write_frames;
-}
-
-void Mapping::improve_slam6D() {
-    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::improve_slam6d);
-
-    this->watcher.setFuture(slam6D_future);
-
-    this->next_process = &Mapping::write_frames;
-}
-
-void Mapping::write_frames() {
-    QFuture<void> slam6D_future = QtConcurrent::run(this, &Mapping::write_frames_slam6d);
-
-    this->watcher.setFuture(slam6D_future);
-
-    this->next_process = &Mapping::finish_mapping;
-}
-
-void Mapping::finish_mapping() {
-    if(this->cancelled) {
-        emit this->finished_mapping(1);
-        this->cancelled = false;
-    } else {
-        //this->read_results();
-        emit this->finished_mapping(0);
-    }
-}
-
-void Mapping::read_results() { 
-    this->icp_results.clear();
-
-    for(int i = 1; i < Scan::allScans.size(); i++) {
-        unsigned int* np;
-        this->icp_results.push_back(this->my_icp->Point_Point_Error(Scan::allScans[i-1], Scan::allScans[i], 
-                                                                    5, np, 100));
-    }
-}
-
-int Mapping::run_command(std::string command) {
-    return system(command.c_str());
-}
-
-// Slots
-void Mapping::on_process_finished() {
-    (this->*next_process)();
-}
-
 // SLAM
 void Mapping::updateAlgorithms(int start, int end) {
 
     // set searchtree and reduction parameter for all scans
-    for(int i = 0; i < Scan::allScans.size(); i++) {
+    for(unsigned int i = 0; i < Scan::allScans.size(); i++) {
         Scan* scan = Scan::allScans[i];
 
         scan->setRangeFilter(this->max_dist, this->min_dist);
@@ -391,96 +278,47 @@ void Mapping::updateAlgorithms(int start, int end) {
     }
 }
 
-void Mapping::do_slam6d()
-{
-    Scan::closeDirectory();
+int Mapping::start_slam6d() {
 
-    /* read scans from directory
-    * param1: scanserver active?
-    * param2: path
-    * param3: scan file format
-    * param4: first scan
-    * param5: last scan
-    */ 
-    Scan::openDirectory(scanserver, dir_path.toStdString(), file_format, start, end); 
-    
-    // after open directory all scans will be in static variable Scan::allScans
-    if(Scan::allScans.size() == 0) {
-        cerr << "No scans found. Did you use the correct format?" << endl;
-        return;
+    std::vector<std::string> errors = this->check_states();
+
+    if(errors.size() > 0) {
+        for(unsigned int i = 0; i < errors.size(); i++) {
+            std::cout << errors[i] << std::endl;
+        }
+        return -1;
     }
 
-    this->updateAlgorithms(this->start, this->end);
+    int start_index = this->start - Mapping_manager::first_scan;
+    int end_index = end - Mapping_manager::first_scan;
 
-    /* do 6DSLAM
-    * param1: max distance for loop closing
-    * param2: loop size
-    * param3: scans
-    * param4: icp
-    * param5: match against meta?
-    * param6: nns method (0 = simple kd, 1 = cached kd)
-    * param7: loop algo
-    * param8: slam algo
-    * param9: max iterations slam
-    * param10: epsilon SLAM
-    * param11: max p2p dist SLAM
-    * param12: max p2p dist final SLAM
-    * param13: max dist for final loop closing
-    * param14: extrapolate pose?
-    * param15: scan file format
-    */ 
-    this->matchGraph6Dautomatic(
-        max_dist_Loop, 
-        loopsize, 
-        Scan::allScans, 
-        my_icp, 
-        match_meta, 
-        nns_method, 
-        my_loopSlam6D, 
-        my_graphSlam6D, 
-        max_it_SLAM, 
-        epsilon_SLAM, 
-        max_p2p_dist_SLAM, 
-        max_p2p_dist_finalSLAM, 
-        max_dist_finalLoop, 
-        extrapolate_pose,
-        file_format,
-        start,
-        end
-    );
-}
-
-void Mapping::improve_slam6d() {
-
-    if(Scan::allScans.size() == 0) {
-        Scan::openDirectory(scanserver, dir_path.toStdString(), file_format, this->improve_start , improve_end);
-    }
-
-    this->updateAlgorithms(this->improve_start, this->improve_end);
-
-    std::vector<Scan*> scans_for_improving;
-    int start_index = start - this->improve_start;
-    int end_index = end - this->improve_start;
+    this->updateAlgorithms(start_index, end_index);
 
     // remember pose of end node
     double old_end[16]; 
-    memcpy(old_end, Scan::allScans[end_index]->get_transMat(), sizeof(old_end)); 
+    memcpy(old_end, Scan::allScans[end_index]->get_transMat(), sizeof(old_end));
 
-    for(int i = start_index; i <= end_index; i++) {
-        Scan* scan = Scan::allScans[i];
-        if(this->do_icp) { // move scans back to origin if icp will be done again
+    if(this->do_icp) {
+        // move scans back to origin
+        for(unsigned int i = start_index; i <= end_index; i++) {
+            Scan* scan = Scan::allScans[i];
             double trans[16];
             M4inv(scan->getDAlign(), trans);
             scan->transform(trans, Scan::ICP);
         }
-        scans_for_improving.push_back(scan);
+
+        // merge first scan position with position of scan before
+        if(start > Mapping_manager::first_scan) {
+            Scan::allScans[start_index]->mergeCoordinatesWithRoboterPosition(Scan::allScans[start_index-1]);
+        }
+    }
+    
+    std::vector<Scan*> scans_for_improving;
+    
+    for(unsigned int i = start_index; i <= end_index; i++) {
+        scans_for_improving.push_back(Scan::allScans[i]);
     }
    
-    // merge first scan position with position of scan before
-    if(this->do_icp && start > this->improve_start) {
-        Scan::allScans[start_index]->mergeCoordinatesWithRoboterPosition(Scan::allScans[start_index-1]);
-    }
- 
     this->matchGraph6Dautomatic(
         max_dist_Loop, 
         loopsize, 
@@ -497,13 +335,13 @@ void Mapping::improve_slam6d() {
         max_dist_finalLoop, 
         extrapolate_pose,
         file_format,
-        improve_start,
-        improve_end
+        start,
+        end
     );
 
     // update transmat of any scans that come after the section to improve
-    if(end == this->improve_end) {
-        return;
+    if(end == Mapping_manager::last_scan) {
+        return 0;
     }
     
 
@@ -512,38 +350,11 @@ void Mapping::improve_slam6d() {
     double delta[16];
     MMult(Scan::allScans[end_index]->get_transMat(), temp, delta);
     
-    for(int i = end_index + 1; i < Scan::allScans.size(); i++) {
+    for(unsigned int i = end_index + 1; i < Scan::allScans.size(); i++) {
         Scan::allScans[i]->transform(delta, Scan::ICP);
     }
-}
-
-void Mapping::write_frames_slam6d() {
     
-    double id[16];
-    M4identity(id);
-
-    for(size_t i= 0; i < Scan::allScans.size(); i++) {
-        Scan::allScans[i]->clearFrames();
-    }
-
-    for(size_t i= 0; i < Scan::allScans.size(); i++) {
-        Scan::allScans[i]->transform(id, Scan::ICP, 0);
-    }
-
-    // write frames to file:
-    const double* p;
-    ofstream redptsout(this->loopclose_path.toStdString());
-    for(ScanVector::iterator it = Scan::allScans.begin();
-        it != Scan::allScans.end();
-        ++it)
-    {
-        Scan* scan = *it;
-        p = scan->get_rPos();
-        Point x(p[0], p[1], p[2]);
-        redptsout << x << endl;
-        scan->saveFrames(false);
-    }
-    redptsout.close();
+    return 0;
 }
 
 /**
@@ -711,7 +522,7 @@ void Mapping::matchGraph6Dautomatic(double cldist, int loopsize, vector <Scan *>
     }
 }
 
-
+/*
 // PointCloud stuff
 void Mapping::transform_cloud(pcl::PointCloud<pcl::PointXYZI> *in, pcl::PointCloud<pcl::PointXYZI> *out, double *angles, double *translation) {
     Eigen::Affine3f transform = Eigen::Affine3f::Identity();
@@ -975,12 +786,7 @@ void Mapping::segmentPointCloud() {
             j++;
     }
 }
-
-
-// getter
-std::vector<double> Mapping::get_icp_results() const {
-    return this->icp_results;
-}
+*/
 
 std::string Mapping::param_to_string() {
     std::ostringstream ss("SLAM6D Paramters:\n");
@@ -996,10 +802,7 @@ std::string Mapping::param_to_string() {
        << "GENERAL very quiet:\t\t" << this->free.very_quiet << "\n"
        << "GENERAL match meta:\t\t" << this->free.match_meta << "\n"
        << "GENERAL extrapolate pose:\t" << this->free.extrapolate_pose << "\n"
-       << "GENERAL scanserver:\t\t" << this->free.scanserver << "\n"
        << "GENERAL animation:\t\t" << this->free.anim << "\n"
-       << "GENERAL loopclose path:\t\t" << this->free.loopclose_path.toStdString() << "\n"
-       << "GENERAL directory path:\t\t" << this->free.dir_path.toStdString() << "\n"
        << "ICP type:\t\t\t" << this->free.type_ICP << "\n"
        << "ICP epsilon:\t\t\t" << this->free.epsilon_ICP << "\n"
        << "ICP iterations:\t\t\t" << this->free.max_it_ICP << "\n"
@@ -1024,28 +827,16 @@ std::string Mapping::param_to_string() {
 }
 
 // setter
-    // Parameters
-void Mapping::set_dir_path(QString path) {
-   this->free.dir_path = path;
-   this->free.loopclose_path = path + "loopclose.pts"; 
+void Mapping::set_file_format(IOType fileformat) {
+    this->free.file_format = fileformat;
 }
 
 void Mapping::set_start(int start) {
     this->free.start = start;
-    this->free.improve_start = start;
 }
 
 void Mapping::set_end(int end) {
     this->free.end = end;
-    this->free.improve_end = end;
-}
-
-void Mapping::set_improve_start(int start) {
-    this->free.improve_start = start;
-}
-
-void Mapping::set_improve_end(int end) {
-    this->free.improve_end = end;
 }
 
 void Mapping::set_do_icp(bool state) {
@@ -1185,10 +976,6 @@ void Mapping::set_match_meta(bool match) {
 
 void Mapping::set_extrapolate_pose(bool eP) {
     this->free.extrapolate_pose = eP;
-}
-
-void Mapping::set_scanserver(bool scanserver) {
-    this->free.scanserver = scanserver;
 }
 
 void Mapping::set_anim(int use_every_nth) {

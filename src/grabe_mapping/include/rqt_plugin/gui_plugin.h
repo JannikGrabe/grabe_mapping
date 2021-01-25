@@ -5,7 +5,7 @@
 #include <grabe_mapping/ui_gui_plugin.h>
 #include <QWidget>
 #include <QMainWindow>
-#include "mapping/mapping.h"
+#include "mapping/mapping_manager.h"
 #include "mapping/rosbag_reader.h"
 #include "ros/ros.h"
 #include "ros/subscriber.h"
@@ -39,9 +39,8 @@ public slots:
 
   // work
   void on_pb_start_pressed();
-  void on_work_finished(int exit_code);
+  void on_mapping_finished(int exit_code);
   void on_pb_show_pressed();
-  void on_pb_cancel_pressed();
   void on_pb_back_pressed();
 
   // parameters
@@ -67,11 +66,12 @@ private:
 
   void initWidgets();
 
-  Mapping* mapping;
+  Mapping_manager* mapping_manager;
   Rosbag_reader* rosbag_reader;
 
   ros::NodeHandle n;
   ros::Subscriber count_sub;
 };
+
 }
 #endif

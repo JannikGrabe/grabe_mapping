@@ -1,21 +1,14 @@
 #ifndef GRABE_MAPPING_MAPPING_H
 #define GRABE_MAPPING_MAPPING_H
 
-#include <QObject>
-#include <QWidget>
-#include <QtConcurrent/QtConcurrent>
-#include <map>
-#include <vector>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <Eigen/Core>
 
 #include "mapping/slam6d.h"
 
 namespace grabe_mapping {
 
-class Mapping : public QWidget {
-    Q_OBJECT
+class Mapping  {
 
 private:
 
@@ -24,8 +17,6 @@ private:
         IOType file_format = UOS;
         int start = 0;
         int end = 1;
-        int improve_start = 0;
-        int improve_end = 1;
         int type_ICP = 1;
         double epsilon_ICP = 0.00001;
         int max_it_ICP = 50;
@@ -54,18 +45,13 @@ private:
         bool very_quiet = true;
         bool match_meta = false;
         bool extrapolate_pose = true;
-        bool scanserver = false;
         int anim = -1;
-        QString loopclose_path;
-        QString dir_path;
         bool do_icp = true;
     } free;
 
     IOType file_format = UOS;
     int start = 0;
     int end = 1;
-    int improve_start = 0;
-    int improve_end = 1;
     int type_ICP = 1;
     double epsilon_ICP = 0.00001;
     int max_it_ICP = 50;
@@ -94,10 +80,7 @@ private:
     bool very_quiet = true;
     bool match_meta = false;
     bool extrapolate_pose = true;
-    bool scanserver = false;
     int anim = -1;
-    QString loopclose_path;
-    QString dir_path;
     bool do_icp = true;
 
     icp6Dminimizer* my_icp6Dminimizer = nullptr;
@@ -114,60 +97,41 @@ private:
                             int nrIt, double epsilonSLAM, double mdml, double mdmll, double graphDist,
                             bool &eP, IOType type, int start, int end); 
 
-
-    // work
-    QFutureWatcher<void> watcher;
-    void (Mapping::*next_process)();
-    bool cancelled = false;
-    std::vector<double> icp_results;
-
-    // control Mapping
-    void lock_parameters();
-    std::vector<std::string> check_states();
-    void start_slam6D();
-    void improve_slam6D();
-    void write_frames_slam6d();
-    void finish_mapping();
-    void read_results();
-    static int run_command(std::string command);
-
 public: 
 
     Mapping();
 
     // control Mapping
-    void start_mapping();
-    void cancel_mapping();
-    void showResults();
+    void lock_parameters();
+    std::vector<std::string> check_states();
 
     // SLAM
-    void do_slam6d();
-    void improve_slam6d();
-    void write_frames();
+    int start_slam6d();
 
+    /*
     // PointCloud stuff
     void transform_cloud(pcl::PointCloud<pcl::PointXYZI> *in, pcl::PointCloud<pcl::PointXYZI> *out, double *angles, double *translation);
     void calculate_crispnesses(int scan1, int scan2);
     double calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in);
     void segmentPointCloud();
-
-signals:
-    void finished_mapping(int exit_code);
-
-public slots:
-    void on_process_finished();
+    */
 
 public: 
     // getter
     std::string param_to_string();
-    std::vector<double> get_icp_results() const;
+
+    int get_start(bool free = false) { 
+        if(free) return this->free.start;
+        else return this->start; }
+    int get_end(bool free = false)  { 
+        if(free) return this->free.end;
+        else return this->end; }
 
     // setter
         // SLAM parameters
+    void set_file_format(IOType fileformat);
     void set_start(int start);
     void set_end(int end);
-    void set_improve_start(int start);
-    void set_improve_end(int end);
     void set_do_icp(bool state);
     bool set_ICP_type(int type);
     void set_epsilon_ICP(double eps);
@@ -196,9 +160,7 @@ public:
     void set_quiet(bool quiet);
     void set_match_meta(bool match);
     void set_extrapolate_pose(bool eP);
-    void set_scanserver(bool scanserver);
     void set_anim(int use_every_nth);
-    void set_dir_path(QString path);
 };
 
 }
