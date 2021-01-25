@@ -22,10 +22,6 @@
 
 namespace grabe_mapping {
 
-std::vector<Scan*> Mapping::allScans;
-int Mapping::first_scan = -1;
-int Mapping::last_scan = -1;
-
 Mapping::Mapping() {
 
     this->next_process = &Mapping::finish_mapping;
@@ -34,50 +30,6 @@ Mapping::Mapping() {
 }
 
 // control Mapping
-
-void Mapping::loadScans(int start, int end) {
-    if(Mapping::first_scan == -1) {
-        Scan::openDirectory(this->scanserver, this->dir_path.toStdString(), this->file_format, start, end);
-    } else if (start < Mapping::first_scan) {
-        Scan::openDirectory(this->scanserver, this->dir_path.toStdString(), this->file_format, start, Mapping::first_scan - 1);
-    } else if( end > Mapping::last_scan) {
-        Scan::openDirectory(this->scanserver, this->dir_path.toStdString(), this->file_format, Mapping::last_scan, end);
-    } else {
-        return;
-    }
-
-    if(Mapping::first_scan == -1 ) {
-        Mapping::first_scan = start;
-        Mapping::last_scan = end;
-
-        for(int i = 0; i < Scan::allScans.size()) {
-            Mapping::allScans.push_back(Scan::allScans[i]);
-        }
-    } else  {
-        std::vector<Scan*> allScans = Mapping::allScans;
-        Mapping::allScans.clear();
-
-        if(start < Mapping::first_scan) {
-            for(int i = 0; i < Scan::allScans.size(); i++) {
-                Mapping::allScans.push_back(Scan::allScans[i]);
-            }
-
-            Mapping::first_scan = start;
-        }
-
-        for(int i = 0; i < allScans; i++) {
-            Mapping::allScans.push_back(allScans[i]);
-        }
-
-        if(end > Mapping::last_scan) {
-            for(int i = 0; i < Scan::allScans.size(); i++) {
-                Mapping::allScans.push_back(Scan::allScans[i]);
-            }
-
-            Mapping::last_scan = end;
-        }
-    }
-}
 
 void Mapping::start_mapping() {
 
@@ -275,8 +227,8 @@ void Mapping::on_process_finished() {
 void Mapping::updateAlgorithms(int start, int end) {
 
     // set searchtree and reduction parameter for all scans
-    for(int i = start; i <= end; i++) {
-        Scan* scan = Mapping::allScans[i];
+    for(int i = 0; i < Scan::allScans.size(); i++) {
+        Scan* scan = Scan::allScans[i];
 
         scan->setRangeFilter(this->max_dist, this->min_dist);
         
@@ -500,37 +452,35 @@ void Mapping::do_slam6d()
 
 void Mapping::improve_slam6d() {
 
-    Mapping::loadScans(this->start, this->end);
+    if(Scan::allScans.size() == 0) {
+        Scan::openDirectory(scanserver, dir_path.toStdString(), file_format, this->improve_start , improve_end);
+    }
+
+    this->updateAlgorithms(this->improve_start, this->improve_end);
 
     std::vector<Scan*> scans_for_improving;
-    int start_index = this->start - Mapping::first_scan;
-    int end_index = this->end - Mapping::first_scan;
-
-    this->updateAlgorithms(start_index, end_index);
+    int start_index = start - this->improve_start;
+    int end_index = end - this->improve_start;
 
     // remember pose of end node
     double old_end[16]; 
-    memcpy(old_end, Mapping::allScans[end_index]->get_transMat(), sizeof(old_end)); 
+    memcpy(old_end, Scan::allScans[end_index]->get_transMat(), sizeof(old_end)); 
 
-    if(this->do_icp) {
-        // move scans back to origin if icp will be done again
-        for(int i = start_index; i <= end_index; i++) {
-            Scan* scan = Mapping::allScans[i];
+    for(int i = start_index; i <= end_index; i++) {
+        Scan* scan = Scan::allScans[i];
+        if(this->do_icp) { // move scans back to origin if icp will be done again
             double trans[16];
             M4inv(scan->getDAlign(), trans);
             scan->transform(trans, Scan::ICP);
         }
-
-        // merge first scan position with position of scan before
-        if(this->start > Mapping::first_scan) {
-            Mapping::allScans[start_index]->mergeCoordinatesWithRoboterPosition(Mapping::allScans[start_index-1]);
-        }
+        scans_for_improving.push_back(scan);
     }
-
-    for(int i = start_index; i <= end_index; i++) {
-        scans_for_improving.push_back(Mapping::allScans[i]);
+   
+    // merge first scan position with position of scan before
+    if(this->do_icp && start > this->improve_start) {
+        Scan::allScans[start_index]->mergeCoordinatesWithRoboterPosition(Scan::allScans[start_index-1]);
     }
-    
+ 
     this->matchGraph6Dautomatic(
         max_dist_Loop, 
         loopsize, 
@@ -547,12 +497,12 @@ void Mapping::improve_slam6d() {
         max_dist_finalLoop, 
         extrapolate_pose,
         file_format,
-        this->start,
-        this->end
+        improve_start,
+        improve_end
     );
 
     // update transmat of any scans that come after the section to improve
-    if(this->end == Mapping::last_scan) {
+    if(end == this->improve_end) {
         return;
     }
     
@@ -560,10 +510,10 @@ void Mapping::improve_slam6d() {
     double temp[16];
     M4inv(old_end, temp);
     double delta[16];
-    MMult(Mapping::allScans[end_index]->get_transMat(), temp, delta);
+    MMult(Scan::allScans[end_index]->get_transMat(), temp, delta);
     
-    for(int i = end_index + 1; i < Mapping::allScans.size(); i++) {
-        Mapping::allScans[i]->transform(delta, Scan::ICP);
+    for(int i = end_index + 1; i < Scan::allScans.size(); i++) {
+        Scan::allScans[i]->transform(delta, Scan::ICP);
     }
 }
 
@@ -572,19 +522,19 @@ void Mapping::write_frames_slam6d() {
     double id[16];
     M4identity(id);
 
-    for(size_t i= 0; i < Mapping::allScans.size(); i++) {
-        Mapping::allScans[i]->clearFrames();
+    for(size_t i= 0; i < Scan::allScans.size(); i++) {
+        Scan::allScans[i]->clearFrames();
     }
 
-    for(size_t i= 0; i < Mapping::allScans.size(); i++) {
-        Mapping::allScans[i]->transform(id, Scan::ICP, 0);
+    for(size_t i= 0; i < Scan::allScans.size(); i++) {
+        Scan::allScans[i]->transform(id, Scan::ICP, 0);
     }
 
     // write frames to file:
     const double* p;
     ofstream redptsout(this->loopclose_path.toStdString());
-    for(ScanVector::iterator it = Mapping::allScans.begin();
-        it != Mapping::allScans.end();
+    for(ScanVector::iterator it = Scan::allScans.begin();
+        it != Scan::allScans.end();
         ++it)
     {
         Scan* scan = *it;
