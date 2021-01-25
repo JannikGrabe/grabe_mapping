@@ -139,16 +139,16 @@ std::vector<std::string> Mapping::check_states() {
     if(this->start < 0) {
         error_msgs.push_back("GENERAL: start < 0");
     }
-    if(this->end > -1 && this->start >= this->end) {
+    if(this->start >= this->end) {
         error_msgs.push_back("GENERAL: start >= end");
     }
-    if(this->improve_start != -1 && (this->improve_start < this->start || this->improve_start >= this->end)) {
+    if(this->improvement && (this->start < Mapping::first_scan || this->start >= Mapping::last_scan)) {
         error_msgs.push_back("IMPROVE: start out of bounds");
     } 
-    if(this->improve_end != -1 && (this->improve_end <= this->start || this->improve_end > this->end)) {
+    if(this->improvement && (this->end <= Mapping::first_scan || this->end > Mapping::last_scan)) {
         error_msgs.push_back("IMPROVE: end out of bounds");
     }
-    if(this->improve_start != -1 && this->improve_end != -1 && this->improve_end <= this->improve_start) {
+    if(this->improvement && this->end <= this->start) {
         error_msgs.push_back("IMPROVE: start >= end");
     }
     if(this->max_it_ICP < 1) {
