@@ -61,7 +61,7 @@ public slots:
 private:
   Ui::Mapping ui_;
   QMainWindow* widget_;
-  Parameter_widget* pw;
+  std::vector<Parameter_widget*> pws;
   Scan_to_file_widget* stfw;
 
   void initWidgets();

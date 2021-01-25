@@ -70,6 +70,37 @@ Parameter_widget::Parameter_widget(Mapping* mapping, QString title, QWidget *par
     QObject::connect(this->ui.sb_slam_iterations, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &Parameter_widget::sb_slam_iterations_value_changed); 
     QObject::connect(this->ui.dsb_graph_epsilon, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &Parameter_widget::dsb_graph_epsilon_value_changed);
     QObject::connect(this->ui.dsb_graph_p2p_distance, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &Parameter_widget::dsb_graph_p2p_distance_value_changed);
+
+
+    // initialize with values from mapping object
+    Parameter_set p = mapping->get_parameters();
+
+    this->ui.sb_first->setValue(p.start);
+    this->ui.sb_last->setValue(p.end);
+    this->ui.dsb_min->setValue(p.min_dist);
+    this->ui.dsb_max->setValue(p.max_dist);
+    int index = this->ui.cb_correspondances->findData(p.pairing_mode);
+    this->ui.cb_correspondances->setCurrentIndex(index);
+    this->ui.cb_metascan->setChecked(p.match_meta);
+    this->ui.cb_do_icp->setChecked(p.do_icp);
+    index = this->ui.cb_icp_minimization->findData(p.type_ICP);
+    this->ui.cb_icp_minimization->setCurrentIndex(index);
+    index = this->ui.cb_nn->findData(p.nns_method);
+    this->ui.cb_nn->setCurrentIndex(index);
+    this->ui.sb_icp_iterations->setValue(p.max_it_ICP);
+    this->ui.dsb_icp_epsilon->setValue(p.epsilon_ICP);
+    this->ui.dsb_nn_p2p_distance->setValue(p.max_p2p_dist_ICP);
+    index = this->ui.cb_closing_loop->findData(p.type_Loop);
+    this->ui.cb_closing_loop->setCurrentIndex(index);
+    index = this->ui.cb_graphslam->findData(p.type_SLAM);
+    this->ui.cb_graphslam->setCurrentIndex(index);
+    this->ui.sb_loop_size->setValue(p.loopsize);
+    this->ui.sb_cl_max_distance->setValue(p.max_dist_Loop);
+    this->ui.dsb_cl_p2p_distance->setValue(p.max_p2p_dist_Loop);
+    this->ui.sb_cl_iterations->setValue(p.max_it_Loop);
+    this->ui.sb_slam_iterations->setValue(p.max_it_SLAM);
+    this->ui.dsb_graph_epsilon->setValue(p.epsilon_SLAM);
+    this->ui.dsb_graph_p2p_distance->setValue(p.max_p2p_dist_SLAM);
 }
 
 void Parameter_widget::save_settings(qt_gui_cpp::Settings& instance_settings) const {
@@ -147,11 +178,24 @@ void Parameter_widget::restore_settings(const qt_gui_cpp::Settings& instance_set
         this->ui.dsb_graph_p2p_distance->setValue(instance_settings.value("slam_p2p_distance").toDouble());
 }
 
+void Parameter_widget::set_total(int total) {
+    this->ui.sb_total->setValue(total);
+}
+
+void Parameter_widget::set_start_min_max(int min, int max) {
+    this->ui.sb_first->setMinimum(min);
+    this->ui.sb_first->setMaximum(max);
+}
+
+void Parameter_widget::set_end_min_max(int min, int max) {
+    this->ui.sb_last->setMinimum(min);
+    this->ui.sb_first->setMaximum(max);
+}
+
 // slots
 
 // general
 void Parameter_widget::sb_total_value_changed(int val) {
-    this->ui.sb_total->setValue(val); 
     this->ui.sb_first->setMaximum(val - 2);
     this->ui.sb_last->setMaximum(val - 1);
     this->ui.sb_last->setValue(val-1);

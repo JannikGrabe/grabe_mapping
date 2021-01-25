@@ -26,6 +26,44 @@ Mapping::Mapping() {
 
 }
 
+Mapping::Mapping(Mapping* mapping) {
+    Parameter_set free = mapping->get_parameters();
+
+    this->free.file_format = free.file_format;
+    this->free.start = free.start;
+    this->free.end = free.end;
+    this->free.type_ICP = free.type_ICP;
+    this->free.epsilon_ICP = free.epsilon_ICP;
+    this->free.max_it_ICP = free.max_it_ICP;
+    this->free.max_p2p_dist_ICP = free.max_p2p_dist_ICP;
+    this->free.type_SLAM = free.type_SLAM;
+    this->free.epsilon_SLAM = free.epsilon_SLAM;
+    this->free.max_it_SLAM = free.max_it_SLAM;
+    this->free.max_p2p_dist_SLAM = free.max_p2p_dist_SLAM;
+    this->free.max_p2p_dist_finalSLAM = free.max_p2p_dist_finalSLAM;
+    this->free.type_Loop = free.type_Loop;
+    this->free.max_it_Loop = free.max_it_Loop;
+    this->free.max_p2p_dist_Loop = free.max_p2p_dist_Loop;
+    this->free.max_dist_Loop = free.max_dist_Loop;
+    this->free.max_dist_finalLoop = free.max_dist_finalLoop;
+    this->free.min_overlap_Loop = free.min_overlap_Loop;
+    this->free.loopsize = free.loopsize;
+    this->free.nns_method = free.nns_method;
+    this->free.bucket_size = free.bucket_size;
+    this->free.pairing_mode = free.pairing_mode;
+    this->free.min_dist = free.min_dist;
+    this->free.max_dist = free.max_dist;
+    this->free.red_voxel_size = free.red_voxel_size;
+    this->free.octree_red = free.octree_red;
+    this->free.random_red = free.random_red;
+    this->free.quiet = free.quiet;
+    this->free.very_quiet = free.very_quiet;
+    this->free.match_meta = free.match_meta;
+    this->free.extrapolate_pose = free.extrapolate_pose;
+    this->free.anim = free.anim;
+    this->free.do_icp = free.do_icp;
+}
+
 // control Mapping
 void Mapping::lock_parameters() {
     file_format = free.file_format;

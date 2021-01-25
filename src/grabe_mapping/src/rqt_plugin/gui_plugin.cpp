@@ -51,8 +51,9 @@ void GuiPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   this->stfw = new Scan_to_file_widget(this->rosbag_reader, "Read Scans from Rosbag", this->widget_);
   this->ui_.vl_main->insertWidget(0, stfw); 
 
-  this->pw = new Parameter_widget(mapping, "SLAM Parameters");
+  Parameter_widget* pw = new Parameter_widget(mapping, "SLAM Parameters");
   this->ui_.hl_main->insertWidget(2, pw);
+  this->pws.push_back(pw);
 
   context.addWidget(widget_);
 
@@ -133,7 +134,7 @@ void GuiPlugin::on_le_source_dir_text_changed(QString text) {
   QStringList files = dir.entryList(QStringList() << "*.3d", QDir::Files);
 
   if(files.size() > 0)
-    this->pw->sb_total_value_changed(files.size()); 
+    this->pws[0]->set_total(files.size()); 
 }
 
 // config
@@ -277,15 +278,14 @@ void GuiPlugin::on_mapping_finished(int exit_code) {
 
   if(exit_code != 0) {
     ROS_ERROR("Something went wrong");
-  } else {
-    this->mapping_manager->write_frames();
+    return;
+  }
 
-    std::vector<double> icp_results; // = this->mapping->get_icp_results();
-    
-    if(icp_results.size() == 0) {
-      return;
-    }
+  this->mapping_manager->write_frames();
 
+  std::vector<double> icp_results; // = this->mapping->get_icp_results();
+  
+  if(icp_results.size() != 0) {
     this->ui_.tw_results->setEnabled(true);
     this->ui_.tw_results->clear();
     this->ui_.tw_results->setRowCount(0);
@@ -312,6 +312,22 @@ void GuiPlugin::on_mapping_finished(int exit_code) {
     this->ui_.tw_results->setVisible(true);
     this->ui_.pb_back->setVisible(true);
   }
+
+//create new instance of mapping
+
+  Mapping* latest = this->mapping_manager->latest();
+  
+  Mapping* mapping = new Mapping(latest);
+  this->mapping_manager->addMapping(mapping);
+
+  Parameter_widget* pw = new Parameter_widget(mapping, "Improving SLAM");
+  pw->set_total(Mapping_manager::last_scan - Mapping_manager::first_scan + 1);
+  pw->set_start_min_max(Mapping_manager::first_scan, Mapping_manager::last_scan - 1);
+  pw->set_end_min_max(Mapping_manager::first_scan + 1, Mapping_manager::last_scan);
+  this->ui_.hl_main->insertWidget(2, pw);
+
+  this->pws.back()->setVisible(false);
+  this->pws.push_back(pw);
 }
 
 void GuiPlugin::on_pb_show_pressed() {
@@ -345,7 +361,7 @@ void GuiPlugin::shutdownPlugin()
 void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
     qt_gui_cpp::Settings& instance_settings) const
 {
-  this->pw->save_settings(instance_settings);
+  this->pws[0]->save_settings(instance_settings);
   this->stfw->save_settings(instance_settings);
 
   instance_settings.setValue("export", this->ui_.cb_export->isChecked());
@@ -356,15 +372,15 @@ void GuiPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings,
 void GuiPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
     const qt_gui_cpp::Settings& instance_settings)
  {
-   this->pw->restore_settings(instance_settings);
-   this->stfw->restore_settings(instance_settings);
-
   if(instance_settings.contains("export"))
     this->ui_.cb_export->setChecked(instance_settings.value("export").toBool());
   if(instance_settings.contains("export_path"))
     this->ui_.le_export->setText(instance_settings.value("export_path").toString());
   if(instance_settings.contains("source_dir"))
     this->ui_.le_source_dir->setText(instance_settings.value("source_dir").toString());
+
+  this->pws[0]->restore_settings(instance_settings);
+  this->stfw->restore_settings(instance_settings);
 }
 
 } 

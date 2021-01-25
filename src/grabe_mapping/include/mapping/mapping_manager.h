@@ -23,6 +23,9 @@ public:
     static int run_command(std::string command);
     void write_frames();
 
+    // getter
+    Mapping* latest() { return this->current; }
+
     // setter
     void set_dir_path(QString text);
     void set_export_path(QString text);

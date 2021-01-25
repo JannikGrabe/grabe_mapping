@@ -25,6 +25,10 @@ public:
     void save_settings(qt_gui_cpp::Settings& instance_settings) const;
     void restore_settings(const qt_gui_cpp::Settings& instance_settings);
 
+    void set_total(int total);
+    void set_start_min_max(int min, int max);
+    void set_end_min_max(int min, int max);
+
 public slots:
     // general
     void sb_total_value_changed(int val);

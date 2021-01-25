@@ -7,47 +7,48 @@
 #include "mapping/slam6d.h"
 
 namespace grabe_mapping {
+// SLAM Parameters
+struct Parameter_set {
+    IOType file_format = UOS;
+    int start = 0;
+    int end = 1;
+    int type_ICP = 1;
+    double epsilon_ICP = 0.00001;
+    int max_it_ICP = 50;
+    double max_p2p_dist_ICP = 25.0;
+    int type_SLAM = 0;
+    double epsilon_SLAM = 0.5;
+    int max_it_SLAM = 50;
+    double max_p2p_dist_SLAM = 25.0;
+    double max_p2p_dist_finalSLAM = -1.0;
+    int type_Loop = 0;
+    int max_it_Loop = 100;
+    double max_p2p_dist_Loop = 700.0;
+    double max_dist_Loop = 500.0;
+    double max_dist_finalLoop = 500.0;
+    int min_overlap_Loop = -1;
+    int loopsize = 20;
+    int nns_method = 0;
+    int bucket_size = 20;
+    PairingMode pairing_mode = CLOSEST_POINT;
+    double min_dist = -1;
+    double max_dist = -1;
+    double red_voxel_size = -1.0;
+    int octree_red = 0;
+    int random_red = -1;
+    bool quiet = true;
+    bool very_quiet = true;
+    bool match_meta = false;
+    bool extrapolate_pose = true;
+    int anim = -1;
+    bool do_icp = true;
+};
 
 class Mapping  {
 
 private:
 
-    // SLAM Parameters
-    struct Parameter_set {
-        IOType file_format = UOS;
-        int start = 0;
-        int end = 1;
-        int type_ICP = 1;
-        double epsilon_ICP = 0.00001;
-        int max_it_ICP = 50;
-        double max_p2p_dist_ICP = 25.0;
-        int type_SLAM = 0;
-        double epsilon_SLAM = 0.5;
-        int max_it_SLAM = 50;
-        double max_p2p_dist_SLAM = 25.0;
-        double max_p2p_dist_finalSLAM = -1.0;
-        int type_Loop = 0;
-        int max_it_Loop = 100;
-        double max_p2p_dist_Loop = 700.0;
-        double max_dist_Loop = 500.0;
-        double max_dist_finalLoop = 500.0;
-        int min_overlap_Loop = -1;
-        int loopsize = 20;
-        int nns_method = 0;
-        int bucket_size = 20;
-        PairingMode pairing_mode = CLOSEST_POINT;
-        double min_dist = -1;
-        double max_dist = -1;
-        double red_voxel_size = -1.0;
-        int octree_red = 0;
-        int random_red = -1;
-        bool quiet = false;
-        bool very_quiet = true;
-        bool match_meta = false;
-        bool extrapolate_pose = true;
-        int anim = -1;
-        bool do_icp = true;
-    } free;
+    Parameter_set free;
 
     IOType file_format = UOS;
     int start = 0;
@@ -100,6 +101,7 @@ private:
 public: 
 
     Mapping();
+    Mapping(Mapping* mapping);
 
     // control Mapping
     void lock_parameters();
@@ -126,6 +128,9 @@ public:
     int get_end(bool free = false)  { 
         if(free) return this->free.end;
         else return this->end; }
+    Parameter_set get_parameters() {
+        return free;
+    }
 
     // setter
         // SLAM parameters
