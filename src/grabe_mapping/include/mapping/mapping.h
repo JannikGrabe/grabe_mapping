@@ -121,8 +121,6 @@ private:
     bool cancelled = false;
     std::vector<double> icp_results;
 
-    bool improvement = false;
-
     // control Mapping
     void lock_parameters();
     std::vector<std::string> check_states();
