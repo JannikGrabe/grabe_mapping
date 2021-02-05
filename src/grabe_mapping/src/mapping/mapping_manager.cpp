@@ -69,7 +69,7 @@ void Mapping_manager::showResults() {
 
     // build command to run show
     std::ostringstream oss(ros::package::getPath("grabe_mapping") + "/bin/show ", std::ios_base::app);
-    oss << "-s " << first_scan << " -e " << last_scan << " " << this->dir_path.toStdString();
+    oss << "-s " << this->current->get_start(true) << " -e " << this->current->get_end(true) << " " << this->dir_path.toStdString();
 
     std::cout << oss.str() << std::endl;
 
@@ -112,6 +112,33 @@ void Mapping_manager::write_frames() {
         scan->saveFrames(false);
     }
     redptsout.close();
+}
+
+Errors Mapping_manager::get_errors() {
+    
+    std::vector<double> new_errors = this->current->get_errors();
+    
+    if(this->errors.errors.size() == 0) {
+        this->errors.errors = new_errors;
+        this->errors.status = std::vector<int>(new_errors.size(), 0);
+        return this->errors;
+    }
+
+    int start = this->current->get_start();
+    int end = this->current->get_end();
+
+    for(int i = start - Mapping_manager::first_scan, j = 0; j < new_errors.size(); j++) {
+        if(this->errors.errors[i] == new_errors[j]) {
+            this->errors.status[i] = 0;
+        } else if( this->errors.errors[i] < new_errors[j]) {
+            this->errors.status[i] = -1;
+        } else {
+            this->errors.status[i] = 1;
+        }
+        this->errors.errors[i] = new_errors[j];
+    }
+
+    return this->errors;
 }
 
 void Mapping_manager::set_dir_path(QString text) {

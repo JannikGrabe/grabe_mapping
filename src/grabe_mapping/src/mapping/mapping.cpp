@@ -7,8 +7,8 @@
 #include <pcl/common/transforms.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/filters/voxel_grid.h>
-#include <pcl/ModelCoefficients.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/io.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/sample_consensus/method_types.h>
@@ -516,7 +516,7 @@ void Mapping::matchGraph6Dautomatic(double cldist, int loopsize, vector <Scan *>
                 double ret;
                 do {
                     // recalculate graph
-                    Graph *gr = new Graph(i + 1, cldist2, loopsize);
+                    Graph *gr = new Graph(allScans, i + 1, cldist2, loopsize);
                     cout << "Global: " << j << endl;
                     ret = my_graphSlam6D->doGraphSlam6D(*gr, allScans, 1);
                     delete gr;
@@ -537,7 +537,7 @@ void Mapping::matchGraph6Dautomatic(double cldist, int loopsize, vector <Scan *>
         double ret;
         do {
             // recalculate graph
-            Graph *gr = new Graph(n, cldist2, loopsize);
+            Graph *gr = new Graph(allScans, n, cldist2, loopsize);
             cout << "Global: " << j << endl;
             ret = my_graphSlam6D->doGraphSlam6D(*gr, allScans, 1);
             delete gr;
@@ -551,13 +551,188 @@ void Mapping::matchGraph6Dautomatic(double cldist, int loopsize, vector <Scan *>
         double ret;
         do {
             // recalculate graph
-            Graph *gr = new Graph(n, sqr(graphDist), loopsize);
+            Graph *gr = new Graph(allScans, n, sqr(graphDist), loopsize);
             cout << "Global: " << j << endl;
             ret = my_graphSlam6D->doGraphSlam6D(*gr, allScans, 1);
             delete gr;
             j++;
         } while (j < nrIt && ret > epsilonSLAM);
     }
+}
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr fillPCLpointCloud(Scan* scan) {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>());
+    pcl::PointXYZ p;
+
+    DataXYZ points(scan->get("xyz reduced"));
+
+    for(int i = 0; i < points.size(); i++) {
+        p.x = points[i][0];
+        p.y = points[i][1];
+        p.z = points[i][2];
+
+        cloud->points.push_back(p);
+    }
+
+    cloud->width = cloud->points.size();
+    cloud->height = 1;
+    cloud->points.resize(cloud->width * cloud->height);
+    cloud->is_dense = false;
+
+    return cloud;
+}
+
+std::vector<double> Mapping::get_point2point_error(int start_index, int end_index) {
+    std::vector<double> errors;
+
+    for(int i = start_index + 1; i <= end_index; i++) {
+        Scan* scan1 = Scan::allScans[i-1];
+        Scan* scan2 = Scan::allScans[i];
+
+        std::vector<PtPair> pairs;
+        double dummy_sum;
+        double dummy_centroid_m[3];
+        double dummy_centroid_d[3];
+
+        Scan::getPtPairs(&pairs, scan1, scan2, 0, this->random_red, 
+            this->max_p2p_dist_ICP*this->max_p2p_dist_ICP, dummy_sum, 
+            dummy_centroid_m, dummy_centroid_d, this->pairing_mode);
+
+        double error = 0.0;
+
+        for(int i = 0; i < pairs.size(); i++) {
+            double dist = sqr(pairs[i].p1.x - pairs[i].p2.x)
+                + sqr(pairs[i].p1.y - pairs[i].p2.y)
+                + sqr(pairs[i].p1.z - pairs[i].p2.z);
+                error += sqrt(dist);
+        }
+
+        errors.push_back(error/pairs.size());
+    }
+
+    return errors;
+}
+
+std::vector<double> Mapping::get_plane2plane_error(int start_index, int end_index) {
+    
+    std::vector<double> errors;
+
+    for(int i = start_index + 1; i <= end_index; i++) {
+        Scan* scan1 = Scan::allScans[i-1];
+        Scan* scan2 = Scan::allScans[i];
+
+        //std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> planes1 = this->extractPlanes(scan1);
+        //std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> planes2 = this->extractPlanes(scan2);
+    }
+}
+
+std::vector<double> Mapping::get_errors() {
+
+    int start_index = this->start - Mapping_manager::first_scan;
+    int end_index = this->end - Mapping_manager::first_scan;
+
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> planes_1, planes_2, planes_s, planes_t;
+    std::vector<pcl::ModelCoefficients::Ptr> coefficients_1, coefficients_2, coefficients_s, coefficients_t;
+
+    this->extractPlanes(Scan::allScans[start_index], planes_1, coefficients_1);
+    this->extractPlanes(Scan::allScans[start_index+1], planes_2, coefficients_2);
+
+    planes_s = planes_1;
+    planes_t = planes_2;
+    coefficients_s = coefficients_1;
+    coefficients_t = coefficients_2;
+
+    if(planes_1.size() > planes_2.size()) {
+        planes_s = planes_2;
+        planes_t = planes_1;
+        coefficients_s = coefficients_2;
+        coefficients_t = coefficients_1;
+    }
+
+    double max_dist = 0;
+    int num_correspondances = 0;
+    int min;
+    double x, y, z, d, dist2, min_dist2;
+
+    std::cout << coefficients_s.size() << std::endl;
+    std::cout << coefficients_t.size() << std::endl;
+
+    double epsilon = 0.1;
+    // find correspondances
+    for(int i = 0; i < coefficients_s.size(); i++) {
+        min = -1;
+        min_dist2 = -1;
+
+        // if normal is (0,1,0) skip (ground)
+        if(std::abs(coefficients_s[i]->values[0]) < epsilon
+        && (1 - std::abs(coefficients_s[i]->values[1]))  < epsilon
+        && std::abs(coefficients_s[i]->values[2]) < epsilon) {
+            continue;
+        }
+        
+        for(int j = 0; j < coefficients_t.size(); j++) {
+            x = coefficients_s[i]->values[0] - coefficients_t[j]->values[0];
+            y = coefficients_s[i]->values[1] - coefficients_t[j]->values[1];
+            z = coefficients_s[i]->values[2] - coefficients_t[j]->values[2];
+            d = coefficients_s[i]->values[3] - coefficients_t[j]->values[3];
+
+            dist2 = x*x + y*y + z*z + d*d;
+
+            if(min == -1 || dist2 < min_dist2) {
+                min = j;
+                min_dist2 = dist2; 
+            }
+        }
+
+        if(min != -1)
+            std::cout << i << " " << min << " " << min_dist2 << std::endl;
+    }
+
+    // go through all Scans and check for loops
+    for(int i = start_index; i <= end_index; i++) {
+        double min_dist = -1;
+        int last = 0;
+        for(int j = start_index; j < i - 20; j++) {
+            double dist = Dist2(Scan::allScans[i]->get_rPos(), Scan::allScans[j]->get_rPos());
+
+            if(dist > this->max_dist_Loop * this->max_dist_Loop) {
+                continue;
+            }
+
+            if (min_dist < 0 || dist < min_dist) {
+                min_dist = dist; 
+                last = j;
+            }
+        }
+
+        if(min_dist != -1) {
+            // Scan* scan1 = Scan::allScans[i];
+            // Scan* scan2 = Scan::allScans[last];
+
+            // std::vector<PtPair> pairs;
+            // double dummy_sum;
+            // double dummy_centroid_m[3];
+            // double dummy_centroid_d[3];
+
+            // Scan::getPtPairs(&pairs, scan1, scan2, 0, this->random_red, 
+            //     this->max_p2p_dist_ICP*this->max_p2p_dist_ICP, dummy_sum, 
+            //     dummy_centroid_m, dummy_centroid_d, this->pairing_mode);
+
+            // double error = 0.0;
+
+            // for(int i = 0; i < pairs.size(); i++) {
+            //     double dist = sqr(pairs[i].p1.x - pairs[i].p2.x)
+            //         + sqr(pairs[i].p1.y - pairs[i].p2.y)
+            //         + sqr(pairs[i].p1.z - pairs[i].p2.z);
+            //         error += sqrt(dist);
+            // }
+
+            std::cout << i << " " << last << ": "
+                        /*<< error / pairs.size()*/ << std::endl;
+        }
+            
+    }
+    return this->get_point2point_error(start_index, end_index);
 }
 
 /*
@@ -730,41 +905,40 @@ double Mapping::calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in) {
     E = E / count;
     return E = -std::log(E);
 }
+*/
 
-void Mapping::segmentPointCloud() {
-    std::ostringstream scan1_base(this->free.dir_path.toStdString() + "/scan", std::ios_base::app);
-    scan1_base << std::setfill('0') << std::setw(3) << 4;
+void Mapping::extractPlanes(Scan* scan, std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>& planes, std::vector<pcl::ModelCoefficients::Ptr>& plane_coefficients) {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = fillPCLpointCloud(scan);
 
-    //IO::scale_factor = 0.01;
-    IO::scale_factor = 100;
-    pcl::PointCloud<pcl::PointXYZI>* cloud;
-    IO::read_pointcloud_from_xyz_file(cloud, "/home/jannik/Bachelorarbeit/data/cloud1.xyz");
-    
-    // pcl::VoxelGrid<pcl::PointXYZI> vg;
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZI>);
-    // vg.setInputCloud (cloud->makeShared());
+    pcl::VoxelGrid<pcl::PointXYZ> vg;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+    // vg.setInputCloud (cloud);
     // vg.setLeafSize (0.1f, 0.1f, 0.1f);
     // vg.filter (*cloud_filtered);
-    // std::cout << "PointCloud after filtering has: " << cloud_filtered->size ()  << " data points." << std::endl; //*
 
     *cloud_filtered = *cloud;
 
     // Create the segmentation object for the planar model and set all the parameters
-    pcl::SACSegmentation<pcl::PointXYZI> seg;
+    pcl::SACSegmentation<pcl::PointXYZ> seg;
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZI> ());
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZI> ());
+    
+    
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ> ());
     pcl::PCDWriter writer;
     seg.setOptimizeCoefficients (true);
     seg.setModelType (pcl::SACMODEL_PLANE);
     seg.setMethodType (pcl::SAC_RANSAC);
-    seg.setMaxIterations (100);
-    seg.setDistanceThreshold (0.02);
+    seg.setMaxIterations (1000);
+    seg.setDistanceThreshold (10);
+
+    planes.clear();
+    plane_coefficients.clear();
 
     int i=0, nr_points = (int) cloud_filtered->size ();
-    while (cloud_filtered->size () > 0.3 * nr_points)
+    while (cloud_filtered->size () > 0.25 * nr_points)
     {
+        pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+
         // Segment the largest planar component from the remaining cloud
         seg.setInputCloud (cloud_filtered);
         seg.segment (*inliers, *coefficients);
@@ -775,56 +949,36 @@ void Mapping::segmentPointCloud() {
         }
 
         // Extract the planar inliers from the input cloud
-        pcl::ExtractIndices<pcl::PointXYZI> extract;
+        pcl::ExtractIndices<pcl::PointXYZ> extract;
         extract.setInputCloud (cloud_filtered);
         extract.setIndices (inliers);
         extract.setNegative (false);
 
         // Get the points associated with the planar surface
-        extract.filter (*cloud_plane);
-        std::cout << "PointCloud representing the planar component: " << cloud_plane->size () << " data points." << std::endl;
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
+        extract.filter(*cloud_plane);
+        //std::cout << "PointCloud representing the planar component: " << cloud_plane->size () << " data points." << std::endl;
+        planes.push_back(cloud_plane);
+        plane_coefficients.push_back(coefficients);
+
+        std::cout << "Cloud " << i << ": " << cloud_plane->size()
+                                    << " " << coefficients->values[0] 
+                                    << " " << coefficients->values[1] 
+                                    << " " << coefficients->values[2]
+                                    << " " << coefficients->values[3] << std::endl;
+
+        std::ostringstream ss("/home/jannik/Bachelorarbeit/data/planes/plane", std::ios_base::app);
+        ss << scan->scanNr << "_" << i << ".pcd";
+
+        pcl::io::savePCDFileBinary(ss.str(), *cloud_plane);
 
         // Remove the planar inliers, extract the rest
         extract.setNegative (true);
         extract.filter (*cloud_f);
         *cloud_filtered = *cloud_f;
-    }
-
-    writer.write<pcl::PointXYZI> ("/home/jannik/Bachelorarbeit/data/clusters/after_planes.pcd", *cloud_filtered, false); 
-
-    // Creating the KdTree object for the search method of the extraction
-    pcl::search::KdTree<pcl::PointXYZI>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZI>);
-    tree->setInputCloud (cloud_filtered);
-
-    std::vector<pcl::PointIndices> cluster_indices;
-    pcl::EuclideanClusterExtraction<pcl::PointXYZI> ec;
-    ec.setClusterTolerance (0.3); // 2cm
-    ec.setMinClusterSize (10);
-    ec.setMaxClusterSize (25000);
-    ec.setSearchMethod (tree);
-    ec.setInputCloud (cloud_filtered);
-    ec.extract (cluster_indices);
-
-    std::cout << "clusters: " << cluster_indices.size() << std::endl;
-
-    int j = 0;
-    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
-    {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZI>);
-        for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-            cloud_cluster->push_back ((*cloud_filtered)[*pit]);
-            cloud_cluster->width = cloud_cluster->size ();
-            cloud_cluster->height = 1;
-            cloud_cluster->is_dense = true;
-
-            std::cout << "PointCloud representing the Cluster: " << cloud_cluster->size () << " data points." << std::endl;
-            std::stringstream ss;
-            ss << "/home/jannik/Bachelorarbeit/data/clusters/cloud_cluster_" << j << ".pcd";
-            writer.write<pcl::PointXYZI> (ss.str (), *cloud_cluster, false); 
-            j++;
+        i++;
     }
 }
-*/
 
 std::string Mapping::param_to_string() {
     std::ostringstream ss("SLAM6D Paramters:\n");

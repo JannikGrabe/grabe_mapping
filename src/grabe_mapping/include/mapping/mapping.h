@@ -3,6 +3,7 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/ModelCoefficients.h>
 
 #include "mapping/slam6d.h"
 
@@ -98,6 +99,11 @@ private:
                             int nrIt, double epsilonSLAM, double mdml, double mdmll, double graphDist,
                             bool &eP, IOType type, int start, int end); 
 
+
+    std::vector<double> get_point2point_error(int start_index, int end_index);
+
+    std::vector<double> get_plane2plane_error(int start_index, int end_index);
+
 public: 
 
     Mapping();
@@ -109,16 +115,16 @@ public:
 
     // SLAM
     int start_slam6d();
+    std::vector<double> get_errors();
 
     /*
     // PointCloud stuff
     void transform_cloud(pcl::PointCloud<pcl::PointXYZI> *in, pcl::PointCloud<pcl::PointXYZI> *out, double *angles, double *translation);
     void calculate_crispnesses(int scan1, int scan2);
     double calculate_crispness(pcl::PointCloud<pcl::PointXYZI> *in);
-    void segmentPointCloud();
     */
-
-public: 
+    void extractPlanes(Scan* scan, std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>& planes, std::vector<pcl::ModelCoefficients::Ptr>& coefficients);
+    
     // getter
     std::string param_to_string();
 

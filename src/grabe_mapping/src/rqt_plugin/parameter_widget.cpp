@@ -189,16 +189,14 @@ void Parameter_widget::set_start_min_max(int min, int max) {
 
 void Parameter_widget::set_end_min_max(int min, int max) {
     this->ui.sb_last->setMinimum(min);
-    this->ui.sb_first->setMaximum(max);
+    this->ui.sb_last->setMaximum(max);
 }
 
 // slots
 
 // general
 void Parameter_widget::sb_total_value_changed(int val) {
-    this->ui.sb_first->setMaximum(val - 2);
-    this->ui.sb_last->setMaximum(val - 1);
-    this->ui.sb_last->setValue(val-1);
+    
 }
 
 void Parameter_widget::sb_first_value_changed(int val) {

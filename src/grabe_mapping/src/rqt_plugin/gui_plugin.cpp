@@ -133,8 +133,11 @@ void GuiPlugin::on_le_source_dir_text_changed(QString text) {
   QDir dir(text);
   QStringList files = dir.entryList(QStringList() << "*.3d", QDir::Files);
 
-  if(files.size() > 0)
-    this->pws[0]->set_total(files.size()); 
+  if(files.size() > 0) {
+    this->pws[0]->set_total(files.size());
+    this->pws[0]->set_start_min_max(0, files.size() - 2);
+    this->pws[0]->set_end_min_max(1, files.size() - 1);
+  } 
 }
 
 // config
@@ -283,7 +286,8 @@ void GuiPlugin::on_mapping_finished(int exit_code) {
 
   this->mapping_manager->write_frames();
 
-  std::vector<double> icp_results; // = this->mapping->get_icp_results();
+  Errors errors = this->mapping_manager->get_errors();
+  std::vector<double> icp_results = errors.errors;
   
   if(icp_results.size() != 0) {
     this->ui_.tw_results->setEnabled(true);
@@ -306,6 +310,11 @@ void GuiPlugin::on_mapping_finished(int exit_code) {
       this->ui_.tw_results->setItem(row, 1, item);
 
       item = new QTableWidgetItem(QString::number(icp_results[i]));
+      if(errors.status[i] == -1)
+        item->setBackgroundColor(QColor(255, 0, 0, 100));
+      else if(errors.status[i] == 1) {
+        item->setBackgroundColor(QColor(0, 255, 0, 100));
+      }
       this->ui_.tw_results->setItem(row, 2, item);
     }
 
@@ -316,7 +325,7 @@ void GuiPlugin::on_mapping_finished(int exit_code) {
 //create new instance of mapping
 
   Mapping* latest = this->mapping_manager->latest();
-  
+
   Mapping* mapping = new Mapping(latest);
   this->mapping_manager->addMapping(mapping);
 

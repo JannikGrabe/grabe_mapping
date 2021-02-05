@@ -38,7 +38,7 @@ std::vector<double> IO::split_string_to_doubles(std::string s) {
     return result;
 }
 
-void IO::read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZI>* &cloud, std::string filename) {
+void IO::read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZ>* &cloud, std::string filename) {
     std::ifstream file;
     file.open(filename.c_str());
 
@@ -46,8 +46,8 @@ void IO::read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZI>* &cloud, 
         throw Bad_file_exception(filename.c_str(), "IO::read_pointcloud_from_xyz_file", "can't open file");
     }
     
-    cloud = new pcl::PointCloud<pcl::PointXYZI>;
-    pcl::PointXYZI p;
+    cloud = new pcl::PointCloud<pcl::PointXYZ>;
+    pcl::PointXYZ p;
 
     std::string line = "";
     std::vector<double> results;

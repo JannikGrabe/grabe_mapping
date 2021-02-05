@@ -149,6 +149,7 @@ Graph::Graph(std::vector<Scan*> scans, int nodes, double cldist2, int loopsize)
           (Dist2(scans[j]->get_rPos(),
                  scans[k]->get_rPos()) < cldist2)) {
         addLink(j, k);
+        //std::cout << j << " " << k << std::endl;
       }
     }
   }

@@ -8,6 +8,11 @@
 
 namespace grabe_mapping {
 
+struct Errors {
+    std::vector<double> errors;
+    std::vector<int> status; // -1 = worse, 0 = nothing, 1 = better
+};
+
 class Mapping_manager : public QWidget {
     Q_OBJECT
 
@@ -25,7 +30,8 @@ public:
 
     // getter
     Mapping* latest() { return this->current; }
-
+    Errors get_errors();
+    
     // setter
     void set_dir_path(QString text);
     void set_export_path(QString text);
@@ -34,6 +40,8 @@ private:
 
     std::vector<Mapping*> mappings;
     Mapping* current = nullptr;
+    Errors errors;
+
 
     QString dir_path;
     QString export_path;

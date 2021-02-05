@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>534</width>
+    <width>608</width>
     <height>299</height>
    </rect>
   </property>
@@ -158,6 +158,33 @@ QGroupBox::title {
        </layout>
       </item>
       <item>
+       <widget class="QTableWidget" name="tw_results">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <column>
+         <property name="text">
+          <string>from</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>to</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>error</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string># points</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -171,33 +198,6 @@ QGroupBox::title {
        </spacer>
       </item>
      </layout>
-    </item>
-    <item>
-     <widget class="QTableWidget" name="tw_results">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <column>
-       <property name="text">
-        <string>from</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>to</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>error</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string># points</string>
-       </property>
-      </column>
-     </widget>
     </item>
     <item>
      <widget class="Line" name="line">

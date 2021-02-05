@@ -20,7 +20,7 @@ public:
 
     static void normalize(double *x, int size = 4);
 
-    static void read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZI>* &cloud, std::string filename);
+    static void read_pointcloud_from_xyz_file(pcl::PointCloud<pcl::PointXYZ>* &cloud, std::string filename);
 
     static void read_frame_from_file(double* eulerAngles, double* translation, std::string filename);
     
